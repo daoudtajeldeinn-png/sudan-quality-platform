@@ -57,7 +57,9 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   const processQuestions = (rawQuestions) => {
     return rawQuestions.map(q => {
       if (q.type === 'mcq' || !q.type) {
-        const options = q.options[language];
+        const options = q.options ? q.options[language] : null;
+        if (!options) return { ...q, type: 'mcq', shuffledOptions: [], newCorrectAnswer: -1 };
+
         const correctText = options[q.correctAnswer];
         const shuffledOptions = shuffleArray([...options]);
         const newCorrectIndex = shuffledOptions.indexOf(correctText);
@@ -77,6 +79,14 @@ const Quiz = ({ unitId, onQuizComplete }) => {
     const newUserAnswers = [...userAnswers];
     newUserAnswers[currentQuestionIndex] = answer;
     setUserAnswers(newUserAnswers);
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      calculateResult();
+    }
   };
 
   const calculateResult = () => {

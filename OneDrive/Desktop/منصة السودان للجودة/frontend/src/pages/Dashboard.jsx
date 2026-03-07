@@ -50,6 +50,9 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'glp-basics', title: t('glpBasics'), subtitle: t('unit2'), color: '#007bff' },
     { id: 'iso-17025', title: t('iso17025'), subtitle: t('unit3'), color: '#ffc107' },
     { id: 'ich-guidelines', title: t('ichGuidelines'), subtitle: t('unit4'), color: '#dc3545' },
+    { id: 'validation-qualification', title: t('valQual'), subtitle: t('unit5'), color: '#20c997' },
+    { id: 'data-integrity', title: t('dataIntegrity'), subtitle: t('unit6'), color: '#6610f2' },
+    { id: 'qrm-basics', title: t('qrmBasics'), subtitle: t('unit7'), color: '#e83e8c' },
   ];
 
   const handleStartUnit = (unitId) => {
