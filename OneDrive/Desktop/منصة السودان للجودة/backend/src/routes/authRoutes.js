@@ -1,14 +1,11 @@
-﻿const express = require("express");
+﻿const express = require('express');
 const router = express.Router();
-const UserController = require("../controllers/userController");
+const authController = require('../controllers/authController');
 
 // POST /api/auth/register - تسجيل مستخدم جديد
-router.post("/register", UserController.register);
+router.post('/register', authController.registerUser);
 
-// POST /api/auth/login - تسجيل دخول المستخدم
-router.post("/login", UserController.login);
-
-// GET /api/auth/me - الحصول على بيانات المستخدم الحالي
-router.get("/me", require("../middleware/authMiddleware"), UserController.getCurrentUser);
+// GET /api/auth/user/:userId - الحصول على بيانات المستخدم
+router.get('/user/:userId', authController.getUser);
 
 module.exports = router;

@@ -1,23 +1,26 @@
 ﻿import React, { useState, useEffect } from 'react';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [firebaseError, setFirebaseError] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   useEffect(() => {
+    // محاولة تحميل Firebase
     const loadFirebase = async () => {
       try {
         const firebaseModule = await import('./firebase/config');
         const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
-          setUser(currentUser);
+          if (currentUser) {
+            setUser(currentUser);
+          }
           setLoading(false);
         });
         return () => unsubscribe();
       } catch (error) {
         console.log('Firebase not configured yet');
-        setFirebaseError(true);
         setLoading(false);
       }
     };
@@ -26,31 +29,53 @@ function App() {
   }, []);
 
   const handleGoogleLogin = async () => {
-    if (firebaseError) {
-      alert('Firebase غير معد بشكل صحيح');
-      return;
-    }
-    
     try {
       const firebaseModule = await import('./firebase/config');
       const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const provider = new GoogleAuthProvider();
+      
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
       const result = await signInWithPopup(firebaseModule.auth, provider);
-      console.log('User signed in:', result.user);
+      setUser(result.user);
+      
+      // إرسال بيانات المستخدم للـ Backend
+      try {
+        const userData = {
+          userId: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL
+        };
+        
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+        
+        if (response.ok) {
+          console.log('User registered in backend');
+        }
+      } catch (error) {
+        console.error('Backend registration error:', error);
+      }
     } catch (error) {
       console.error('Login error:', error);
-      alert('حدث خطأ في تسجيل الدخول: ' + error.message);
     }
   };
 
   const handleLogout = async () => {
-    if (firebaseError) return;
-    
     try {
       const firebaseModule = await import('./firebase/config');
       const { signOut } = await import('firebase/auth');
       await signOut(firebaseModule.auth);
-      console.log('User signed out');
+      setUser(null);
+      setShowDashboard(false);
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -64,16 +89,11 @@ function App() {
         fontFamily: 'Arial, sans-serif'
       }}>
         <div>جاري التحميل...</div>
-        {firebaseError && (
-          <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            Firebase غير معد بشكل صحيح
-          </div>
-        )}
       </div>
     );
   }
 
-  if (!user) {
+  if (user && !showDashboard) {
     return (
       <div style={{ 
         textAlign: 'center', 
@@ -81,28 +101,58 @@ function App() {
         fontFamily: 'Arial, sans-serif',
         direction: 'rtl'
       }}>
-        <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
-        <p style={{ fontSize: '18px', color: '#666' }}>
-          التدريب التفاعلي في الجودة الدوائية
-        </p>
+        <h1 style={{ color: '#28a745' }}>مرحباً، {user.displayName || 'مستخدم'}</h1>
+        {user.photoURL && (
+          <img 
+            src={user.photoURL} 
+            alt="Profile" 
+            style={{ 
+              width: '100px', 
+              height: '100px', 
+              borderRadius: '50%',
+              border: '3px solid #28a745',
+              margin: '20px 0'
+            }}
+          />
+        )}
+        <p style={{ fontSize: '18px', color: '#333' }}>{user.email}</p>
         <button 
-          onClick={handleGoogleLogin}
-          disabled={firebaseError}
+          onClick={() => setShowDashboard(true)}
           style={{
-            backgroundColor: firebaseError ? '#cccccc' : '#4285f4',
+            backgroundColor: '#28a745',
             color: 'white',
             border: 'none',
             padding: '12px 24px',
             borderRadius: '6px',
-            cursor: firebaseError ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
+            fontSize: '16px',
+            marginTop: '20px',
+            marginRight: '10px'
+          }}
+        >
+          الذهاب للوحة التحكم
+        </button>
+        <button 
+          onClick={handleLogout}
+          style={{
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            cursor: 'pointer',
             fontSize: '16px',
             marginTop: '20px'
           }}
         >
-          {firebaseError ? 'خطأ في إعداد Firebase' : 'الدخول بحساب Google'}
+          تسجيل الخروج
         </button>
       </div>
     );
+  }
+
+  if (user && showDashboard) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
   }
 
   return (
@@ -112,34 +162,24 @@ function App() {
       fontFamily: 'Arial, sans-serif',
       direction: 'rtl'
     }}>
-      <h1>مرحباً، {user.displayName || 'مستخدم'}</h1>
-      {user.photoURL && (
-        <img 
-          src={user.photoURL} 
-          alt="Profile" 
-          style={{ 
-            width: '100px', 
-            height: '100px', 
-            borderRadius: '50%',
-            border: '3px solid #28a745'
-          }}
-        />
-      )}
-      <p style={{ fontSize: '18px', color: '#333' }}>{user.email}</p>
+      <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
+      <p style={{ fontSize: '18px', color: '#666' }}>
+        التدريب التفاعلي في الجودة الدوائية
+      </p>
       <button 
-        onClick={handleLogout}
+        onClick={handleGoogleLogin}
         style={{
-          backgroundColor: '#dc3545',
+          backgroundColor: '#4285f4',
           color: 'white',
           border: 'none',
-          padding: '10px 20px',
-          borderRadius: '5px',
+          padding: '12px 24px',
+          borderRadius: '6px',
           cursor: 'pointer',
-          marginTop: '20px',
-          fontSize: '16px'
+          fontSize: '16px',
+          marginTop: '20px'
         }}
       >
-        تسجيل الخروج
+        الدخول بحساب Google
       </button>
     </div>
   );

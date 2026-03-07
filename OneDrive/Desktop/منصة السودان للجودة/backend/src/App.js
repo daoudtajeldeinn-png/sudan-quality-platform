@@ -1,56 +1,31 @@
 ﻿import React, { useState, useEffect } from 'react';
-import './App.css';
 import Dashboard from './pages/Dashboard';
-import { LanguageProvider, useLanguage } from './LanguageContext';
+import './App.css';
 
-function AppContent() {
+function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [showDashboard, setShowDashboard] = useState(false);
 
   useEffect(() => {
     // محاولة تحميل Firebase
     const loadFirebase = async () => {
       try {
         const firebaseModule = await import('./firebase/config');
-        const unsubscribe = firebaseModule.auth.onAuthStateChanged(async (currentUser) => {
+        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
           if (currentUser) {
             setUser(currentUser);
-            // تسجيل المستخدم في Backend
-            try {
-              const userData = {
-                userId: currentUser.uid,
-                email: currentUser.email,
-                displayName: currentUser.displayName,
-                photoURL: currentUser.photoURL
-              };
-
-              // إرسال بيانات المستخدم للـ Backend
-              const response = await fetch('http://localhost:5000/api/auth/register', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
-              });
-
-              if (response.ok) {
-                console.log('User registered in backend');
-              }
-            } catch (error) {
-              console.error('Backend registration error:', error);
-            }
+            setShowDashboard(true); // إظهار لوحة التحكم تلقائياً عند تسجيل الدخول
           }
           setLoading(false);
         });
         return () => unsubscribe();
       } catch (error) {
         console.log('Firebase not configured yet');
-        setError('Firebase configuration error');
         setLoading(false);
       }
     };
-
+    
     loadFirebase();
   }, []);
 
@@ -59,15 +34,16 @@ function AppContent() {
       const firebaseModule = await import('./firebase/config');
       const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const provider = new GoogleAuthProvider();
-
+      
       provider.setCustomParameters({
         prompt: 'select_account'
       });
-
+      
       const result = await signInWithPopup(firebaseModule.auth, provider);
-      console.log('User signed in:', result.user);
-
-      // تسجيل المستخدم في Backend
+      setUser(result.user);
+      setShowDashboard(true); // الانتقال للوحة التحكم تلقائياً
+      
+      // إرسال بيانات المستخدم للـ Backend
       try {
         const userData = {
           userId: result.user.uid,
@@ -75,7 +51,7 @@ function AppContent() {
           displayName: result.user.displayName,
           photoURL: result.user.photoURL
         };
-
+        
         const response = await fetch('http://localhost:5000/api/auth/register', {
           method: 'POST',
           headers: {
@@ -83,19 +59,15 @@ function AppContent() {
           },
           body: JSON.stringify(userData),
         });
-
+        
         if (response.ok) {
           console.log('User registered in backend');
         }
       } catch (error) {
         console.error('Backend registration error:', error);
       }
-
-      setUser(result.user);
-      setError('');
     } catch (error) {
       console.error('Login error:', error);
-      setError('حدث خطأ في تسجيل الدخول: ' + error.message);
     }
   };
 
@@ -105,43 +77,72 @@ function AppContent() {
       const { signOut } = await import('firebase/auth');
       await signOut(firebaseModule.auth);
       setUser(null);
-      console.log('User signed out');
-      setError('');
+      setShowDashboard(false);
     } catch (error) {
       console.error('Logout error:', error);
-      setError('حدث خطأ في تسجيل الخروج');
     }
   };
 
   if (loading) {
     return (
-      <div style={{
-        textAlign: 'center',
+      <div style={{ 
+        textAlign: 'center', 
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif'
       }}>
         <div>جاري التحميل...</div>
-        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
       </div>
     );
   }
 
-  if (!user) {
+  if (user && showDashboard) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
+  }
+
+  if (user && !showDashboard) {
+    // هذا هو الجزء المفقود - زر الذهاب للوحة التحكم
     return (
-      <div style={{
-        textAlign: 'center',
+      <div style={{ 
+        textAlign: 'center', 
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif',
         direction: 'rtl'
       }}>
-        <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
-        <p style={{ fontSize: '18px', color: '#666' }}>
-          التدريب التفاعلي في الجودة الدوائية
-        </p>
-        <button
-          onClick={handleGoogleLogin}
+        <h1 style={{ color: '#28a745' }}>مرحباً، {user.displayName || 'مستخدم'}</h1>
+        {user.photoURL && (
+          <img 
+            src={user.photoURL} 
+            alt="Profile" 
+            style={{ 
+              width: '100px', 
+              height: '100px', 
+              borderRadius: '50%',
+              border: '3px solid #28a745',
+              margin: '20px 0'
+            }}
+          />
+        )}
+        <p style={{ fontSize: '18px', color: '#333' }}>{user.email}</p>
+        <button 
+          onClick={() => setShowDashboard(true)}
           style={{
-            backgroundColor: '#4285f4',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            marginTop: '20px',
+            marginRight: '10px'
+          }}
+        >
+          الذهاب للوحة التحكم
+        </button>
+        <button 
+          onClick={handleLogout}
+          style={{
+            backgroundColor: '#dc3545',
             color: 'white',
             border: 'none',
             padding: '12px 24px',
@@ -151,36 +152,39 @@ function AppContent() {
             marginTop: '20px'
           }}
         >
-          الدخول بحساب Google
+          تسجيل الخروج
         </button>
-
-        {error && (
-          <div style={{
-            color: 'red',
-            marginTop: '20px',
-            padding: '10px',
-            backgroundColor: '#ffe6e6',
-            borderRadius: '4px',
-            maxWidth: '400px',
-            margin: '20px auto 0'
-          }}>
-            {error}
-          </div>
-        )}
       </div>
     );
   }
 
   return (
-    <Dashboard user={user} onLogout={handleLogout} />
-  );
-}
-
-function App() {
-  return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <div style={{ 
+      textAlign: 'center', 
+      marginTop: '50px',
+      fontFamily: 'Arial, sans-serif',
+      direction: 'rtl'
+    }}>
+      <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
+      <p style={{ fontSize: '18px', color: '#666' }}>
+        التدريب التفاعلي في الجودة الدوائية
+      </p>
+      <button 
+        onClick={handleGoogleLogin}
+        style={{
+          backgroundColor: '#4285f4',
+          color: 'white',
+          border: 'none',
+          padding: '12px 24px',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          marginTop: '20px'
+        }}
+      >
+        الدخول بحساب Google
+      </button>
+    </div>
   );
 }
 
