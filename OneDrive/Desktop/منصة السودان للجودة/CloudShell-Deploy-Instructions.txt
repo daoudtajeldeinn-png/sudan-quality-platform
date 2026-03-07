@@ -1,0 +1,26 @@
+The issue you are facing is that you mapped the repository incorrectly into the Google Cloud Shell or opened an incorrect folder `~/sudanqualityplatform` which doesn't seem to have the `frontend` folder synced properly.
+
+Because we successfully committed the changes to GitHub a moment ago, the easiest and most reliable way to deploy from that Cloud Shell is to clone your latest repository directly.
+
+Run these commands one-by-one in that Cloud Shell terminal:
+
+1. Go to your home directory:
+`cd ~`
+
+2. Delete the old incorrect folder:
+`rm -rf sudanqualityplatform`
+
+3. Clone your latest repository from GitHub (which contains all our new code and the `firebase.json`):
+`git clone https://github.com/daoudtajeldeinn-png/sudan-quality-platform.git`
+
+4. Enter the frontend directory inside the cloned repo:
+`cd sudan-quality-platform/frontend`
+
+5. Install dependencies:
+`npm install`
+
+6. Build the project:
+`npm run build`
+
+7. Finally, run the deploy command:
+`npx firebase-tools deploy --only hosting`

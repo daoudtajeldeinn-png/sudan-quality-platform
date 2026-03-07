@@ -14,20 +14,78 @@ const Quiz = ({ unitId, onQuizComplete }) => {
     loadQuestions();
   }, [unitId]);
 
+  const demoQuestions = {
+    'gmp-intro': [
+      {
+        _id: 'd1',
+        questionText: {
+          ar: 'ما هو الهدف الرئيسي من تطبيق مبادئ GMP؟',
+          en: 'What is the primary objective of applying GMP principles?'
+        },
+        options: {
+          ar: ['تقليل التكاليف', 'ضمان جودة وسلامة المنتجات الدوائية', 'زيادة الإنتاج فقط', 'تحسين التسويق'],
+          en: ['Reduce costs', 'Ensure quality and safety of pharmaceutical products', 'Increase production only', 'Improve marketing']
+        },
+        correctAnswer: 1, // Store locally for demo mode
+        explanation: {
+          ar: 'الهدف الرئيسي من GMP هو ضمان أن المنتجات الدوائية تُنتج وفقاً لأعلى معايير الجودة والسلامة',
+          en: 'The primary goal of GMP is to ensure that medicinal products are produced to the highest quality and safety standards'
+        }
+      },
+      {
+        _id: 'd2',
+        questionText: {
+          ar: 'أي من العوامل التالية يُعتبر جزءاً أساسياً من نظام GMP؟',
+          en: 'Which of the following is considered a core part of the GMP system?'
+        },
+        options: {
+          ar: ['التنظيف والتعقيم', 'تقليل عدد الموظفين', 'استخدام أحدث المعدات فقط', 'التركيز على الربح فقط'],
+          en: ['Cleaning and sanitation', 'Reducing staff count', 'Using newest equipment only', 'Focusing on profit only']
+        },
+        correctAnswer: 0,
+        explanation: {
+          ar: 'التنظيف والتعقيم من المبادئ الأساسية في تطبيق GMP لضمان عدم تلوث المنتجات',
+          en: 'Cleaning and sanitation are fundamental principles in GMP to prevent product contamination'
+        }
+      }
+    ],
+    'glp-basics': [
+      {
+        _id: 'd3',
+        questionText: {
+          ar: 'ما هو الفرق الأساسي بين GLP و GMP؟',
+          en: 'What is the primary difference between GLP and GMP?'
+        },
+        options: {
+          ar: ['GLP للإنتاج و GMP للمختبرات', 'GLP للمختبرات و GMP للإنتاج', 'كلاهما للإنتاج', 'كلاهما للمختبرات'],
+          en: ['GLP for production, GMP for labs', 'GLP for labs, GMP for production', 'Both for production', 'Both for labs']
+        },
+        correctAnswer: 1,
+        explanation: {
+          ar: 'GLP يطبق على المختبرات بينما GMP يطبق على التصنيع',
+          en: 'GLP (Good Laboratory Practice) applies to labs, while GMP (Good Manufacturing Practice) applies to manufacturing'
+        }
+      }
+    ]
+  };
+
   const loadQuestions = async () => {
     try {
+      setQuizState('loading');
       const response = await fetch(`http://localhost:5000/api/questions/${unitId}/10`);
       if (response.ok) {
         const questionsData = await response.json();
         setQuestions(questionsData);
         setQuizState('active');
+        console.log('Loaded from backend');
       } else {
-        console.error('Failed to load questions');
-        setQuizState('error');
+        throw new Error('Fallback to demo');
       }
     } catch (error) {
-      console.error('Error loading questions:', error);
-      setQuizState('error');
+      console.warn('Backend connection failed, using Demo Mode questions');
+      const fallbackData = demoQuestions[unitId] || demoQuestions['gmp-intro'];
+      setQuestions(fallbackData);
+      setQuizState('active');
     }
   };
 
@@ -54,22 +112,25 @@ const Quiz = ({ unitId, onQuizComplete }) => {
     try {
       let correctAnswers = 0;
 
-      // التحقق من الإجابات
+      // Check answers (Try backend first, then local fallback)
       for (const question of questions) {
-        const response = await fetch('http://localhost:5000/api/questions/check', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            questionId: question._id,
-            userAnswer: userAnswers[question._id]
-          }),
-        });
+        const userAnswer = userAnswers[question._id];
+        
+        try {
+          const response = await fetch('http://localhost:5000/api/questions/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questionId: question._id, userAnswer }),
+          });
 
-        if (response.ok) {
-          const result = await response.json();
-          if (result.isCorrect) {
+          if (response.ok) {
+            const result = await response.json();
+            if (result.isCorrect) correctAnswers++;
+            continue;
+          }
+        } catch (e) {
+          // Local fallback for check if backend fails
+          if (userAnswer === question.correctAnswer) {
             correctAnswers++;
           }
         }
@@ -79,7 +140,6 @@ const Quiz = ({ unitId, onQuizComplete }) => {
       setScore(finalScore);
       setQuizState('completed');
 
-      // إرسال النتيجة للـ Backend
       if (onQuizComplete) {
         onQuizComplete(finalScore);
       }
