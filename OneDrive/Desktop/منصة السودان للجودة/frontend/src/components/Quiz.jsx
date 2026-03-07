@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { apiService } from '../services/api';
 
 const Quiz = ({ unitId, onQuizComplete }) => {
   const { language, t } = useLanguage();
@@ -66,21 +67,52 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           en: 'GLP (Good Laboratory Practice) applies to labs, while GMP (Good Manufacturing Practice) applies to manufacturing'
         }
       }
+    ],
+    'iso-17025': [
+      {
+        _id: 'd4',
+        questionText: {
+          ar: 'ما هو التركيز الأساسي لمعيار ISO 17025؟',
+          en: 'What is the primary focus of ISO 17025?'
+        },
+        options: {
+          ar: ['إدارة الجودة في المكاتب', 'كفاءة مختبرات الفحص والمعايرة', 'تصنيع السيارات', 'الأمن الغذائي'],
+          en: ['Office quality management', 'Competence of testing and calibration laboratories', 'Car manufacturing', 'Food safety']
+        },
+        correctAnswer: 1,
+        explanation: {
+          ar: 'ISO 17025 هو المعيار العالمي لكفاءة مختبرات الفحص والمعايرة',
+          en: 'ISO 17025 is the international standard for the competence of testing and calibration laboratories'
+        }
+      }
+    ],
+    'ich-guidelines': [
+      {
+        _id: 'd5',
+        questionText: {
+          ar: 'ما هو الهدف من دلائل ICH؟',
+          en: 'What is the purpose of ICH guidelines?'
+        },
+        options: {
+          ar: ['توحيد المتطلبات التقنية للمنتجات الدوائية', 'زيادة أسعار الأدوية', 'تقليل عدد الأدوية المتاحة', 'التشجيع على عدم التوثيق'],
+          en: ['Harmonize technical requirements for pharmaceuticals', 'Increase drug prices', 'Reduce available drugs', 'Encourage lack of documentation']
+        },
+        correctAnswer: 0,
+        explanation: {
+          ar: 'هدف ICH هو تحقيق التوافق العالمي في المتطلبات التقنية لضمان الجودة والسلامة والفعالية',
+          en: 'The goal of ICH is to achieve global harmonization in technical requirements to ensure quality, safety, and efficacy'
+        }
+      }
     ]
   };
 
   const loadQuestions = async () => {
     try {
       setQuizState('loading');
-      const response = await fetch(`http://localhost:5000/api/questions/${unitId}/10`);
-      if (response.ok) {
-        const questionsData = await response.json();
-        setQuestions(questionsData);
-        setQuizState('active');
-        console.log('Loaded from backend');
-      } else {
-        throw new Error('Fallback to demo');
-      }
+      console.log('Fetching questions for:', unitId);
+      const questionsData = await apiService.getQuestions(unitId, 10);
+      setQuestions(questionsData);
+      setQuizState('active');
     } catch (error) {
       console.warn('Backend connection failed, using Demo Mode questions');
       const fallbackData = demoQuestions[unitId] || demoQuestions['gmp-intro'];
@@ -160,7 +192,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   if (quizState === 'error') {
     return (
       <div style={{ textAlign: 'center', padding: '50px', direction: language === 'ar' ? 'rtl' : 'ltr', color: 'red' }}>
-        <div>حدث خطأ في تحميل الأسئلة</div>
+        <div>{t('errorLoading')}</div>
         <button
           onClick={loadQuestions}
           style={{
