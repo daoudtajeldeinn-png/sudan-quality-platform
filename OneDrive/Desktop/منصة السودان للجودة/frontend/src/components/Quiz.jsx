@@ -9,6 +9,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   const [userAnswers, setUserAnswers] = useState({});
   const [quizState, setQuizState] = useState('loading'); // loading, active, completed
   const [score, setScore] = useState(0);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     // تحميل الأسئلة من الـ Backend
@@ -109,6 +110,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   const loadQuestions = async () => {
     try {
       setQuizState('loading');
+      setIsDemoMode(false);
       console.log('Fetching questions for:', unitId);
       const questionsData = await apiService.getQuestions(unitId, 10);
       setQuestions(questionsData);
@@ -117,6 +119,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
       console.warn('Backend connection failed, using Demo Mode questions');
       const fallbackData = demoQuestions[unitId] || demoQuestions['gmp-intro'];
       setQuestions(fallbackData);
+      setIsDemoMode(true);
       setQuizState('active');
     }
   };
@@ -292,7 +295,10 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           alignItems: 'center',
           marginBottom: '20px'
         }}>
-          <h2>{t('quizTitle')}: {unitId}</h2>
+          <h2>
+            {t('quizTitle')}: {unitId} 
+             {isDemoMode && <span style={{ fontSize: '0.6em', color: '#666', marginLeft: '10px' }}>(Demo Mode)</span>}
+          </h2>
           <div>
             {t('question')} {currentQuestionIndex + 1} {t('of')} {questions.length}
           </div>

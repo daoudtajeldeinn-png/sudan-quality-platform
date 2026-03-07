@@ -38,6 +38,7 @@ export const translations = {
         correctAnswerInfo: 'الإجابة الصحيحة كانت',
         lectureTitle: 'المادة العلمية للوحدة',
         proceedToQuiz: 'الانتقال إلى الاختبار',
+        errorLoading: 'حدث خطأ في تحميل الأسئلة من الخادم. تم تفعيل وضع العرض التجريبي (Demo Mode).',
     },
     en: {
         dashboardTitle: 'Dashboard - Sudan Quality Platform',
@@ -75,6 +76,7 @@ export const translations = {
         correctAnswerInfo: 'The correct answer was',
         lectureTitle: 'Unit Study Material',
         proceedToQuiz: 'Proceed to Quiz',
+        errorLoading: 'Error loading questions from server. Demo Mode activated.',
     }
 };
 
