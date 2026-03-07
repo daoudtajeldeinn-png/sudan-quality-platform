@@ -1,6 +1,7 @@
 ﻿node_modules/
 .env
-*.log
+*.sw?
+.firebase/
 build/
 dist/
 .vscode/
@@ -11,3 +12,4 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.firebase/

@@ -39,6 +39,8 @@ export const translations = {
         lectureTitle: 'المادة العلمية للوحدة',
         proceedToQuiz: 'الانتقال إلى الاختبار',
         errorLoading: 'حدث خطأ في تحميل الأسئلة من الخادم. تم تفعيل وضع العرض التجريبي (Demo Mode).',
+        courseCurriculum: 'منهج الدورة',
+        back: 'رجوع',
     },
     en: {
         dashboardTitle: 'Dashboard - Sudan Quality Platform',
@@ -77,6 +79,8 @@ export const translations = {
         lectureTitle: 'Unit Study Material',
         proceedToQuiz: 'Proceed to Quiz',
         errorLoading: 'Error loading questions from server. Demo Mode activated.',
+        courseCurriculum: 'Course Curriculum',
+        back: 'Back',
     }
 };
 

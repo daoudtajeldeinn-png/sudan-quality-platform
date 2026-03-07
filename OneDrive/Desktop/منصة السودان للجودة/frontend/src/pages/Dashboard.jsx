@@ -61,12 +61,17 @@ const Dashboard = ({ user, onLogout }) => {
     setIsLectureMode(false);
   };
 
-  const handleQuizComplete = (score) => {
+  const handleQuizComplete = (result) => {
+    // result comes from Quiz.jsx as { score, passed, unitId }
+    const { score, unitId } = result;
+
+    // Map full unit ID (e.g., 'gmp-intro') to progress key (e.g., 'gmp')
+    const progressKey = unitId.split('-')[0];
+
     if (score >= 90) {
-      // تحديث التقدم
       setUserProgress(prev => ({
         ...prev,
-        [currentUnit]: 100
+        [progressKey]: 100
       }));
       alert(`${t('congrats')} ${score}%`);
     } else {
