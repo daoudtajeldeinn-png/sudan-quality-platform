@@ -36,15 +36,18 @@ const Quiz = ({ unitId, onQuizComplete }) => {
         throw new Error('No questions found');
       }
     } catch (error) {
-      console.warn('Backend connection failed, using Randomized Demo Mode questions');
+      console.warn('Backend connection failed, using Randomized Advanced Demo Mode questions');
       const unitData = educationalContent.units[unitId] || educationalContent.units['gmp-intro'];
       const pool = unitData.examQuestionPool;
-      
-      const rawQuestions = pool.map(id => ({
+
+      // Select 10 random questions from the pool to prevent repetition
+      const randomSubset = shuffleArray(pool).slice(0, 10);
+
+      const rawQuestions = randomSubset.map(id => ({
         ...educationalContent.allQuestions[id],
         _id: id
       }));
-      
+
       setQuestions(processQuestions(rawQuestions));
       setIsDemoMode(true);
       setQuizState('active');
@@ -52,47 +55,49 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   };
 
   const processQuestions = (rawQuestions) => {
-    return shuffleArray(rawQuestions).map(q => {
-      const options = q.options[language];
-      const correctText = options[q.correctAnswer];
-      const shuffledOptions = shuffleArray([...options]);
-      const newCorrectIndex = shuffledOptions.indexOf(correctText);
-      
-      return {
-        ...q,
-        shuffledOptions,
-        newCorrectAnswer: newCorrectIndex
-      };
+    return rawQuestions.map(q => {
+      if (q.type === 'mcq' || !q.type) {
+        const options = q.options[language];
+        const correctText = options[q.correctAnswer];
+        const shuffledOptions = shuffleArray([...options]);
+        const newCorrectIndex = shuffledOptions.indexOf(correctText);
+
+        return {
+          ...q,
+          type: 'mcq',
+          shuffledOptions,
+          newCorrectAnswer: newCorrectIndex
+        };
+      }
+      return q; // T/F and Fill and handled directly
     });
   };
 
-  const handleAnswerSelect = (optionIndex) => {
+  const handleAnswerSelect = (answer) => {
     const newUserAnswers = [...userAnswers];
-    newUserAnswers[currentQuestionIndex] = optionIndex;
+    newUserAnswers[currentQuestionIndex] = answer;
     setUserAnswers(newUserAnswers);
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      calculateResult();
-    }
   };
 
   const calculateResult = () => {
     let correctCount = 0;
     questions.forEach((q, index) => {
-      if (userAnswers[index] === q.newCorrectAnswer) {
-        correctCount++;
+      const userAnswer = userAnswers[index];
+      if (q.type === 'mcq') {
+        if (userAnswer === q.newCorrectAnswer) correctCount++;
+      } else if (q.type === 'tf') {
+        if (userAnswer === q.correctAnswer) correctCount++;
+      } else if (q.type === 'fill') {
+        const normalizedUser = String(userAnswer || '').trim().toLowerCase();
+        const isCorrect = q.correctAnswers.some(ans => ans.toLowerCase() === normalizedUser);
+        if (isCorrect) correctCount++;
       }
     });
 
     const finalScore = Math.round((correctCount / questions.length) * 100);
     setScore(finalScore);
     setQuizState('completed');
-    
-    // Pass high score to parent for certification if above 90%
+
     if (onQuizComplete) {
       onQuizComplete({
         score: finalScore,
@@ -148,7 +153,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
       direction: language === 'ar' ? 'rtl' : 'ltr'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>{t('quizTitle')} {isDemoMode && <span style={{fontSize: '0.8rem', color: '#666'}}>(Randomized Demo)</span>}</h2>
+        <h2 style={{ margin: 0 }}>{t('quizTitle')} {isDemoMode && <span style={{ fontSize: '0.8rem', color: '#666' }}>(Enhanced Multi-Type)</span>}</h2>
         <span style={{ fontWeight: 'bold', color: '#28a745' }}>{currentQuestionIndex + 1} / {questions.length}</span>
       </div>
 
@@ -163,41 +168,91 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           {currentQuestion.questionText[language]}
         </p>
 
-        <div className="options-stack" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {currentQuestion.shuffledOptions.map((option, index) => (
+        {currentQuestion.type === 'mcq' && (
+          <div className="options-stack" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {currentQuestion.shuffledOptions.map((option, index) => (
+              <button
+                key={index}
+                className={`option-btn ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
+                onClick={() => handleAnswerSelect(index)}
+                style={{
+                  padding: '18px 25px',
+                  textAlign: language === 'ar' ? 'right' : 'left',
+                  borderRadius: '16px',
+                  border: '2px solid',
+                  borderColor: userAnswers[currentQuestionIndex] === index ? '#28a745' : '#f0f0f0',
+                  backgroundColor: userAnswers[currentQuestionIndex] === index ? '#f0fff4' : 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontSize: '1rem'
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {currentQuestion.type === 'tf' && (
+          <div style={{ display: 'flex', gap: '20px' }}>
             <button
-              key={index}
-              className={`option-btn ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
-              onClick={() => handleAnswerSelect(index)}
+              className={`option-btn ${userAnswers[currentQuestionIndex] === true ? 'selected' : ''}`}
+              onClick={() => handleAnswerSelect(true)}
               style={{
-                padding: '18px 25px',
-                textAlign: language === 'ar' ? 'right' : 'left',
-                borderRadius: '16px',
-                border: '2px solid',
-                borderColor: userAnswers[currentQuestionIndex] === index ? '#28a745' : '#f0f0f0',
-                backgroundColor: userAnswers[currentQuestionIndex] === index ? '#f0fff4' : 'white',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontSize: '1rem'
+                flex: 1, padding: '20px', borderRadius: '16px', border: '2px solid',
+                borderColor: userAnswers[currentQuestionIndex] === true ? '#28a745' : '#f0f0f0',
+                backgroundColor: userAnswers[currentQuestionIndex] === true ? '#f0fff4' : 'white',
+                cursor: 'pointer'
               }}
             >
-              {option}
+              {language === 'ar' ? 'صح' : 'True'}
             </button>
-          ))}
-        </div>
+            <button
+              className={`option-btn ${userAnswers[currentQuestionIndex] === false ? 'selected' : ''}`}
+              onClick={() => handleAnswerSelect(false)}
+              style={{
+                flex: 1, padding: '20px', borderRadius: '16px', border: '2px solid',
+                borderColor: userAnswers[currentQuestionIndex] === false ? '#dc3545' : '#f0f0f0',
+                backgroundColor: userAnswers[currentQuestionIndex] === false ? '#fff5f5' : 'white',
+                cursor: 'pointer'
+              }}
+            >
+              {language === 'ar' ? 'خطأ' : 'False'}
+            </button>
+          </div>
+        )}
+
+        {currentQuestion.type === 'fill' && (
+          <div>
+            <input
+              type="text"
+              value={userAnswers[currentQuestionIndex] || ''}
+              onChange={(e) => handleAnswerSelect(e.target.value)}
+              placeholder={language === 'ar' ? 'اكتب إجابتك هنا...' : 'Type your answer here...'}
+              style={{
+                width: '100%',
+                padding: '18px',
+                borderRadius: '16px',
+                border: '2px solid #28a745',
+                fontSize: '1.1rem',
+                outline: 'none'
+              }}
+            />
+          </div>
+        )}
 
         <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             className="btn-primary"
-            disabled={userAnswers[currentQuestionIndex] === undefined}
+            disabled={userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === ''}
             onClick={handleNext}
             style={{
               padding: '12px 40px',
               borderRadius: '12px',
-              backgroundColor: userAnswers[currentQuestionIndex] === undefined ? '#ccc' : '#28a745',
+              backgroundColor: (userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === '') ? '#ccc' : '#28a745',
               color: 'white',
               border: 'none',
-              cursor: userAnswers[currentQuestionIndex] === undefined ? 'not-allowed' : 'pointer',
+              cursor: (userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === '') ? 'not-allowed' : 'pointer',
               fontWeight: 'bold'
             }}
           >
@@ -205,8 +260,9 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           </button>
         </div>
       </div>
-      
-      <style dangerouslySetInnerHTML={{ __html: `
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .option-btn:hover:not(.selected) {
           border-color: #28a745 !important;
           background-color: #fafafa !important;

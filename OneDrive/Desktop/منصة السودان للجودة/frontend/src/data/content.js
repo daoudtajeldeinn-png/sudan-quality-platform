@@ -17,7 +17,7 @@ export const educationalContent = {
         { id: 'gmp_s13', type: 'learning', ar: { title: 'عواقب عدم الامتثال', text: 'يؤدي عدم الالتزام بالـ GMP إلى عواقب وخيمة تشمل: سحب المنتجات من السوق (Recalls)، غرامات مالية باهظة، عقوبات قانونية، وفقدان ثقة المرضى والمجتمع الطبي.' }, en: { title: 'Consequences of Non-Compliance', text: 'Failure to comply with GMP leads to serious consequences: product recalls, heavy fines, legal penalties, and loss of patient and medical community trust.' } },
         { id: 'gmp_discussion', type: 'discussion', ar: { title: 'نقاش عام حول الـ GMP', text: 'بناءً على ما تعلمته، كيف تساهم مبادئ الـ GMP في حماية صحة المريض بشكل مباشر؟ ناقش أهمية "التوثيق المعاصر" في بيئة العمل.' }, en: { title: 'General Discussion: GMP', text: 'Based on what you learned, how do GMP principles directly contribute to patient safety? Discuss the importance of "Contemporary Documentation" in the workplace.' } }
       ],
-      examQuestionPool: ['gmp_q1', 'gmp_q2', 'gmp_q3', 'gmp_q4', 'gmp_q5', 'gmp_q6', 'gmp_q7', 'gmp_q8', 'gmp_q9', 'gmp_q10', 'gmp_q11', 'gmp_q12', 'gmp_q13', 'gmp_q14', 'gmp_q15']
+      examQuestionPool: ['gmp_q1', 'gmp_q2', 'gmp_q3', 'gmp_q4', 'gmp_q5', 'gmp_q6', 'gmp_q7', 'gmp_q8', 'gmp_q9', 'gmp_q10', 'gmp_q11', 'gmp_q12', 'gmp_q13', 'gmp_q14', 'gmp_q15', 'gmp_q16', 'gmp_tf1', 'gmp_tf2', 'gmp_fill1', 'gmp_fill2']
     },
     'glp-basics': {
       slides: [
@@ -32,7 +32,7 @@ export const educationalContent = {
         { id: 'glp_s8', type: 'learning', ar: { title: 'توصيف مواد الاختبار', text: 'يجب تعريف كل مادة اختبار ومرجع بدقة (الاسم، رقم التشغيلة، النقاء، تاريخ انتهاء الصلاحية). يجب الاحتفاظ بعينة مرجعية لكل تشغيلة.' }, en: { title: 'Characterization of Test Items', text: 'Every test and reference item must be precisely identified (name, batch number, purity, expiry). A reference sample for each batch must be retained.' } },
         { id: 'glp_discussion', type: 'discussion', ar: { title: 'نقاش حول الـ GLP', text: 'لماذا يُعتبر مدير الدراسة هو حلقة الوصل الأهم في الـ GLP؟ ناقش المخاطر المترتبة على ضعف نظام الأرشفة في الدراسات غير السريرية.' }, en: { title: 'Discussion: GLP Principles', text: 'Why is the Study Director considered the most critical link in GLP? Discuss the risks associated with a weak archiving system in non-clinical studies.' } }
       ],
-      examQuestionPool: ['glp_q1', 'glp_q2', 'glp_q3', 'glp_q4', 'glp_q5', 'glp_q6', 'glp_q7', 'glp_q8', 'glp_q9', 'glp_q10']
+      examQuestionPool: ['glp_q1', 'glp_q2', 'glp_q3', 'glp_q4', 'glp_q5', 'glp_q6', 'glp_q7', 'glp_q8', 'glp_q9', 'glp_q10', 'glp_tf1', 'glp_tf2', 'glp_fill1']
     },
     'iso-17025': {
       slides: [
@@ -50,7 +50,7 @@ export const educationalContent = {
         { id: 'iso_s12', type: 'learning', ar: { title: 'لماذا تم تحديث 17025؟', text: 'تم تحديث الإصدار الأخير في 2017 لمواكبة التغيرات التقنية وتقنيات المعلومات الحديثة، ودمج "التفكير المبني على المخاطر" والتوافق مع ISO 9001:2015.' }, en: { title: 'Legacy of ISO/IEC 17025', text: 'The latest version was updated in 2017 to align with technical changes, modern IT, and "Risk-based Thinking," integrating with ISO 9001:2015.' } },
         { id: 'iso_discussion', type: 'discussion', ar: { title: 'نقاش حول ISO 17025', text: 'كيف يؤثر "الارتياب في القياس" على دقة بيان المطابقة (Pass/Fail)؟ ناقش أهمية الارتباط المترولوجي في قبول النتائج عالمياً.' }, en: { title: 'Discussion: ISO 17025 Standards', text: 'How does "Measurement Uncertainty" affect the validity of a conformity statement (Pass/Fail)? Discuss the importance of metrological traceability for global acceptance of results.' } }
       ],
-      examQuestionPool: ['iso_q1', 'iso_q2', 'iso_q3', 'iso_q4', 'iso_q5', 'iso_q6', 'iso_q7', 'iso_q8', 'iso_q9', 'iso_q10', 'iso_q11', 'iso_q12']
+      examQuestionPool: ['iso_q1', 'iso_q2', 'iso_q3', 'iso_q4', 'iso_q5', 'iso_q6', 'iso_q7', 'iso_q8', 'iso_q9', 'iso_q10', 'iso_q11', 'iso_q12', 'iso_tf1', 'iso_tf2', 'iso_fill1']
     },
     'ich-guidelines': {
       slides: [
@@ -64,7 +64,7 @@ export const educationalContent = {
         { id: 'ich_s8', type: 'learning', ar: { title: 'الملف الفني المشترك (CTD)', text: 'هو تنسيق موحد (M4) لإرسال طلبات تسجيل الأدوية إلى السلطات الرقابية في العالم، مما يسهل المراجعة العالمية.' }, en: { title: 'Common Technical Document (CTD)', text: 'A harmonized format (M4) for submitting drug registration dossiers to regulatory authorities, facilitating global review.' } },
         { id: 'ich_discussion', type: 'discussion', ar: { title: 'نقاش حول إرشادات ICH', text: 'كيف ساهم الـ CTD في تسريع عملية تسجيل الأدوية عالمياً؟ ناقش التوازن بين إرشادات السلامة (S) والفعالية (E) في تطوير الأدوية الجديدة.' }, en: { title: 'Discussion: ICH Guidelines', text: 'How did the CTD facilitate faster drug registration globally? Discuss the balance between Safety (S) and Efficacy (E) guidelines in new drug development.' } }
       ],
-      examQuestionPool: ['ich_q1', 'ich_q2', 'ich_q3', 'ich_q4', 'ich_q5', 'ich_q6', 'ich_q7', 'ich_q8', 'ich_q9', 'ich_q10', 'ich_q11', 'ich_q12']
+      examQuestionPool: ['ich_q1', 'ich_q2', 'ich_q3', 'ich_q4', 'ich_q5', 'ich_q6', 'ich_q7', 'ich_q8', 'ich_q9', 'ich_q10', 'ich_q11', 'ich_q12', 'ich_tf1', 'ich_fill1']
     }
   },
   allQuestions: {
@@ -116,6 +116,23 @@ export const educationalContent = {
     'ich_q9': { questionText: { ar: 'إرشادات الفعالية (E) تغطي الدراسات:', en: 'Efficacy (E) guidelines cover studies that are:' }, options: { ar: ['ما قبل السريرية على الحيوانات', 'السريرية على البشر', 'الاقتصادية للشركات', 'الهندسية للمصنع'], en: ['Pre-clinical on animals', 'Clinical on humans', 'Economic', 'Engineering'] }, correctAnswer: 1 },
     'ich_q10': { questionText: { ar: 'أي دليل ICH يهتم بنظام الجودة الصيدلاني؟', en: 'Which ICH guideline concerns the Pharmaceutical Quality System?' }, options: { ar: ['ICH Q1', 'ICH Q10', 'ICH S1', 'ICH E2'], en: ['ICH Q1', 'ICH Q10', 'ICH S1', 'ICH E2'] }, correctAnswer: 1 },
     'ich_q11': { questionText: { ar: 'الشوائب (Impurities) يتم تنظيمها في أي سلسلة؟', en: 'In which series are Impurities regulated?' }, options: { ar: ['Q1', 'Q3', 'S5', 'M2'], en: ['Q1', 'Q3', 'S5', 'M2'] }, correctAnswer: 1 },
-    'ich_q12': { questionText: { ar: 'إدارة المخاطر النوعية (Quality Risk Management) توجد في:', en: 'Quality Risk Management is found in:' }, options: { ar: ['ICH Q7', 'ICH Q9', 'ICH E6', 'ICH S8'], en: ['ICH Q7', 'ICH Q9', 'ICH E6', 'ICH S8'] }, correctAnswer: 1 }
+    'ich_q12': { questionText: { ar: 'إدارة المخاطر النوعية (Quality Risk Management) توجد في:', en: 'Quality Risk Management is found in:' }, options: { ar: ['ICH Q7', 'ICH Q9', 'ICH E6', 'ICH S8'], en: ['ICH Q7', 'ICH Q9', 'ICH E6', 'ICH S8'] }, correctAnswer: 1 },
+    // --- Advanced GMP ---
+    'gmp_q16': { type: 'mcq', questionText: { ar: 'أي مما يلي لا يعد جزءاً من نظام الجودة الصيدلاني (ICH Q10)؟', en: 'Which of the following is NOT an element of PQS (ICH Q10)?' }, options: { ar: ['نظام كابا (CAPA)', 'إدارة التغيير', 'تخفيض تكاليف الموظفين', 'مراقبة أداء العمليات'], en: ['CAPA System', 'Change Management', 'Reducing personnel costs', 'Process Performance Monitoring'] }, correctAnswer: 2 },
+    'gmp_tf1': { type: 'tf', questionText: { ar: 'هل ضمان الجودة (QA) هو جزء من مراقبة الجودة (QC)؟', en: 'Is Quality Assurance (QA) a part of Quality Control (QC)?' }, correctAnswer: false },
+    'gmp_tf2': { type: 'tf', questionText: { ar: 'تنطبق مبادئ ALCOA++ على السجلات الورقية والإلكترونية على حد سواء.', en: 'ALCOA++ principles apply to both paper and electronic records.' }, correctAnswer: true },
+    'gmp_fill1': { type: 'fill', questionText: { ar: 'ماذا تعني كلمة Contemporaneous في مبادئ ALCOA؟ (اكتب الإجابة بالعربية: "معاصر" أو الإنجليزية)', en: 'What does Contemporaneous mean in ALCOA? (Answer: Contemporary or معاصر)' }, correctAnswers: ['معاصر', 'Contemporary', 'معاصرة'] },
+    'gmp_fill2': { type: 'fill', questionText: { ar: 'أي دليل من إرشادات ICH يغطي "إدارة المخاطر النوعية"؟ (مثال: Q9)', en: 'Which ICH guideline covers Quality Risk Management? (e.g., Q9)' }, correctAnswers: ['Q9', 'ICH Q9'] },
+    // --- Advanced GLP ---
+    'glp_tf1': { type: 'tf', questionText: { ar: 'هل يمكن لمدير الدراسة تفويض مسؤوليته النهائية عن السيطرة الفنية؟', en: 'Can the Study Director delegate their ultimate responsibility for technical conduct?' }, correctAnswer: false },
+    'glp_tf2': { type: 'tf', questionText: { ar: 'يجب أن تكون وحدة ضمان الجودة (QAU) مستقلة عن موظفي الدراسة.', en: 'The Quality Assurance Unit (QAU) must be independent of study personnel.' }, correctAnswer: true },
+    'glp_fill1': { type: 'fill', questionText: { ar: 'من المسؤول عن توفير الموارد الكافية والموظفين في الـ GLP؟', en: 'Who is responsible for providing sufficient resources and staff in GLP?' }, correctAnswers: ['Management', 'Facility Management', 'الإدارة', 'إدارة المنشأة'] },
+    // --- Advanced ISO 17025 ---
+    'iso_tf1': { type: 'tf', questionText: { ar: 'اعتماد ISO 17025 هو عملية إلزامية لجميع المختبرات التجارية قانوناً.', en: 'ISO 17025 accreditation is legally mandatory for all commercial laboratories.' }, correctAnswer: false },
+    'iso_tf2': { type: 'tf', questionText: { ar: 'يجب توثيق الارتباط المترولوجي لجميع معدات القياس التي تؤثر على النتائج.', en: 'Metrological traceability must be documented for all measurement equipment affecting results.' }, correctAnswer: true },
+    'iso_fill1': { type: 'fill', questionText: { ar: 'ارتباط القراءات بالنظام الدولي للوحدات يسمى "الارتباط الـ...؟"', en: 'The linkage of measurements to the International System of Units is called Metrological...?' }, correctAnswers: ['Traceability', 'مترولوجي', 'ارتباط مترولوجي', 'Metrological Traceability'] },
+    // --- Advanced ICH ---
+    'ich_tf1': { type: 'tf', questionText: { ar: 'هل يغطي دليل ICH E6 الممارسات السريرية الجيدة (GCP)؟', en: 'Does ICH E6 cover Good Clinical Practice (GCP)?' }, correctAnswer: true },
+    'ich_fill1': { type: 'fill', questionText: { ar: 'ما هو التنسيق الموحد لتقديم ملفات الأدوية (CTD)؟ (اكتب الاختصار)', en: 'What is the harmonized format for submitting drug dossiers? (The acronym)' }, correctAnswers: ['CTD', 'ICH CTD'] }
   }
 };
