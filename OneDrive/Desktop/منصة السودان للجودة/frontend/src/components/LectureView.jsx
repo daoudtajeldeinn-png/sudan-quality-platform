@@ -14,8 +14,8 @@ const UNIT_COLORS = {
   'gdp-basics': '#fd7e14',
 };
 
-const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
-  const { language, t } = useLanguage();
+const LectureView = ({ unitId, onComplete, onBack }) => {
+  const { language, t, theme } = useLanguage();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [completedSlides, setCompletedSlides] = useState([0]); // First slide is always unlocked
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -58,7 +58,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       return;
     }
     if (showCompletion) {
-      onProceedToQuiz();
+      onComplete();
       return;
     }
     if (currentSlideIndex < slides.length - 1) {
@@ -136,15 +136,15 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       
       <p style={{
         fontSize: '1.5rem',
-        color: '#333',
+        color: 'var(--text-primary)',
         marginBottom: '10px'
       }}>
-        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{userName}</strong>
+        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{t('userName')}</strong>
       </p>
       
       <h3 style={{
         fontSize: '1.8rem',
-        color: '#1a2b3c',
+        color: 'var(--text-primary)',
         marginTop: '20px',
         marginBottom: '30px'
       }}>
@@ -153,7 +153,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       
       <p style={{
         fontSize: '1.1rem',
-        color: '#666',
+        color: 'var(--text-secondary)',
         maxWidth: '600px',
         lineHeight: '1.8'
       }}>
@@ -169,11 +169,12 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       }}>
         {unitLearningObjectives && unitLearningObjectives.map((obj, idx) => (
           <div key={idx} style={{
-            backgroundColor: '#f0fff4',
+            backgroundColor: 'var(--bg-card)',
             padding: '15px 25px',
             borderRadius: '12px',
-            border: '1px solid #28a745',
-            maxWidth: '300px'
+            border: '1px solid var(--border-color)',
+            maxWidth: '300px',
+            color: 'var(--text-primary)'
           }}>
             <span style={{ marginLeft: language === 'ar' ? '0' : '10px', marginRight: language === 'ar' ? '10px' : '0' }}>✓</span>
             {obj[language]}
@@ -218,7 +219,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       
       <p style={{
         fontSize: '1.3rem',
-        color: '#333',
+        color: 'var(--text-primary)',
         marginBottom: '10px'
       }}>
         {language === 'ar' ? 'لقد أكملت:' : 'You have completed:'}
@@ -226,7 +227,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       
       <h3 style={{
         fontSize: '1.8rem',
-        color: '#1a2b3c',
+        color: 'var(--text-primary)',
         marginTop: '10px',
         marginBottom: '20px'
       }}>
@@ -238,19 +239,19 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
         color: '#28a745',
         marginBottom: '30px'
       }}>
-        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{userName}</strong>
+        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{t('userName')}</strong>
       </p>
       
       <div style={{
-        backgroundColor: '#f0fff4',
+        backgroundColor: 'var(--bg-card)',
         padding: '20px 40px',
         borderRadius: '16px',
-        border: '2px solid #28a745',
+        border: '2px solid var(--border-color)',
         marginBottom: '30px'
       }}>
         <p style={{
           fontSize: '1.1rem',
-          color: '#666',
+          color: 'var(--text-primary)',
           margin: '0'
         }}>
           {language === 'ar' ? 'أنت الآن جاهز لاجتياز الامتحان النهائي' : 'You are now ready to take the final exam'}
@@ -259,7 +260,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       
       <p style={{
         fontSize: '1rem',
-        color: '#888'
+        color: 'var(--text-secondary)'
       }}>
         {language === 'ar' 
           ? `لقد استعرضت ${completedSlides.length} من ${slides.length} شريحة`
@@ -288,28 +289,17 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             gap: '15px',
             marginBottom: '25px'
           }}>
-            <span style={{
-              backgroundColor: unitColor,
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '0.9rem',
-              fontWeight: 'bold'
-            }}>
-              {currentSlideIndex + 1} / {slides.length}
-            </span>
-            <h2 style={{ color: unitColor, margin: 0, fontSize: '2rem', fontWeight: '800', textAlign: language === 'ar' ? 'right' : 'left' }}>
-              {currentSlide[language].title}
-            </h2>
           </div>
           <div style={{ 
-            fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
-            lineHeight: '1.8', 
-            color: '#2c3e50', 
+            fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', 
+            lineHeight: '1.6', 
+            color: 'var(--text-primary)', 
             textAlign: language === 'ar' ? 'right' : 'left',
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
-            hyphens: 'auto'
+            hyphens: 'auto',
+            textJustify: 'inter-word',
+            padding: '0 10px'
           }}>
             {parseBullets(currentSlide[language].text)}
           </div>
@@ -324,11 +314,11 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             display: 'inline-block',
             padding: '15px 30px',
             borderRadius: '50px',
-            backgroundColor: '#fff3cd',
-            color: '#856404',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
             marginBottom: '30px',
             fontWeight: 'bold',
-            border: '1px solid #ffeeba'
+            border: '1px solid var(--border-color)'
           }}>
             <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>💡</span>
             {language === 'ar' ? 'وقت النقاش وعصف ذهني' : 'Discussion & Brainstorming'}
@@ -340,22 +330,11 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             gap: '15px',
             marginBottom: '25px'
           }}>
-            <span style={{
-              backgroundColor: unitColor,
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '0.9rem',
-              fontWeight: 'bold'
-            }}>
-              {currentSlideIndex + 1} / {slides.length}
-            </span>
-            <h2 style={{ color: unitColor, margin: 0, fontSize: '2rem' }}>{currentSlide[language].title}</h2>
           </div>
           <div style={{
             fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
             lineHeight: '1.9',
-            color: '#333',
+            color: 'var(--text-primary)',
             padding: '40px',
             backgroundColor: `${unitColor}08`,
             borderRadius: '24px',
@@ -380,7 +359,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: '#f4f7f6',
+      backgroundColor: 'var(--bg-color)',
       direction: language === 'ar' ? 'rtl' : 'ltr',
       fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       overflow: 'hidden'
@@ -388,8 +367,8 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
       {/* LMS Header */}
       <header style={{
         height: '70px',
-        backgroundColor: '#fff',
-        borderBottom: '1px solid #e1e8ed',
+        backgroundColor: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -402,11 +381,11 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             onClick={onBack}
             style={{
               background: 'none',
-              border: '1px solid #ddd',
+              border: '1px solid var(--border-color)',
               padding: '8px 15px',
               borderRadius: '8px',
               cursor: 'pointer',
-              color: '#555',
+              color: 'var(--text-primary)',
               fontSize: '0.9rem',
               fontWeight: '600',
               display: 'flex',
@@ -416,33 +395,33 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
           >
             {language === 'ar' ? '✕ إغلاق' : '✕ Close'}
           </button>
-          <div style={{ height: '30px', width: '1px', backgroundColor: '#eee' }}></div>
-          <h1 style={{ fontSize: '1.2rem', margin: 0, color: '#2c3e50', fontWeight: '700' }}>
+          <div style={{ height: '30px', width: '1px', backgroundColor: 'var(--border-color)' }}></div>
+          <h1 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--text-primary)', fontWeight: '700' }}>
             {unitId.toUpperCase().replace('-', ' ')}
           </h1>
         </div>
 
         <div style={{ flex: 1, maxWidth: '400px', margin: '0 40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '600', color: '#666' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>
             <span>{Math.round(progress)}% {t('completed')}</span>
           </div>
-          <div style={{ height: '8px', backgroundColor: '#e9ecef', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '10px', overflow: 'hidden' }}>
             <div style={{ width: `${showWelcome || showCompletion ? 0 : progress}%`, height: '100%', backgroundColor: unitColor, transition: 'width 0.5s ease' }}></div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {userName && (
+          {t('userName') && (
             <div style={{
-              backgroundColor: '#f0fff4',
+              backgroundColor: 'var(--bg-card)',
               padding: '8px 16px',
               borderRadius: '20px',
-              border: '1px solid #28a745',
+              border: '1px solid var(--border-color)',
               fontSize: '0.85rem',
-              color: '#28a745',
+              color: 'var(--text-primary)',
               fontWeight: '600'
             }}>
-              👤 {userName}
+              👤 {t('userName')}
             </div>
           )}
         </div>
@@ -452,16 +431,16 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
         {/* Curriculum Sidebar */}
         <aside style={{
           width: isSidebarOpen ? '320px' : '0',
-          backgroundColor: '#fff',
-          borderRight: language === 'en' ? '1px solid #e1e8ed' : 'none',
-          borderLeft: language === 'ar' ? '1px solid #e1e8ed' : 'none',
+          backgroundColor: 'var(--bg-card)',
+          borderRight: language === 'en' ? '1px solid var(--border-color)' : 'none',
+          borderLeft: language === 'ar' ? '1px solid var(--border-color)' : 'none',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           overflowY: 'auto'
         }}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fcfcfc' }}>
-            <h3 style={{ margin: 0, fontSize: '1rem', color: '#1a2b3c' }}>{t('courseCurriculum')}</h3>
+          <div style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>{t('courseCurriculum')}</h3>
           </div>
           <div style={{ flex: 1 }}>
             {slides.map((slide, idx) => (
@@ -470,9 +449,9 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
                 onClick={() => handleJumpToSlide(idx)}
                 style={{
                   padding: '16px 20px',
-                  borderBottom: '1px solid #f9f9f9',
+                  borderBottom: '1px solid var(--border-color)',
                   cursor: 'pointer',
-                  backgroundColor: currentSlideIndex === idx ? '#f0fff4' : 'transparent',
+                  backgroundColor: currentSlideIndex === idx ? 'var(--focus-ring)' : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
@@ -493,7 +472,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
                 }}>
                   {completedSlides.includes(idx) ? '✓' : (idx + 1)}
                 </div>
-                <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: currentSlideIndex === idx ? '600' : '400', color: currentSlideIndex === idx ? unitColor : '#444' }}>
+                <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: currentSlideIndex === idx ? '600' : '400', color: currentSlideIndex === idx ? unitColor : 'var(--text-primary)' }}>
                   {slide[language].title}
                 </div>
               </div>
@@ -513,14 +492,15 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             width: '50px',
             height: '50px',
             borderRadius: '50%',
-            backgroundColor: '#fff',
-            border: '1px solid #ddd',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             cursor: 'pointer',
             fontSize: '1.2rem',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            color: 'var(--text-primary)'
           }}
           title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
         >
@@ -538,16 +518,31 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
         }}>
           <div style={{
             width: '100%',
-            maxWidth: '900px',
-            backgroundColor: '#fff',
-            padding: '50px',
-            borderRadius: '20px',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
-            minHeight: '60vh',
+            minHeight: '65vh',
+            backgroundColor: 'var(--bg-card)',
+            padding: '30px',
+            borderRadius: '16px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.05)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            gap: '20px'
           }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <span style={{
+                backgroundColor: unitColor,
+                color: 'white',
+                padding: '6px 12px',
+                borderRadius: '15px',
+                fontSize: '0.85rem',
+                fontWeight: 'bold'
+              }}>
+                {currentSlideIndex + 1} / {slides.length}
+              </span>
+              <h2 style={{ color: unitColor, margin: 0, fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: '800' }}>
+                {currentSlide[language].title}
+              </h2>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               {showWelcome && renderWelcomeScreen()}
               {showCompletion && renderCompletionScreen()}
               {!showWelcome && !showCompletion && renderContent()}
@@ -556,7 +551,7 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
             <div style={{
               marginTop: '50px',
               paddingTop: '30px',
-              borderTop: '1px solid #eee',
+              borderTop: '1px solid var(--border-color)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
@@ -567,8 +562,6 @@ const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
                 style={{
                   padding: '12px 25px',
                   borderRadius: '10px',
-                  border: '1px solid #ddd',
-                  backgroundColor: '#fff',
                   color: showWelcome ? '#ccc' : '#555',
                   cursor: showWelcome ? 'not-allowed' : 'pointer',
                   fontWeight: '600'

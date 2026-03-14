@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { apiService } from '../services/api';
-import { educationalContent } from '../data/content';
+import { educationalContent } from '../data/content_new.js';
 
 const Quiz = ({ unitId, onQuizComplete }) => {
-  const { language, t } = useLanguage();
+  const { language, t, theme } = useLanguage();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
@@ -155,29 +155,43 @@ const Quiz = ({ unitId, onQuizComplete }) => {
 
   if (quizState === 'loading') {
     return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '80px 50px',
-        direction: language === 'ar' ? 'rtl' : 'ltr'
+      <div style={{
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '20px',
+        fontFamily: 'Inter, Arial, sans-serif',
+        direction: language === 'ar' ? 'rtl' : 'ltr',
+        color: 'var(--text-primary)'
       }}>
-        <div style={{
-          width: '100px',
-          height: '100px',
+        {/* Quiz Header */}
+        <div className="glass-panel" style={{
+          backgroundColor: 'var(--bg-card)',
+          borderRadius: '20px',
+          padding: '25px',
+          marginBottom: '30px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            width: '100px',
+            height: '100px',
           margin: '0 auto 30px',
           borderRadius: '50%',
-          backgroundColor: '#f0fff4',
+          backgroundColor: 'var(--bg-card)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: '4px solid #28a745',
+          border: '4px solid var(--primary-color)',
           animation: 'pulse 1.5s infinite'
         }}>
           <span style={{ fontSize: '2.5rem' }}>📝</span>
         </div>
-        <h2 style={{ color: '#28a745', marginBottom: '20px', fontSize: '1.8rem' }}>
+        <h2 style={{ color: 'var(--primary-color)', marginBottom: '20px', fontSize: '1.8rem' }}>
           {language === 'ar' ? 'جاري تحميل الأسئلة التقنية...' : 'Loading Technical Questions...'}
         </h2>
-        <p style={{ color: '#666', fontSize: '1.1rem', marginBottom: '30px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '30px' }}>
           {language === 'ar' 
             ? 'يرجى الانتظار قليلاً أثناء تحميل الامتحان'
             : 'Please wait while the exam is being loaded'}
@@ -185,7 +199,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
         <div style={{
           width: '200px',
           height: '8px',
-          backgroundColor: '#eee',
+          backgroundColor: 'var(--bg-color-secondary)',
           borderRadius: '10px',
           margin: '0 auto',
           overflow: 'hidden'
@@ -193,7 +207,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           <div style={{
             width: '50%',
             height: '100%',
-            backgroundColor: '#28a745',
+            backgroundColor: 'var(--primary-color)',
             borderRadius: '10px',
             animation: 'loading 1.5s infinite'
           }}></div>
@@ -213,20 +227,84 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           `
         }} />
       </div>
+    </div>
     );
   }
 
   // Safety check - if no questions loaded, show error
   if (!questions || questions.length === 0) {
+    if (quizState === 'error') { // This block handles explicit errors during loading
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '50px',
+          direction: language === 'ar' ? 'rtl' : 'ltr'
+        }}>
+          <div className="glass-panel" style={{ 
+            backgroundColor: 'var(--bg-error)', 
+            border: '1px solid var(--border-error)',
+            borderRadius: '12px',
+            padding: '40px',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--bg-card)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              border: '3px solid var(--border-error)'
+            }}>
+              <span style={{ fontSize: '2rem' }}>❌</span>
+            </div>
+            <h2 style={{ color: 'var(--text-error)', marginBottom: '15px', fontSize: '1.5rem' }}>
+              {language === 'ar' ? 'حدث خطأ في التحميل' : 'Loading Error'}
+            </h2>
+            <p style={{ color: 'var(--text-error)', marginBottom: '15px', lineHeight: '1.6' }}>
+              {language === 'ar' 
+                ? 'عذراً، حدث خطأ أثناء تحميل الامتحان.'
+                : 'Sorry, an error occurred while loading the exam.'}
+            </p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '25px', fontSize: '0.95rem' }}>
+              {language === 'ar' 
+                ? 'يرجى التحقق من الاتصال وحاولة مرة أخرى'
+                : 'Please check your connection and try again'}
+            </p>
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => window.location.reload()}
+                className="btn-primary"
+                style={{ padding: '12px 30px', backgroundColor: 'var(--btn-error-bg)' }}
+              >
+                {language === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
+              </button>
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="btn-secondary"
+                style={{ padding: '12px 30px' }}
+              >
+                {language === 'ar' ? 'العودة للرئيسية' : 'Go Back'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // This block handles cases where questions array is empty but quizState is not explicitly 'error'
+    // (e.g., if backend returned empty array or demo mode failed to find questions)
     return (
       <div style={{ 
         textAlign: 'center', 
         padding: '50px',
         direction: language === 'ar' ? 'rtl' : 'ltr'
       }}>
-        <div style={{ 
-          backgroundColor: '#fff3cd', 
-          border: '1px solid #ffc107',
+        <div className="glass-panel" style={{ 
+          backgroundColor: 'var(--bg-warning)', 
+          border: '1px solid var(--border-warning)',
           borderRadius: '12px',
           padding: '40px',
           maxWidth: '600px',
@@ -236,24 +314,24 @@ const Quiz = ({ unitId, onQuizComplete }) => {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--bg-card)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px',
-            border: '3px solid #ffc107'
+            border: '3px solid var(--border-warning)'
           }}>
             <span style={{ fontSize: '2rem' }}>⚠️</span>
           </div>
-          <h2 style={{ color: '#856404', marginBottom: '15px', fontSize: '1.5rem' }}>
+          <h2 style={{ color: 'var(--text-warning)', marginBottom: '15px', fontSize: '1.5rem' }}>
             {language === 'ar' ? 'لا توجد أسئلة متاحة' : 'No Questions Available'}
           </h2>
-          <p style={{ color: '#856404', marginBottom: '15px', lineHeight: '1.6' }}>
+          <p style={{ color: 'var(--text-warning)', marginBottom: '15px', lineHeight: '1.6' }}>
             {language === 'ar' 
               ? 'عذراً، لم يتم العثور على أسئلة لهذه الوحدة.'
               : 'Sorry, no questions were found for this unit.'}
           </p>
-          <p style={{ color: '#666', marginBottom: '25px', fontSize: '0.95rem' }}>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '25px', fontSize: '0.95rem' }}>
             {language === 'ar' 
               ? 'سيتم توجيهك لإعادة المحاولة'
               : 'You will be redirected to try again'}
@@ -262,69 +340,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
             <button 
               onClick={() => window.location.reload()}
               className="btn-primary"
-              style={{ padding: '12px 30px', backgroundColor: '#ffc107', color: '#000' }}
-            >
-              {language === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
-            </button>
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="btn-secondary"
-              style={{ padding: '12px 30px' }}
-            >
-              {language === 'ar' ? 'العودة للرئيسية' : 'Go Back'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (quizState === 'error') {
-    return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '50px',
-        direction: language === 'ar' ? 'rtl' : 'ltr'
-      }}>
-        <div style={{ 
-          backgroundColor: '#f8d7da', 
-          border: '1px solid #f5c6cb',
-          borderRadius: '12px',
-          padding: '40px',
-          maxWidth: '600px',
-          margin: '0 auto'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            backgroundColor: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            border: '3px solid #dc3545'
-          }}>
-            <span style={{ fontSize: '2rem' }}>❌</span>
-          </div>
-          <h2 style={{ color: '#721c24', marginBottom: '15px', fontSize: '1.5rem' }}>
-            {language === 'ar' ? 'حدث خطأ في التحميل' : 'Loading Error'}
-          </h2>
-          <p style={{ color: '#721c24', marginBottom: '15px', lineHeight: '1.6' }}>
-            {language === 'ar' 
-              ? 'عذراً، حدث خطأ أثناء تحميل الامتحان.'
-              : 'Sorry, an error occurred while loading the exam.'}
-          </p>
-          <p style={{ color: '#666', marginBottom: '25px', fontSize: '0.95rem' }}>
-            {language === 'ar' 
-              ? 'يرجى التحقق من الاتصال وحاولة مرة أخرى'
-              : 'Please check your connection and try again'}
-          </p>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <button 
-              onClick={() => window.location.reload()}
-              className="btn-primary"
-              style={{ padding: '12px 30px', backgroundColor: '#dc3545' }}
+              style={{ padding: '12px 30px', backgroundColor: 'var(--btn-warning-bg)', color: 'var(--btn-warning-text)' }}
             >
               {language === 'ar' ? 'إعادة المحاولة' : 'Try Again'}
             </button>
@@ -349,30 +365,30 @@ const Quiz = ({ unitId, onQuizComplete }) => {
         margin: '0 auto',
         padding: '40px',
         textAlign: 'center',
-        backgroundColor: 'white',
+        backgroundColor: 'var(--bg-card)',
         borderRadius: '24px',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+        boxShadow: 'var(--shadow-lg)',
         direction: language === 'ar' ? 'rtl' : 'ltr'
       }}>
-        <h2 style={{ fontSize: '3rem', color: passed ? '#28a745' : '#dc3545', marginBottom: '10px' }}>
+        <h2 style={{ fontSize: '3rem', color: passed ? 'var(--primary-color)' : 'var(--text-error)', marginBottom: '10px' }}>
           %{score}
         </h2>
         <h3>{passed ? (language === 'ar' ? 'تهانينا! لقد اجتزت الامتحان' : 'Congratulations! You passed') : (language === 'ar' ? 'للأسف لم تتخطى درجة النجاح (90%)' : 'Sorry, you didn\'t reach the passing score (90%)')}</h3>
 
         {!passed && (
-          <p style={{ color: '#dc3545', fontWeight: 'bold', margin: '15px 0' }}>
+          <p style={{ color: 'var(--text-error)', fontWeight: 'bold', margin: '15px 0' }}>
             {t('scoreLowWarning')}
           </p>
         )}
 
-        <p style={{ margin: '20px 0', color: '#666' }}>
+        <p style={{ margin: '20px 0', color: 'var(--text-secondary)' }}>
           {language === 'ar' ? 'لقد تمت مراجعة إجاباتك بناءً على المعايير العالمية.' : 'Your answers have been reviewed based on international standards.'}
         </p>
 
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
           <button onClick={() => window.location.reload()} className="btn-primary" style={{
             padding: '12px 30px',
-            backgroundColor: !passed ? '#6c757d' : '#28a745'
+            backgroundColor: !passed ? 'var(--btn-secondary-bg)' : 'var(--primary-color)'
           }}>
             {language === 'ar' ? 'العودة للوحة القيادة' : 'Back to Dashboard'}
           </button>
@@ -383,7 +399,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
               setUserAnswers([]);
               setQuizState('active');
               loadQuestions();
-            }} className="btn-primary" style={{ padding: '12px 30px', backgroundColor: '#dc3545' }}>
+            }} className="btn-primary" style={{ padding: '12px 30px', backgroundColor: 'var(--btn-error-bg)' }}>
               {t('retakeBtn')}
             </button>
           )}
@@ -402,43 +418,46 @@ const Quiz = ({ unitId, onQuizComplete }) => {
       direction: language === 'ar' ? 'rtl' : 'ltr'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>{t('quizTitle')} {isDemoMode && <span style={{ fontSize: '0.8rem', color: '#666' }}>(Enhanced Multi-Type)</span>}</h2>
-        <span style={{ fontWeight: 'bold', color: '#28a745' }}>{currentQuestionIndex + 1} / {questions.length}</span>
+        <h2 style={{ margin: 0 }}>{t('quizTitle')} {isDemoMode && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>(Enhanced Multi-Type)</span>}</h2>
+        <span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{currentQuestionIndex + 1} / {questions.length}</span>
       </div>
 
-      <div className="question-card" style={{
-        backgroundColor: 'white',
+      <div className="glass-panel" style={{
+        backgroundColor: 'var(--bg-card)',
         padding: '40px',
         borderRadius: '24px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-        border: '1px solid #eee'
+        boxShadow: 'var(--shadow-md)',
+        border: '1px solid var(--border-color)'
       }}>
-        <p style={{ fontSize: '1.2rem', marginBottom: '30px', fontWeight: '500' }}>
+        <p style={{ fontSize: '1.2rem', marginBottom: '30px', fontWeight: '500', color: 'var(--text-primary)' }}>
           {currentQuestion.questionText[language]}
         </p>
 
         {currentQuestion.type === 'mcq' && (
           <div className="options-stack" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {currentQuestion.shuffledIndices.map((originalIdx, btnIdx) => (
-              <button
-                key={btnIdx}
-                className={`option-btn ${userAnswers[currentQuestionIndex] === btnIdx ? 'selected' : ''}`}
-                onClick={() => handleAnswerSelect(btnIdx)}
-                style={{
-                  padding: '15px 20px',
-                  textAlign: language === 'ar' ? 'right' : 'left',
-                  borderRadius: '12px',
-                  border: '2px solid',
-                  borderColor: userAnswers[currentQuestionIndex] === btnIdx ? '#28a745' : '#f0f0f0',
-                  backgroundColor: userAnswers[currentQuestionIndex] === btnIdx ? '#f0fff4' : 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontSize: '0.95rem'
-                }}
-              >
-                {currentQuestion.options[language][originalIdx]}
-              </button>
-            ))}
+            {currentQuestion.shuffledIndices.map((originalIdx, btnIdx) => {
+              const isSelected = userAnswers[currentQuestionIndex] === btnIdx;
+              return (
+                <button
+                  key={btnIdx}
+                  className={`option-btn ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleAnswerSelect(btnIdx)}
+                  style={{
+                    padding: '15px 20px',
+                    textAlign: language === 'ar' ? 'right' : 'left',
+                    borderRadius: '12px',
+                    border: `2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                    backgroundColor: isSelected ? 'var(--bg-selected)' : 'var(--bg-color)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.95rem',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {currentQuestion.options[language][originalIdx]}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -449,9 +468,10 @@ const Quiz = ({ unitId, onQuizComplete }) => {
               onClick={() => handleAnswerSelect(true)}
               style={{
                 flex: 1, padding: '15px', borderRadius: '12px', border: '2px solid',
-                borderColor: userAnswers[currentQuestionIndex] === true ? '#28a745' : '#f0f0f0',
-                backgroundColor: userAnswers[currentQuestionIndex] === true ? '#f0fff4' : 'white',
-                cursor: 'pointer'
+                borderColor: userAnswers[currentQuestionIndex] === true ? 'var(--primary-color)' : 'var(--border-color)',
+                backgroundColor: userAnswers[currentQuestionIndex] === true ? 'var(--bg-selected)' : 'var(--bg-color)',
+                cursor: 'pointer',
+                color: 'var(--text-primary)'
               }}
             >
               {t('true')}
@@ -461,9 +481,10 @@ const Quiz = ({ unitId, onQuizComplete }) => {
               onClick={() => handleAnswerSelect(false)}
               style={{
                 flex: 1, padding: '15px', borderRadius: '12px', border: '2px solid',
-                borderColor: userAnswers[currentQuestionIndex] === false ? '#dc3545' : '#f0f0f0',
-                backgroundColor: userAnswers[currentQuestionIndex] === false ? '#fff5f5' : 'white',
-                cursor: 'pointer'
+                borderColor: userAnswers[currentQuestionIndex] === false ? 'var(--text-error)' : 'var(--border-color)',
+                backgroundColor: userAnswers[currentQuestionIndex] === false ? 'var(--bg-error-light)' : 'var(--bg-color)',
+                cursor: 'pointer',
+                color: 'var(--text-primary)'
               }}
             >
               {t('false')}
@@ -482,9 +503,11 @@ const Quiz = ({ unitId, onQuizComplete }) => {
                 width: '100%',
                 padding: '15px',
                 borderRadius: '12px',
-                border: '2px solid #28a745',
+                border: '2px solid var(--primary-color)',
                 fontSize: '1rem',
-                outline: 'none'
+                outline: 'none',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-primary)'
               }}
             />
           </div>
@@ -494,10 +517,10 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           <div className="explanation-box animate-fade-in" style={{
             marginTop: '20px',
             padding: '15px',
-            backgroundColor: '#fff5f5',
-            border: '1px solid #feb2b2',
+            backgroundColor: 'var(--bg-error-light)',
+            border: '1px solid var(--border-error)',
             borderRadius: '12px',
-            color: '#c53030',
+            color: 'var(--text-error)',
             fontSize: '0.9rem'
           }}>
             <strong style={{ display: 'block', marginBottom: '5px' }}>⚠️ {t('logicHint')}:</strong>

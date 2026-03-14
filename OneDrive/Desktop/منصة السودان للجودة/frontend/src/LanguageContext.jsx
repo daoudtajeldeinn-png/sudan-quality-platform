@@ -98,7 +98,9 @@ export const translations = {
         placeholderFill: 'اكتب إجابتك هنا...',
         logicHint: 'المنطق العلمي',
         retakeBtn: 'إعادة الاختبار للنجاح (90%)',
-        scoreLowWarning: 'درجتك الحالية لا تؤهلك للحصول على الشهادة. يرجى المذاكرة وإعادة المحاولة.'
+        scoreLowWarning: 'درجتك الحالية لا تؤهلك للحصول على الشهادة. يرجى المذاكرة وإعادة المحاولة.',
+        darkMode: 'الوضع الليلي',
+        lightMode: 'الوضع النهاري'
     },
     en: {
         // ... same structure for English
@@ -175,7 +177,9 @@ export const translations = {
         placeholderFill: 'Type your answer here...',
         logicHint: 'Technical Logic',
         retakeBtn: 'Retake Exam to Pass (90%)',
-        scoreLowWarning: 'Your current score is below the passing threshold. Please review and try again.'
+        scoreLowWarning: 'Your current score is below the passing threshold. Please review and try again.',
+        darkMode: 'Dark Mode',
+        lightMode: 'Light Mode'
     }
 };
 
@@ -188,12 +192,6 @@ export const LanguageProvider = ({ children }) => {
         return savedLang || 'ar';
     });
 
-    useEffect(() => {
-        localStorage.setItem('appLanguage', language);
-        // Set text direction on the body element
-        document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
-    }, [language]);
-
     const toggleLanguage = () => {
         setLanguage(prevLang => prevLang === 'ar' ? 'en' : 'ar');
     };
@@ -202,8 +200,23 @@ export const LanguageProvider = ({ children }) => {
         return translations[language][key] || key;
     };
 
+    // Add Theme state
+    const [theme, setTheme] = useState(() => {
+        const savedTheme = localStorage.getItem('appTheme');
+        return savedTheme || 'light';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('appTheme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    };
+
     return (
-        <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
+        <LanguageContext.Provider value={{ language, toggleLanguage, t, theme, toggleTheme }}>
             {children}
         </LanguageContext.Provider>
     );

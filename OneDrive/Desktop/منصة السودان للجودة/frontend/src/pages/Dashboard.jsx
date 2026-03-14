@@ -18,7 +18,7 @@ const UNIT_ICONS = {
 };
 
 const Dashboard = ({ user, onLogout }) => {
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
   const [currentUnit, setCurrentUnit] = useState(null);
   const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
@@ -150,13 +150,15 @@ const Dashboard = ({ user, onLogout }) => {
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 5000,
-      display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+      display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
+      overflowY: 'auto'
     }}>
       <div style={{
-        backgroundColor: 'white', maxWidth: '700px', width: '100%', padding: '40px', borderRadius: '30px',
-        textAlign: 'center', border: '8px solid #28a745', position: 'relative', direction: 'rtl'
+        backgroundColor: 'white', maxWidth: '600px', width: '100%', padding: '40px', borderRadius: '30px',
+        textAlign: 'center', border: '8px solid #28a745', position: 'relative', direction: language === 'ar' ? 'rtl' : 'ltr',
+        margin: 'auto'
       }}>
-        <button onClick={() => setShowDevProfile(false)} style={{ position: 'absolute', top: '20px', right: '20px', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+        <button onClick={() => setShowDevProfile(false)} style={{ position: 'absolute', top: '20px', right: language === 'ar' ? 'auto' : '20px', left: language === 'ar' ? '20px' : 'auto', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
 <div style={{ width: '150px', height: '150px', borderRadius: '50%', margin: '0 auto 20px', border: '5px solid #28a745', overflow: 'hidden' }}>
           {/* Dr. Daoud Tajeldeinn profile from scholar/credential.net - replace src with actual URL */}
           <img 
@@ -165,12 +167,12 @@ const Dashboard = ({ user, onLogout }) => {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
           />
         </div>
-        <h2 style={{ color: '#1a5928', fontSize: '2rem', marginBottom: '10px' }}>{t('developerName')}</h2>
-        <p style={{ color: '#28a745', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px' }}>{t('developerTitle')}</p>
-        <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '20px', textAlign: 'right', marginBottom: '30px' }}>
-          <p style={{ lineHeight: '1.6' }}>• {t('developerTitle')}</p>
-          <p>• متخصص التدريب والتأهيل الدوائي</p>
-          <p>• مؤسس {t('issuingAuthority')}</p>
+        <h2 style={{ color: '#1a5928', fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '10px' }}>{t('developerName')}</h2>
+        <p style={{ color: '#28a745', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '20px' }}>{t('developerTitle')}</p>
+        <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '20px', textAlign: language === 'ar' ? 'right' : 'left', marginBottom: '30px', fontSize: '1rem' }}>
+          <p style={{ lineHeight: '1.8', margin: '5px 0' }}>• {t('developerTitle')}</p>
+          <p style={{ lineHeight: '1.8', margin: '5px 0' }}>• {language === 'ar' ? 'متخصص التدريب والتأهيل الدوائي' : 'Pharmaceutical Training & Qualification Specialist'}</p>
+          <p style={{ lineHeight: '1.8', margin: '5px 0' }}>• {language === 'ar' ? `مؤسس ${t('issuingAuthority')}` : `Founder of ${t('issuingAuthority')}`}</p>
         </div>
         <a href="https://www.credential.net/profile/daoudtajeldeinn887198/wallet" target="_blank" rel="noreferrer" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none' }}>
           View Digital Wallet 🌐
@@ -392,25 +394,26 @@ const Dashboard = ({ user, onLogout }) => {
   return (
     <div style={{
       direction: language === 'ar' ? 'rtl' : 'ltr',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f8f9fa',
-      minHeight: '100vh', paddingBottom: '50px'
+      paddingBottom: '50px'
     }}>
       {showPledge && <PledgeModal />}
       {showCertificate && <CertificateModal isSample={isSampleMode} />}
       {showDevProfile && <DeveloperProfileModal />}
 
       {/* Header */}
-      <header className="main-header">
+      <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <img src={LOGO_PATH} alt="Pharma Logo" style={{ width: '55px', height: '55px' }} />
           <div>
             <h1 style={{ fontSize: '1.8rem', margin: 0 }}>{t('issuingAuthority')}</h1>
-            <p style={{ margin: 0, opacity: 0.8 }}>Quality Specialist Management System</p>
+            <p style={{ margin: 0, opacity: 0.9 }}>Quality Specialist Management System</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button onClick={() => setShowDevProfile(true)} className="btn-lang" style={{ backgroundColor: '#17a2b8', color: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <button onClick={toggleTheme} className="btn-lang" title={theme === 'dark' ? t('lightMode') : t('darkMode')}>
+             {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+          <button onClick={() => setShowDevProfile(true)} className="btn-lang" style={{ backgroundColor: 'var(--primary-hover)', color: 'white' }}>
             {t('developerProfile')}
           </button>
           <button onClick={() => { setIsSampleMode(true); setShowCertificate(true); }} className="btn-lang" style={{ backgroundColor: '#ffc107', color: 'black' }}>
@@ -434,8 +437,8 @@ const Dashboard = ({ user, onLogout }) => {
       {/* Main Content */}
       <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Micro-Credentials Wallet Section */}
-        <section style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', marginBottom: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ marginBottom: '20px', color: '#1a5928', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+          <h3 style={{ marginBottom: '20px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '1.5rem' }}>🎫</span> {t('microBadge')} Wallet
           </h3>
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -446,8 +449,8 @@ const Dashboard = ({ user, onLogout }) => {
         </section>
 
         {/* NEW: Visual Icon Grid for Units */}
-        <section style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '24px', marginBottom: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ marginBottom: '25px', color: '#1a5928', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+          <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '1.5rem' }}>📚</span> {t('availableUnits')}
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
@@ -462,17 +465,18 @@ const Dashboard = ({ user, onLogout }) => {
                   key={unit.id}
                   onClick={() => handleStartUnit(unit.id)}
                   style={{
-                    backgroundColor: '#fff',
+                    backgroundColor: 'var(--bg-card)',
                     borderRadius: '20px',
                     padding: '25px',
                     cursor: 'pointer',
-                    border: `2px solid ${isPassed ? '#28a745' : '#e9ecef'}`,
-                    boxShadow: isPassed ? '0 8px 25px rgba(40,167,69,0.2)' : '0 4px 15px rgba(0,0,0,0.05)',
+                    border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                    boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
                     transition: 'all 0.3s ease',
                     textAlign: 'center',
                     position: 'relative',
                     overflow: 'hidden'
                   }}
+                  className="interactive-card"
                 >
                   {/* Progress indicator */}
                   <div style={{
@@ -598,39 +602,66 @@ const Dashboard = ({ user, onLogout }) => {
 
       <style dangerouslySetInnerHTML={{
         __html: `
-        .main-header { background-color: #28a745; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .user-profile { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 40px; }
-        .user-profile img { width: 32px; height: 32px; border-radius: 50%; }
-        .btn-lang { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; }
-        .btn-lang:hover { background: rgba(255,255,255,0.2); }
-        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-logout:hover { background: #c82333; }
-        .btn-primary { background: #28a745; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; padding: 12px 30px; }
-        .btn-secondary { background: #6c757d; color: white; border: none; border-radius: 12px; cursor: pointer; padding: 10px 20px; }
-        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
-        .units-section { background-color: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); grid-column: span 2; }
-        .section-title { color: #1a5928; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        .section-title .dot { width: 8px; height: 24px; background-color: #28a745; border-radius: 4px; }
-        .units-list { display: flex; flex-direction: column; gap: 15px; }
-        .unit-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 16px; transition: all 0.2s; }
-        .unit-card:hover { border-color: #28a745; box-shadow: 0 5px 15px rgba(40,167,69,0.1); }
-        .unit-card h4 { margin: 0; font-size: 1.1rem; }
-        .unit-subtitle { font-size: 0.85rem; color: #888; }
-        .unit-actions { display: flex; align-items: center; gap: 20px; }
-        .score-badge { text-align: center; }
-        .score-badge .label { font-size: 0.8rem; color: #666; }
-        .score-badge .value { font-weight: bold; }
-        .btn-start { border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        .certificate-sidebar { background-color: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; text-align: center; height: fit-content; }
-        .certificate-sidebar h2 { color: #1a5928; }
-        .certificate-sidebar p { color: #666; margin: 15px 0; }
-        .cert-trophy { font-size: 4rem; margin-bottom: 10px; }
+        .main-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .user-profile { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 40px; backdrop-filter: blur(5px); }
+        .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); }
+        .btn-lang { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; backdrop-filter: blur(5px); }
+        .btn-lang:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .btn-logout:hover { background: #c82333; transform: scale(1.05); }
+        .btn-primary { background: var(--primary-color); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; padding: 12px 30px; transition: all 0.3s; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px var(--focus-ring); }
+        .btn-secondary { background: #6c757d; color: white; border: none; border-radius: 12px; cursor: pointer; padding: 10px 20px; transition: 0.2s; }
+        .btn-secondary:hover { background: #5a6268; }
+        .certificate-sidebar { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 30px; border-radius: 24px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: center; text-align: center; height: fit-content; transition: 0.3s; }
+        .certificate-sidebar h2 { color: var(--primary-color); }
+        .certificate-sidebar p { color: var(--text-secondary); margin: 15px 0; }
+        .cert-trophy { font-size: 4.5rem; margin-bottom: 10px; text-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: float 3s ease-in-out infinite; }
         .progress-container { margin: 20px 0; }
-        .progress-bar-bg { width: 100%; height: 12px; background-color: #eee; border-radius: 6px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background-color: #28a745; transition: width 1s ease; }
-        .btn-cert { width: 100%; padding: 18px; border-radius: 16px; border: none; background-color: #ccc; color: white; font-size: 1.2rem; font-weight: bold; cursor: not-allowed; box-shadow: none; }
-        .btn-cert.active { background-color: #28a745; cursor: pointer; box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3); }
-        .lecture-done { font-size: 0.75rem; color: #28a745; font-weight: bold; display: block; margin-top: 5px; }
+        .progress-bar-bg { width: 100%; height: 12px; background-color: var(--border-color); border-radius: 6px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background-color: var(--primary-color); transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .btn-cert { width: 100%; padding: 18px; border-radius: 16px; border: none; background-color: var(--border-color); color: var(--text-secondary); font-size: 1.2rem; font-weight: bold; cursor: not-allowed; box-shadow: none; transition: 0.3s; }
+        .btn-cert.active { background-color: var(--primary-color); color: white; cursor: pointer; box-shadow: 0 10px 20px var(--focus-ring); }
+        .btn-cert.active:hover { background-color: var(--primary-hover); transform: translateY(-3px) scale(1.02); }
+        .interactive-card { 
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+          position: relative;
+          overflow: hidden;
+        }
+        .interactive-card::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+          transform: rotate(30deg);
+          transition: all 0.6s;
+          opacity: 0;
+        }
+        .interactive-card:hover { 
+          transform: translateY(-8px) scale(1.02); 
+          box-shadow: var(--shadow-xl);
+          border-color: var(--primary-color);
+        }
+        .interactive-card:hover::after {
+          animation: shine 1.5s;
+        }
+        @keyframes float {
+          0% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(5deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes shine {
+          0% { opacity: 1; left: -100%; top: -100%; }
+          100% { opacity: 0; left: 100%; top: 100%; }
+        }
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
         @media print {
           body * { visibility: hidden; }
           #certificate-printable, #certificate-printable * { visibility: visible; }
