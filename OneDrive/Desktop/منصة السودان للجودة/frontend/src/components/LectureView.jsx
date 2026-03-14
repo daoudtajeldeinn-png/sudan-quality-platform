@@ -58,7 +58,7 @@ const LectureView = ({ unitId, onComplete, onBack }) => {
       return;
     }
     if (showCompletion) {
-      onComplete();
+      onProceedToQuiz();
       return;
     }
     if (currentSlideIndex < slides.length - 1) {
