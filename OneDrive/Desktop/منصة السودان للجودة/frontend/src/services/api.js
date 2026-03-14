@@ -1,4 +1,4 @@
-const isProduction = window.location.hostname !== 'localhost';
+const isProduction = false; // Always use local backend for now
 const API_BASE_URL = isProduction 
   ? 'https://sudan-quality-platform-backend.onrender.com/api' // Placeholder for future backend deployment
   : 'http://localhost:5000/api';

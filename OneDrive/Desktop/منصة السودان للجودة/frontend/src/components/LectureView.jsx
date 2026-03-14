@@ -1,15 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { educationalContent } from '../data/content';
+import { educationalContent } from '../data/content_new.js';
 
-const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
+// Unit-specific colors for visual consistency
+const UNIT_COLORS = {
+  'gmp-intro': '#28a745',
+  'glp-basics': '#007bff',
+  'iso-17025': '#ffc107',
+  'ich-guidelines': '#dc3545',
+  'validation-qualification': '#20c997',
+  'data-integrity': '#6610f2',
+  'qrm-basics': '#e83e8c',
+  'gdp-basics': '#fd7e14',
+};
+
+const LectureView = ({ unitId, userName, onProceedToQuiz, onBack }) => {
   const { language, t } = useLanguage();
-  const unit = educationalContent.units[unitId];
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [completedSlides, setCompletedSlides] = useState([0]); // First slide is always unlocked
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [slideKey, setSlideKey] = useState(0); // For animation trigger
+  
+  // Get the unit content - ensure it exists
+  const unit = educationalContent?.units?.[unitId];
 
-  if (!unit) {
+  // Get slides first
+  const slides = unit?.slides || [];
+
+  // Get unit info - use defaults if not available
+  // Content.js may not have title/description, so use fallbacks
+  const unitTitle = slides?.[0]?.[language]?.title || unitId.toUpperCase().replace('-', ' ');
+  const unitDescription = unit?.description?.[language] || (language === 'ar' 
+    ? 'دراسة شاملة لمبادئ الجودة الدوائية' 
+    : 'Comprehensive study of pharmaceutical quality principles');
+  const unitLearningObjectives = unit?.learningObjectives || [];
+
+  if (!unit || slides.length === 0) {
     return (
       <div style={{ padding: '50px', textAlign: 'center' }}>
         <p>مادة علمية غير متوفرة حالياً لهذه الوحدة.</p>
@@ -18,38 +46,272 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
     );
   }
 
-  const slides = unit.slides;
   const currentSlide = slides[currentSlideIndex];
   const progress = ((completedSlides.length) / slides.length) * 100;
 
+  // Get the unit color
+  const unitColor = UNIT_COLORS[unitId] || '#28a745';
+
   const handleNext = () => {
+    if (showWelcome) {
+      setShowWelcome(false);
+      return;
+    }
+    if (showCompletion) {
+      onProceedToQuiz();
+      return;
+    }
     if (currentSlideIndex < slides.length - 1) {
       const nextIdx = currentSlideIndex + 1;
       if (!completedSlides.includes(nextIdx)) {
         setCompletedSlides(prev => [...prev, nextIdx]);
       }
+      // Trigger animation
+      setSlideKey(prev => prev + 1);
       setCurrentSlideIndex(nextIdx);
     } else {
-      onProceedToQuiz();
+      // Final slide reached
+      if (completedSlides.length >= slides.length) {
+        setShowCompletion(true);
+      } else {
+        alert(language === 'ar' ? 'يرجى استعراض جميع الشرائح أولاً' : 'Please view all slides first');
+      }
+    }
+  };
+
+  const handlePrevious = () => {
+    if (showWelcome) return;
+    if (showCompletion) {
+      setShowCompletion(false);
+      return;
+    }
+    if (currentSlideIndex > 0) {
+      // Trigger animation
+      setSlideKey(prev => prev + 1);
+      setCurrentSlideIndex(currentSlideIndex - 1);
     }
   };
 
   const handleJumpToSlide = (index) => {
+    setShowWelcome(false);
+    setShowCompletion(false);
     setCurrentSlideIndex(index);
     if (!completedSlides.includes(index)) {
       setCompletedSlides(prev => [...prev, index]);
     }
   };
 
+  const renderWelcomeScreen = () => (
+    <div className="welcome-screen animate-fade-in" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      textAlign: 'center',
+      padding: '40px'
+    }}>
+      <div style={{
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        backgroundColor: '#28a745',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '30px',
+        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+      }}>
+        <span style={{ fontSize: '3rem' }}>📚</span>
+      </div>
+      
+      <h2 style={{ 
+        color: '#28a745', 
+        fontSize: '2.5rem', 
+        marginBottom: '20px',
+        fontWeight: '800'
+      }}>
+        {language === 'ar' ? 'مرحباً بك' : 'Welcome'}
+      </h2>
+      
+      <p style={{
+        fontSize: '1.5rem',
+        color: '#333',
+        marginBottom: '10px'
+      }}>
+        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{userName}</strong>
+      </p>
+      
+      <h3 style={{
+        fontSize: '1.8rem',
+        color: '#1a2b3c',
+        marginTop: '20px',
+        marginBottom: '30px'
+      }}>
+        {unitTitle}
+      </h3>
+      
+      <p style={{
+        fontSize: '1.1rem',
+        color: '#666',
+        maxWidth: '600px',
+        lineHeight: '1.8'
+      }}>
+        {unitDescription}
+      </p>
+      
+      <div style={{
+        marginTop: '40px',
+        display: 'flex',
+        gap: '20px',
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
+        {unitLearningObjectives && unitLearningObjectives.map((obj, idx) => (
+          <div key={idx} style={{
+            backgroundColor: '#f0fff4',
+            padding: '15px 25px',
+            borderRadius: '12px',
+            border: '1px solid #28a745',
+            maxWidth: '300px'
+          }}>
+            <span style={{ marginLeft: language === 'ar' ? '0' : '10px', marginRight: language === 'ar' ? '10px' : '0' }}>✓</span>
+            {obj[language]}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCompletionScreen = () => (
+    <div className="completion-screen animate-fade-in" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      textAlign: 'center',
+      padding: '40px'
+    }}>
+      <div style={{
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        backgroundColor: '#28a745',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '30px',
+        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+      }}>
+        <span style={{ fontSize: '3rem' }}>🎉</span>
+      </div>
+      
+      <h2 style={{ 
+        color: '#28a745', 
+        fontSize: '2.5rem', 
+        marginBottom: '20px',
+        fontWeight: '800'
+      }}>
+        {language === 'ar' ? 'تهانينا!' : 'Congratulations!'}
+      </h2>
+      
+      <p style={{
+        fontSize: '1.3rem',
+        color: '#333',
+        marginBottom: '10px'
+      }}>
+        {language === 'ar' ? 'لقد أكملت:' : 'You have completed:'}
+      </p>
+      
+      <h3 style={{
+        fontSize: '1.8rem',
+        color: '#1a2b3c',
+        marginTop: '10px',
+        marginBottom: '20px'
+      }}>
+        {unitTitle}
+      </h3>
+      
+      <p style={{
+        fontSize: '1.5rem',
+        color: '#28a745',
+        marginBottom: '30px'
+      }}>
+        {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{userName}</strong>
+      </p>
+      
+      <div style={{
+        backgroundColor: '#f0fff4',
+        padding: '20px 40px',
+        borderRadius: '16px',
+        border: '2px solid #28a745',
+        marginBottom: '30px'
+      }}>
+        <p style={{
+          fontSize: '1.1rem',
+          color: '#666',
+          margin: '0'
+        }}>
+          {language === 'ar' ? 'أنت الآن جاهز لاجتياز الامتحان النهائي' : 'You are now ready to take the final exam'}
+        </p>
+      </div>
+      
+      <p style={{
+        fontSize: '1rem',
+        color: '#888'
+      }}>
+        {language === 'ar' 
+          ? `لقد استعرضت ${completedSlides.length} من ${slides.length} شريحة`
+          : `You have viewed ${completedSlides.length} of ${slides.length} slides`}
+      </p>
+    </div>
+  );
+
   const renderContent = () => {
     if (currentSlide.type === 'learning') {
+      // Parse bullet lists from text (e.g., "- Item")
+      const parseBullets = (text) => {
+        return text.split('\n').map((line, idx) => {
+          if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
+            return <li key={idx} style={{ marginBottom: '0.8rem', fontSize: '1.25rem' }}>{line.trim().substring(2).trim()}</li>;
+          }
+          return <p key={idx} style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>{line}</p>;
+        });
+      };
+
       return (
-        <div className="slide-content animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ color: '#28a745', marginBottom: '30px', fontSize: '2.2rem', fontWeight: '800' }}>
-            {currentSlide[language].title}
-          </h2>
-          <div style={{ fontSize: '1.3rem', lineHeight: '1.9', color: '#2c3e50', whiteSpace: 'pre-line' }}>
-            {currentSlide[language].text}
+        <div key={slideKey} className="slide-content animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            marginBottom: '25px'
+          }}>
+            <span style={{
+              backgroundColor: unitColor,
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold'
+            }}>
+              {currentSlideIndex + 1} / {slides.length}
+            </span>
+            <h2 style={{ color: unitColor, margin: 0, fontSize: '2rem', fontWeight: '800', textAlign: language === 'ar' ? 'right' : 'left' }}>
+              {currentSlide[language].title}
+            </h2>
+          </div>
+          <div style={{ 
+            fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
+            lineHeight: '1.8', 
+            color: '#2c3e50', 
+            textAlign: language === 'ar' ? 'right' : 'left',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            hyphens: 'auto'
+          }}>
+            {parseBullets(currentSlide[language].text)}
           </div>
         </div>
       );
@@ -57,7 +319,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
 
     if (currentSlide.type === 'discussion') {
       return (
-        <div className="slide-content discussion-slide animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+        <div key={slideKey} className="slide-content discussion-slide animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center', padding: '0 20px' }}>
           <div style={{
             display: 'inline-block',
             padding: '15px 30px',
@@ -71,19 +333,42 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>💡</span>
             {language === 'ar' ? 'وقت النقاش وعصف ذهني' : 'Discussion & Brainstorming'}
           </div>
-          <h2 style={{ color: '#28a745', marginBottom: '30px', fontSize: '2rem' }}>{currentSlide[language].title}</h2>
           <div style={{
-            fontSize: '1.4rem',
-            lineHeight: '2',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '15px',
+            marginBottom: '25px'
+          }}>
+            <span style={{
+              backgroundColor: unitColor,
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold'
+            }}>
+              {currentSlideIndex + 1} / {slides.length}
+            </span>
+            <h2 style={{ color: unitColor, margin: 0, fontSize: '2rem' }}>{currentSlide[language].title}</h2>
+          </div>
+          <div style={{
+            fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
+            lineHeight: '1.9',
             color: '#333',
             padding: '40px',
-            backgroundColor: 'rgba(40, 167, 69, 0.05)',
+            backgroundColor: `${unitColor}08`,
             borderRadius: '24px',
-            borderRight: language === 'ar' ? '6px solid #28a745' : 'none',
-            borderLeft: language === 'en' ? '6px solid #28a745' : 'none',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+            borderRight: language === 'ar' ? `6px solid ${unitColor}` : 'none',
+            borderLeft: language === 'en' ? `6px solid ${unitColor}` : 'none',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+            textAlign: language === 'ar' ? 'right' : 'left',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word'
           }}>
-            {currentSlide[language].text}
+            {currentSlide[language].text.split('\n').map((line, idx) => (
+              line.trim() ? <p key={idx} style={{ marginBottom: '1rem' }}>{line}</p> : <br key={idx} />
+            ))}
           </div>
         </div>
       );
@@ -142,12 +427,24 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             <span>{Math.round(progress)}% {t('completed')}</span>
           </div>
           <div style={{ height: '8px', backgroundColor: '#e9ecef', borderRadius: '10px', overflow: 'hidden' }}>
-            <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#28a745', transition: 'width 0.5s ease' }}></div>
+            <div style={{ width: `${showWelcome || showCompletion ? 0 : progress}%`, height: '100%', backgroundColor: unitColor, transition: 'width 0.5s ease' }}></div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {/* Can add user profile here if needed */}
+          {userName && (
+            <div style={{
+              backgroundColor: '#f0fff4',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: '1px solid #28a745',
+              fontSize: '0.85rem',
+              color: '#28a745',
+              fontWeight: '600'
+            }}>
+              👤 {userName}
+            </div>
+          )}
         </div>
       </header>
 
@@ -186,8 +483,8 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  border: completedSlides.includes(idx) ? 'none' : '2px solid #ddd',
-                  backgroundColor: completedSlides.includes(idx) ? '#28a745' : 'transparent',
+                  border: completedSlides.includes(idx) ? 'none' : `2px solid ${unitColor}50`,
+                  backgroundColor: completedSlides.includes(idx) ? unitColor : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -196,7 +493,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                 }}>
                   {completedSlides.includes(idx) ? '✓' : (idx + 1)}
                 </div>
-                <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: currentSlideIndex === idx ? '600' : '400', color: currentSlideIndex === idx ? '#28a745' : '#444' }}>
+                <div style={{ flex: 1, fontSize: '0.95rem', fontWeight: currentSlideIndex === idx ? '600' : '400', color: currentSlideIndex === idx ? unitColor : '#444' }}>
                   {slide[language].title}
                 </div>
               </div>
@@ -230,11 +527,11 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
           {isSidebarOpen ? '←' : '→'}
         </button>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Vertical Slides Display */}
         <main style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '60px 40px',
+          padding: '40px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
@@ -243,19 +540,21 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             width: '100%',
             maxWidth: '900px',
             backgroundColor: '#fff',
-            padding: '60px',
+            padding: '50px',
             borderRadius: '20px',
             boxShadow: '0 8px 30px rgba(0,0,0,0.03)',
             minHeight: '60vh',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <div style={{ flex: 1 }}>
-              {renderContent()}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              {showWelcome && renderWelcomeScreen()}
+              {showCompletion && renderCompletionScreen()}
+              {!showWelcome && !showCompletion && renderContent()}
             </div>
 
             <div style={{
-              marginTop: '60px',
+              marginTop: '50px',
               paddingTop: '30px',
               borderTop: '1px solid #eee',
               display: 'flex',
@@ -263,15 +562,15 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
               alignItems: 'center'
             }}>
               <button
-                onClick={() => currentSlideIndex > 0 && setCurrentSlideIndex(currentSlideIndex - 1)}
-                disabled={currentSlideIndex === 0}
+                onClick={handlePrevious}
+                disabled={showWelcome}
                 style={{
                   padding: '12px 25px',
                   borderRadius: '10px',
                   border: '1px solid #ddd',
                   backgroundColor: '#fff',
-                  color: currentSlideIndex === 0 ? '#ccc' : '#555',
-                  cursor: currentSlideIndex === 0 ? 'not-allowed' : 'pointer',
+                  color: showWelcome ? '#ccc' : '#555',
+                  cursor: showWelcome ? 'not-allowed' : 'pointer',
                   fontWeight: '600'
                 }}
               >
@@ -284,18 +583,22 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                   padding: '14px 40px',
                   borderRadius: '12px',
                   border: 'none',
-                  backgroundColor: '#28a745',
+                  backgroundColor: unitColor,
                   color: 'white',
                   cursor: 'pointer',
                   fontWeight: 'bold',
                   fontSize: '1.1rem',
-                  boxShadow: '0 6px 20px rgba(40, 167, 69, 0.25)',
+                  boxShadow: `0 6px 20px ${unitColor}40`,
                   transition: 'transform 0.2s, box-shadow 0.2s'
                 }}
               >
-                {currentSlideIndex === slides.length - 1
-                  ? (language === 'ar' ? 'بدء الامتحان النهائي' : 'Start Final Exam')
-                  : (language === 'ar' ? 'إكمال ومتابعة →' : 'Complete and Continue →')}
+                {showWelcome 
+                  ? (language === 'ar' ? 'ابدأ التعلم →' : 'Start Learning →')
+                  : showCompletion
+                    ? (language === 'ar' ? 'بدء الامتحان →' : 'Start Exam →')
+                    : currentSlideIndex === slides.length - 1
+                      ? (language === 'ar' ? 'إنهاء ومتابعة →' : 'Finish and Continue →')
+                      : (language === 'ar' ? 'الشريحة التالية →' : 'Next Slide →')}
               </button>
             </div>
           </div>
@@ -331,3 +634,4 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
 };
 
 export default LectureView;
+

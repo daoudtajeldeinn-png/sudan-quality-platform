@@ -1,93 +1,79 @@
-﻿const User = require('../models/User');
+﻿const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-exports.registerUser = async (req, res) => {
+// تسجيل مستخدم جديد
+const registerUser = async (req, res) => {
   try {
-    const { userId, email, displayName, photoURL } = req.body;
-
-    // التحقق من صحة البيانات
-    if (!userId || !email || !displayName) {
-      return res.status(400).json({
-        error: 'Missing required fields: userId, email, displayName'
-      });
+if (!password || password.length < 6) {
+  return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
+}
+const { email, displayName = email.split('@')[0] } = req.body;
+    
+    // التحقق من وجود البريد الإلكتروني
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "البريد الإلكتروني مسجل مسبقاً" });
     }
-
-    // Check for Demo Mode
-    if (req.isDemoMode) {
-      let user = await req.demoDB.findUserByEmail(email);
-      if (!user) {
-        user = await req.demoDB.createUser({ userId, email, displayName, photoURL });
-        console.log('Demo user created:', email);
-      } else {
-        user.lastLogin = new Date();
-        console.log('Demo user login updated:', email);
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: 'User registered successfully (Demo Mode)',
-        user
-      });
-    }
-
-    // البحث عن المستخدم الحالي
-    let user = await User.findOne({ userId });
-
-    if (!user) {
-      // إنشاء مستخدم جديد
-      user = new User({
-        userId,
-        email,
-        displayName,
-        photoURL,
-        createdAt: new Date(),
-        lastLogin: new Date()
-      });
-      await user.save();
-      console.log('New user created:', email);
-    } else {
-      // تحديث تاريخ آخر دخول
-      user.lastLogin = new Date();
-      await user.save();
-      console.log('User login updated:', email);
-    }
-
-    res.status(200).json({
+    
+    // تشفير كلمة المرور
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    // إنشاء مستخدم جديد
+    const user = new User({
+      userId: `user_${Date.now()}`,
+      email,
+      displayName,
+      password: hashedPassword,
+      photoURL: null,
+      createdAt: new Date(),
+      lastLogin: new Date()
+    });
+    
+    await user.save();
+    
+    // إنشاء JWT token
+    const token = jwt.sign(
+      { userId: user.userId, email: user.email },
+      process.env.JWT_SECRET || "sudan_quality_secret",
+      { expiresIn: "24h" }
+    );
+    
+    res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      token,
       user: {
         userId: user.userId,
         email: user.email,
         displayName: user.displayName,
-        photoURL: user.photoURL,
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin
+        photoURL: user.photoURL
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: error.message });
+    console.error("Registration error:", error);
+    res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 };
 
-exports.getUser = async (req, res) => {
+// الحصول على بيانات المستخدم
+const getUser = async (req, res) => {
   try {
     const { userId } = req.params;
-
-    if (req.isDemoMode) {
-      const user = await req.demoDB.findUserById(userId);
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      return res.status(200).json({ user });
-    }
-
     const user = await User.findOne({ userId });
-
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "المستخدم غير موجود" });
     }
-
-    res.status(200).json({ user });
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    });
   } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: error.message });
+    console.error("Get user error:", error);
+    res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 };
+
+module.exports = { registerUser, getUser };
