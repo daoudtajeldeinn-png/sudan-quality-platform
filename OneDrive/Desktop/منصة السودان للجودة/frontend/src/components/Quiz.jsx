@@ -189,12 +189,12 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           <span style={{ fontSize: '2.5rem' }}>📝</span>
         </div>
         <h2 style={{ color: 'var(--primary-color)', marginBottom: '20px', fontSize: '1.8rem' }}>
-          {language === 'ar' ? 'جاري تحميل الأسئلة التقنية...' : 'Loading Technical Questions...'}
+          {language === 'ar' ? 'جاري تحضير الأسئلة...' : 'Preparing Questions...'}
         </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '30px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '30px', textAlign: 'center' }}>
           {language === 'ar' 
-            ? 'يرجى الانتظار قليلاً أثناء تحميل الامتحان'
-            : 'Please wait while the exam is being loaded'}
+            ? 'يرجى الانتظار قليلاً. قد يستغرق الخادم لحظات للاستيقاظ لأول مرة.'
+            : 'Please wait a moment. The server may take a few seconds to wake up for the first time.'}
         </p>
         <div style={{
           width: '200px',

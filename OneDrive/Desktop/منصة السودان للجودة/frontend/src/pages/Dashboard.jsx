@@ -15,6 +15,8 @@ const UNIT_ICONS = {
   'data-integrity': { icon: '🔒', color: '#6610f2', title: { ar: 'سلامة البيانات', en: 'Data Integrity' } },
   'qrm-basics': { icon: '⚠️', color: '#e83e8c', title: { ar: 'إدارة المخاطر', en: 'QRM Basics' } },
   'gdp-basics': { icon: '🚚', color: '#fd7e14', title: { ar: 'ممارسات التوزيع', en: 'GDP Basics' } },
+  'ich-q10': { icon: '🏆', color: '#17a2b8', title: { ar: 'نظام Q10', en: 'ICH Q10' } },
+  'sterile-annex1': { icon: '🛡️', color: '#6c757d', title: { ar: 'التصنيع المعقم', en: 'Sterile Mfg' } },
 };
 
 const Dashboard = ({ user, onLogout }) => {
@@ -33,7 +35,9 @@ const Dashboard = ({ user, onLogout }) => {
     'validation-qualification': 0,
     'data-integrity': 0,
     'qrm-basics': 0,
-    'gdp-basics': 0
+    'gdp-basics': 0,
+    'ich-q10': 0,
+    'sterile-annex1': 0
   });
   const [unitStates, setUnitStates] = useState({}); // { unitId: { lectureFinished: bool } }
 
@@ -94,6 +98,8 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'data-integrity', title: t('dataIntegrity'), subtitle: t('unit6'), color: '#6610f2' },
     { id: 'qrm-basics', title: t('qrmBasics'), subtitle: t('unit7'), color: '#e83e8c' },
     { id: 'gdp-basics', title: t('gdpBasics'), subtitle: t('unit8'), color: '#fd7e14' },
+    { id: 'ich-q10', title: t('ichQ10'), subtitle: t('unit9'), color: '#17a2b8' },
+    { id: 'sterile-annex1', title: t('annex1'), subtitle: t('unit10'), color: '#6c757d' },
   ];
 
   const handleStartUnit = (unitId) => {

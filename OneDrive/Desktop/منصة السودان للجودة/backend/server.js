@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -15,7 +15,18 @@ const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://daoudtajeldeinn113_d
 console.log("MongoDB URI:", MONGO_URI);
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'https://decisive-octane-472816-d3.web.app',
+    'https://decisive-octane-472816-d3.firebaseapp.com',
+    'http://localhost:5173',
+    'http://localhost:5000'
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Demo mode flag - set to true if MongoDB is not available
