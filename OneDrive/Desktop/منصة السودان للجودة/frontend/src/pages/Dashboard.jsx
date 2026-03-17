@@ -164,13 +164,8 @@ const Dashboard = ({ user, onLogout }) => {
     setCurrentUnit(null);
   };
 
-  const unitIds = [
-    'gmp-intro', 'glp-basics', 'iso-17025', 'ich-guidelines', 
-    'validation-qualification', 'data-integrity', 'qrm-basics', 'gdp-basics',
-    'ich-q10', 'sterile-annex1', 'gamp5-basics', 'batch-records'
-  ];
   const allPassed = unitIds.every(id => (userProgress[id] || 0) >= 90);
-  const totalAverage = Math.round(unitIds.reduce((a, id) => a + (userProgress[id] || 0), 0) / unitIds.length);
+  const totalAverage = Math.round(unitIds.reduce((a, id) => a + (userProgress[id] || 0), 0) / (unitIds.length || 1));
 
   const DeveloperProfileModal = () => (
     <div style={{
