@@ -125,6 +125,15 @@ export const translations = {
         batchRecords: 'سجلات التشغيل (Batch Records)',
         nmpbReg: 'الرقابة الدوائية (NMPB)',
         unit13: 'الوحدة الثالثة عشر',
+        level: 'المستوى',
+        xp: 'نقاط الخبرة (XP)',
+        xpRange: 'النقاط للمستوى التالي',
+        leaderboard: 'لوحة الصدارة',
+        rank: 'الترتيب',
+        student: 'المتدرب',
+        perfectScoreBadge: 'وسام الدرجة الكاملة',
+        sudanExpertBadge: 'وسام خبير السودان',
+        speedLearnerBadge: 'وسام المتعلم السريع',
     },
     en: {
         // ... same structure for English
@@ -230,6 +239,15 @@ export const translations = {
         batchRecords: 'Batch Records & Documentation',
         nmpbReg: 'NMPB Regulatory',
         unit13: 'Unit 13',
+        level: 'Level',
+        xp: 'Experience Points (XP)',
+        xpRange: 'XP till Next Level',
+        leaderboard: 'Leaderboard',
+        rank: 'Rank',
+        student: 'Student',
+        perfectScoreBadge: 'Perfect Score Badge',
+        sudanExpertBadge: 'Sudan Expert Badge',
+        speedLearnerBadge: 'Speed Learner Badge',
     }
 };
 
