@@ -111,6 +111,7 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'sterile-annex1', title: t('annex1'), subtitle: t('unit10'), color: '#6c757d' },
     { id: 'gamp5-basics', title: t('gamp5'), subtitle: t('unit11'), color: '#343a40' },
     { id: 'batch-records', title: t('batchRecords'), subtitle: t('unit12'), color: '#6610f2' },
+    { id: 'nmpb-reg', title: t('nmpbReg') || 'NMPB Regulatory', subtitle: t('unit13') || 'Phase 8', color: '#009688' },
   ];
 
   const handleStartUnit = (unitId) => {

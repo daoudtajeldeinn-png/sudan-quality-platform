@@ -132,6 +132,8 @@ export const translations = {
         perfectScoreBadge: 'وسام الدرجة الكاملة',
         sudanExpertBadge: 'وسام خبير السودان',
         speedLearnerBadge: 'وسام المتعلم السريع',
+        nmpbReg: 'الرقابة الدوائية (NMPB)',
+        unit13: 'الوحدة الثالثة عشر',
     },
     en: {
         // ... same structure for English
@@ -244,6 +246,8 @@ export const translations = {
         perfectScoreBadge: 'Perfect Score Badge',
         sudanExpertBadge: 'Sudan Expert Badge',
         speedLearnerBadge: 'Speed Learner Badge',
+        nmpbReg: 'NMPB Regulatory',
+        unit13: 'Unit 13',
     }
 };
 
