@@ -47,8 +47,11 @@ const Dashboard = ({ user, onLogout }) => {
     'ich-q10': 0,
     'sterile-annex1': 0,
     'gamp5-basics': 0,
-    'batch-records': 0
+    'batch-records': 0,
+    'nmpb-reg': 0
   });
+
+  const unitIds = Object.keys(UNIT_ICONS);
   const [unitStates, setUnitStates] = useState({}); // { unitId: { lectureFinished: bool } }
 
   const LOGO_PATH = pharmaLogo;
