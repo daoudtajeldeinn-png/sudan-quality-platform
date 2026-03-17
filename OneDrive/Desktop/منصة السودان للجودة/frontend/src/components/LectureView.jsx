@@ -16,6 +16,7 @@ const UNIT_COLORS = {
   'sterile-annex1': '#6c757d',
   'gamp5-basics': '#343a40',
   'batch-records': '#5a2d8c',
+  'nmpb-reg': '#009688',
 };
 
 const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
