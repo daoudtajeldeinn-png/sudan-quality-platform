@@ -12,9 +12,13 @@ const UNIT_COLORS = {
   'data-integrity': '#6610f2',
   'qrm-basics': '#e83e8c',
   'gdp-basics': '#fd7e14',
+  'ich-q10': '#17a2b8',
+  'sterile-annex1': '#6c757d',
+  'gamp5-basics': '#343a40',
+  'batch-records': '#5a2d8c',
 };
 
-const LectureView = ({ unitId, onComplete, onBack }) => {
+const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const { language, t, theme } = useLanguage();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [completedSlides, setCompletedSlides] = useState([0]); // First slide is always unlocked

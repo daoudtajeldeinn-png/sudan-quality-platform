@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import { LanguageProvider, useLanguage } from './LanguageContext';
+import { apiService } from './services/api';
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -25,18 +26,9 @@ function AppContent() {
                 photoURL: currentUser.photoURL
               };
 
-              // إرسال بيانات المستخدم للـ Backend
-              const response = await fetch('http://localhost:5000/api/auth/register', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
-              });
-
-              if (response.ok) {
-                console.log('User registered in backend');
-              }
+              // إرسال بيانات المستخدم للـ Backend باستخدام apiService
+              const response = await apiService.registerUser(userData);
+              console.log('User registered in backend');
             } catch (error) {
               console.error('Backend registration error:', error);
             }
@@ -76,17 +68,9 @@ function AppContent() {
           photoURL: result.user.photoURL
         };
 
-        const response = await fetch('http://localhost:5000/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
-
-        if (response.ok) {
-          console.log('User registered in backend');
-        }
+        // تسجيل المستخدم في Backend باستخدام apiService
+        const response = await apiService.registerUser(userData);
+        console.log('User registered in backend');
       } catch (error) {
         console.error('Backend registration error:', error);
       }

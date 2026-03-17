@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Quiz from '../components/Quiz';
 import LectureView from '../components/LectureView';
+import FMEATool from '../components/FMEATool';
+import BatchSignSim from '../components/BatchSignSim';
 import { useLanguage } from '../LanguageContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
@@ -17,6 +19,8 @@ const UNIT_ICONS = {
   'gdp-basics': { icon: '🚚', color: '#fd7e14', title: { ar: 'ممارسات التوزيع', en: 'GDP Basics' } },
   'ich-q10': { icon: '🏆', color: '#17a2b8', title: { ar: 'نظام Q10', en: 'ICH Q10' } },
   'sterile-annex1': { icon: '🛡️', color: '#6c757d', title: { ar: 'التصنيع المعقم', en: 'Sterile Mfg' } },
+  'gamp5-basics': { icon: '💻', color: '#343a40', title: { ar: 'GAMP 5', en: 'GAMP 5' } },
+  'batch-records': { icon: '📝', color: '#6610f2', title: { ar: 'سجلات التشغيل', en: 'Batch Records' } },
 };
 
 const Dashboard = ({ user, onLogout }) => {
@@ -27,6 +31,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [isSampleMode, setIsSampleMode] = useState(false);
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
+  const [viewMode, setViewMode] = useState('academy'); // 'academy' or 'toolkit'
   const [userProgress, setUserProgress] = useState({
     'gmp-intro': 0,
     'glp-basics': 0,
@@ -37,7 +42,9 @@ const Dashboard = ({ user, onLogout }) => {
     'qrm-basics': 0,
     'gdp-basics': 0,
     'ich-q10': 0,
-    'sterile-annex1': 0
+    'sterile-annex1': 0,
+    'gamp5-basics': 0,
+    'batch-records': 0
   });
   const [unitStates, setUnitStates] = useState({}); // { unitId: { lectureFinished: bool } }
 
@@ -100,6 +107,8 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'gdp-basics', title: t('gdpBasics'), subtitle: t('unit8'), color: '#fd7e14' },
     { id: 'ich-q10', title: t('ichQ10'), subtitle: t('unit9'), color: '#17a2b8' },
     { id: 'sterile-annex1', title: t('annex1'), subtitle: t('unit10'), color: '#6c757d' },
+    { id: 'gamp5-basics', title: t('gamp5'), subtitle: t('unit11'), color: '#343a40' },
+    { id: 'batch-records', title: t('batchRecords'), subtitle: t('unit12'), color: '#6610f2' },
   ];
 
   const handleStartUnit = (unitId) => {
@@ -148,9 +157,13 @@ const Dashboard = ({ user, onLogout }) => {
     setCurrentUnit(null);
   };
 
-  const unitIds = ['gmp-intro', 'glp-basics', 'iso-17025', 'ich-guidelines', 'validation-qualification', 'data-integrity', 'qrm-basics', 'gdp-basics'];
+  const unitIds = [
+    'gmp-intro', 'glp-basics', 'iso-17025', 'ich-guidelines', 
+    'validation-qualification', 'data-integrity', 'qrm-basics', 'gdp-basics',
+    'ich-q10', 'sterile-annex1', 'gamp5-basics', 'batch-records'
+  ];
   const allPassed = unitIds.every(id => (userProgress[id] || 0) >= 90);
-  const totalAverage = Math.round(unitIds.reduce((a, id) => a + (userProgress[id] || 0), 0) / 8);
+  const totalAverage = Math.round(unitIds.reduce((a, id) => a + (userProgress[id] || 0), 0) / unitIds.length);
 
   const DeveloperProfileModal = () => (
     <div style={{
@@ -440,163 +453,257 @@ const Dashboard = ({ user, onLogout }) => {
         </div>
       </header>
 
+      {/* Sub Navigation */}
+      <nav style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: '15px', 
+        marginTop: '25px', 
+        marginBottom: '10px',
+        padding: '0 20px'
+      }}>
+        <button 
+          onClick={() => setViewMode('academy')} 
+          style={{ 
+            padding: '12px 35px', 
+            borderRadius: '15px', 
+            border: 'none', 
+            backgroundColor: viewMode === 'academy' ? 'var(--primary-color)' : 'var(--bg-card)',
+            color: viewMode === 'academy' ? 'white' : 'var(--text-primary)',
+            fontWeight: 'bold', 
+            cursor: 'pointer', 
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'all 0.3s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          🎓 {t('academy')}
+        </button>
+        <button 
+          onClick={() => setViewMode('toolkit')} 
+          style={{ 
+            padding: '12px 35px', 
+            borderRadius: '15px', 
+            border: 'none', 
+            backgroundColor: viewMode === 'toolkit' ? 'var(--primary-color)' : 'var(--bg-card)',
+            color: viewMode === 'toolkit' ? 'white' : 'var(--text-primary)',
+            fontWeight: 'bold', 
+            cursor: 'pointer', 
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'all 0.3s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          🛠️ {t('toolkit')}
+        </button>
+        <button 
+          onClick={() => setViewMode('analytics')} 
+          style={{ 
+            padding: '12px 35px', 
+            borderRadius: '15px', 
+            border: 'none', 
+            backgroundColor: viewMode === 'analytics' ? 'var(--primary-color)' : 'var(--bg-card)',
+            color: viewMode === 'analytics' ? 'white' : 'var(--text-primary)',
+            fontWeight: 'bold', 
+            cursor: 'pointer', 
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'all 0.3s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          📊 {t('analytics') || 'Analytics'}
+        </button>
+      </nav>
+
       {/* Main Content */}
       <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Micro-Credentials Wallet Section */}
-        <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
-          <h3 style={{ marginBottom: '20px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '1.5rem' }}>🎫</span> {t('microBadge')} Wallet
-          </h3>
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            {units.map(u => (
-              <MicroBadge key={u.id} unitId={u.id} score={userProgress[u.id]} />
-            ))}
-          </div>
-        </section>
+        {viewMode === 'academy' ? (
+          <div className="animate-fade-in">
+            {/* Micro-Credentials Wallet Section */}
+            <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+              <h3 style={{ marginBottom: '20px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.5rem' }}>🎫</span> {t('microBadge')} Wallet
+              </h3>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                {unitIds.map(id => (
+                  <MicroBadge key={id} unitId={id} score={userProgress[id]} />
+                ))}
+              </div>
+            </section>
 
-        {/* NEW: Visual Icon Grid for Units */}
-        <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
-          <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '1.5rem' }}>📚</span> {t('availableUnits')}
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            {units.map((unit) => {
-              const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
-              const finishedLecture = unitStates[unit.id]?.lectureFinished;
-              const progress = userProgress[unit.id] || 0;
-              const isPassed = progress >= 90;
-              
-              return (
-                <div 
-                  key={unit.id}
-                  onClick={() => handleStartUnit(unit.id)}
-                  style={{
-                    backgroundColor: 'var(--bg-card)',
-                    borderRadius: '20px',
-                    padding: '25px',
-                    cursor: 'pointer',
-                    border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                    boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                  className="interactive-card"
-                >
-                  {/* Progress indicator */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: language === 'ar' ? 'auto' : '10px',
-                    left: language === 'ar' ? '10px' : 'auto',
-                    backgroundColor: isPassed ? '#28a745' : '#6c757d',
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold'
-                  }}>
-                    {progress}%
-                  </div>
-                  
-                  {/* Icon */}
-                  <div style={{
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: '50%',
-                    backgroundColor: `${unitIcon.color}20`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 15px',
-                    fontSize: '2.5rem'
-                  }}>
-                    {unitIcon.icon}
-                  </div>
-                  
-                  {/* Title */}
-                  <h4 style={{ 
-                    margin: '0 0 8px 0', 
-                    fontSize: '1.1rem',
-                    color: '#2c3e50'
-                  }}>
-                    {unit.title}
-                  </h4>
-                  
-                  {/* Subtitle */}
-                  <p style={{ 
-                    margin: '0 0 15px 0', 
-                    fontSize: '0.85rem',
-                    color: '#888'
-                  }}>
-                    {unit.subtitle}
-                  </p>
-                  
-                  {/* Status badge */}
-                  {finishedLecture && (
-                    <div style={{
-                      backgroundColor: '#d4edda',
-                      color: '#155724',
-                      padding: '6px 15px',
-                      borderRadius: '20px',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold',
-                      display: 'inline-block'
-                    }}>
-                      ✓ {language === 'ar' ? 'مكتمل' : 'Completed'}
-                    </div>
-                  )}
-                  
-                  {!finishedLecture && (
-                    <div style={{
-                      backgroundColor: unitIcon.color,
-                      color: 'white',
-                      padding: '8px 20px',
-                      borderRadius: '20px',
-                      fontSize: '0.85rem',
-                      fontWeight: 'bold',
-                      display: 'inline-block'
-                    }}>
-                      {t('startStudy')} →
-                    </div>
-                  )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px', alignItems: 'start' }}>
+              {/* Visual Icon Grid for Units */}
+              <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
+                <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.5rem' }}>📚</span> {t('availableUnits')}
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                  {units.map((unit) => {
+                    const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
+                    const finishedLecture = unitStates[unit.id]?.lectureFinished;
+                    const progress = userProgress[unit.id] || 0;
+                    const isPassed = progress >= 90;
+                    
+                    return (
+                      <div 
+                        key={unit.id}
+                        onClick={() => handleStartUnit(unit.id)}
+                        style={{
+                          backgroundColor: 'var(--bg-card)',
+                          borderRadius: '20px',
+                          padding: '25px',
+                          cursor: 'pointer',
+                          border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                          boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
+                          transition: 'all 0.3s ease',
+                          textAlign: 'center',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                        className="interactive-card"
+                      >
+                        {/* Progress indicator */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: language === 'ar' ? 'auto' : '10px',
+                          left: language === 'ar' ? '10px' : 'auto',
+                          backgroundColor: isPassed ? '#28a745' : '#6c757d',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold'
+                        }}>
+                          {progress}%
+                        </div>
+                        
+                        {/* Icon */}
+                        <div style={{
+                          width: '70px',
+                          height: '70px',
+                          borderRadius: '50%',
+                          backgroundColor: `${unitIcon.color}20`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto 15px',
+                          fontSize: '2.5rem'
+                        }}>
+                          {unitIcon.icon}
+                        </div>
+                        
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{unit.title}</h4>
+                        <p style={{ margin: '0 0 15px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{unit.subtitle}</p>
+                        
+                        {finishedLecture && (
+                          <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '6px 15px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block' }}>
+                            ✓ {language === 'ar' ? 'مكتمل' : 'Completed'}
+                          </div>
+                        )}
+                        
+                        {!finishedLecture && (
+                          <div style={{ backgroundColor: unitIcon.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block' }}>
+                            {t('startStudy')} →
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        </section>
+              </section>
 
-        {/* Certificate Summary */}
-        <div className="certificate-sidebar">
-          <div className="cert-trophy">🏆</div>
-          <h2 style={{ color: '#1a5928' }}>{t('earnedCertificates')}</h2>
-          <p style={{ color: '#666', margin: '15px 0' }}>
-            {allPassed ? t('earned') : t('lockedMsg')}
-          </p>
+              {/* Certificate Summary Sidebar */}
+              <div className="certificate-sidebar">
+                <div className="cert-trophy">🏆</div>
+                <h2 style={{ color: 'var(--primary-color)' }}>{t('earnedCertificates')}</h2>
+                <p style={{ color: 'var(--text-secondary)', margin: '15px 0' }}>
+                  {allPassed ? t('earned') : t('lockedMsg')}
+                </p>
 
-          <div className="progress-container">
-            <div className="progress-bar-bg">
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${(unitIds.filter(id => (userProgress[id] || 0) >= 90).length / 8) * 100}%`,
-                }}
-              ></div>
+                <div className="progress-container">
+                  <div className="progress-bar-bg">
+                    <div
+                      className="progress-bar-fill"
+                      style={{
+                        width: `${(unitIds.filter(id => (userProgress[id] || 0) >= 90).length / unitIds.length) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p style={{ marginTop: '10px', fontWeight: '500' }}>
+                    {unitIds.filter(id => (userProgress[id] || 0) >= 90).length} / {unitIds.length} {t('completed')}
+                  </p>
+                </div>
+
+                <button
+                  disabled={!allPassed}
+                  onClick={() => { setIsSampleMode(false); setShowCertificate(true); }}
+                  className={`btn-cert ${allPassed ? 'active' : ''}`}
+                >
+                  {allPassed ? t('viewCert') : t('lockedMsg').split(':')[0]}
+                </button>
+              </div>
             </div>
-            <p style={{ marginTop: '10px', fontWeight: '500' }}>
-              {unitIds.filter(id => (userProgress[id] || 0) >= 90).length} / 8 {t('completed')}
-            </p>
           </div>
-
-          <button
-            disabled={!allPassed}
-            onClick={() => { setIsSampleMode(false); setShowCertificate(true); }}
-            className={`btn-cert ${allPassed ? 'active' : ''}`}
-          >
-            {allPassed ? t('viewCert') : t('lockedMsg').split(':')[0]}
-          </button>
-        </div>
+        ) : viewMode === 'toolkit' ? (
+          <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px' }}>
+            <FMEATool />
+            <BatchSignSim />
+          </div>
+        ) : (
+          /* Analytics View */
+          <div className="animate-fade-in">
+            <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+              <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.5rem' }}>📊</span> {language === 'ar' ? 'تحليل تقدمك' : 'Your Progress Analytics'}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid var(--primary-color)' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
+                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة مكتملة' : 'Units Completed'}</div>
+                </div>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #ffc107' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ffc107' }}>{totalAverage}%</div>
+                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'متوسط الدرجات' : 'Average Score'}</div>
+                </div>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: `2px solid ${allPassed ? '#28a745' : '#6c757d'}` }}>
+                  <div style={{ fontSize: '2.5rem' }}>{allPassed ? '🏆' : '🔒'}</div>
+                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'حالة الشهادة' : 'Certificate Status'}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: allPassed ? '#28a745' : '#6c757d', marginTop: '4px' }}>{allPassed ? (language === 'ar' ? 'مكتملة ✓' : 'Earned ✓') : (language === 'ar' ? 'قيد التقدم' : 'In Progress')}</div>
+                </div>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #e83e8c' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#e83e8c' }}>{unitIds.length - unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
+                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة متبقية' : 'Units Remaining'}</div>
+                </div>
+              </div>
+              <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>{language === 'ar' ? '📋 تفاصيل الدرجات لكل وحدة' : '📋 Score Details by Unit'}</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {units.map(unit => {
+                  const score = userProgress[unit.id] || 0;
+                  const isPassed = score >= 90;
+                  const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
+                  return (
+                    <div key={unit.id}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '500', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><span>{unitIcon.icon}</span> {unit.title}</span>
+                        <span style={{ fontWeight: 'bold', color: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'var(--text-secondary)', minWidth: '75px', textAlign: 'right' }}>{score > 0 ? `${score}%` : (language === 'ar' ? 'لم يبدأ' : 'Not Started')}</span>
+                      </div>
+                      <div style={{ height: '10px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
+                        <div style={{ width: `${score}%`, height: '100%', backgroundColor: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'transparent', borderRadius: '10px', transition: 'width 1.5s cubic-bezier(0.25, 1, 0.5, 1)' }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+        )}
       </main>
 
       {/* Footer Branding */}
