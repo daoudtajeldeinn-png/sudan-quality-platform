@@ -18,6 +18,21 @@ Objective: Successfully aligned platform content with international (ICH, WHO) s
     - [x] **GAMP 5 / 21 CFR Part 11** unit for Computerized Systems validation.
     - [x] **Batch Record Simulation**: Audit trail and E-Signature training.
 
+## Upcoming: Phase 6 (Expansion & Optimization)
+4.  **[ ] Mobile & Reliability**
+    - [ ] **PWA (Progressive Web App)**: Installable on phones and offline support.
+    - [x] **Dynamic Quiz Engine**: Randomized refresh from MongoDB on every attempt. (Completed ✅)
+5.  **[ ] Gamification & Engagement**
+    - [ ] **Leaderboards**: Competitive ranking for students.
+    - [ ] **Micro-Badges**: Achievement rewards for module completions.
+6.  **[ ] Sudan-Specific Compliance**
+    - [ ] **NMPB Unit**: National Medicine and Poisons Board regulatory module.
+    - [ ] **Inspection Checklist**: GMP/GSP readiness tool for local factories.
+7.  **[ ] Advanced Toolkit**
+    - [ ] **Stability Calculator**: Shelf-life prediction tool.
+    - [ ] **Sampling Calculator**: Stat-based (√n+1) tool for receiving.
+
 ## Maintenance
 - [x] Double-language (AR/EN) consistency across current modules.
 - [x] Deployment to Git & Firebase hosting (Completed 2026-03-15).
+

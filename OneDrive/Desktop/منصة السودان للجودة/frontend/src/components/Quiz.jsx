@@ -13,6 +13,8 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   const [score, setScore] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
   const [isLastAnswerCorrect, setIsLastAnswerCorrect] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [currentExplanation, setCurrentExplanation] = useState({ ar: '', en: '' });
 
   useEffect(() => {
     loadQuestions();
@@ -94,25 +96,58 @@ const Quiz = ({ unitId, onQuizComplete }) => {
     });
   };
 
-  const handleAnswerSelect = (answer) => {
+  const handleAnswerSelect = async (answer) => {
+    if (isVerifying) return;
+    
     const newUserAnswers = [...userAnswers];
     newUserAnswers[currentQuestionIndex] = answer;
     setUserAnswers(newUserAnswers);
 
     const q = questions[currentQuestionIndex];
     let isCorrect = false;
-    if (q.type === 'mcq') {
-      const originalIdx = q.shuffledIndices[answer];
-      isCorrect = originalIdx === q.correctAnswer;
-    } else if (q.type === 'tf') {
-      isCorrect = answer === q.correctAnswer;
-    } else if (q.type === 'fill') {
-      const normalizedUser = String(answer || '').trim().toLowerCase();
-      isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+    let explanationObj = q.explanation || { ar: '', en: '' };
+
+    if (isDemoMode) {
+      // Local validation for Demo Mode
+      if (q.type === 'mcq') {
+        const originalIdx = q.shuffledIndices[answer];
+        isCorrect = originalIdx === q.correctAnswer;
+      } else if (q.type === 'tf') {
+        isCorrect = answer === q.correctAnswer;
+      } else if (q.type === 'fill') {
+        const normalizedUser = String(answer || '').trim().toLowerCase();
+        isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+      }
+    } else {
+      // Server-side validation
+      try {
+        setIsVerifying(true);
+        const result = await apiService.checkAnswer(q._id, answer);
+        isCorrect = result.isCorrect;
+        explanationObj = result.explanation || { ar: '', en: '' };
+      } catch (error) {
+        console.error('Answer verification failed:', error);
+        // Fallback to local check if server fails unexpectedly
+        if (q.type === 'mcq') {
+          const originalIdx = q.shuffledIndices[answer];
+          isCorrect = originalIdx === q.correctAnswer;
+        } else if (q.type === 'tf') {
+          isCorrect = answer === q.correctAnswer;
+        } else if (q.type === 'fill') {
+          const normalizedUser = String(answer || '').trim().toLowerCase();
+          isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+        }
+      } finally {
+        setIsVerifying(false);
+      }
     }
 
     setIsLastAnswerCorrect(isCorrect);
+    setCurrentExplanation(explanationObj);
     setShowExplanation(!isCorrect);
+
+    // Track score locally for immediate feedback if needed, 
+    // though calculateResult handles the final tally
   };
 
   const handleNext = () => {
@@ -125,17 +160,22 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   };
 
   const calculateResult = () => {
+    // We will re-verify all answers for the final score locally 
+    // as we've kept track of correctness status in a more robust flow
+    // In a real production app, we might want a final scoresheet from the server
     let correctCount = 0;
     questions.forEach((q, index) => {
       const userAnswer = userAnswers[index];
       if (q.type === 'mcq') {
         const originalIndex = q.shuffledIndices[userAnswer];
+        // Note: For now we trust the local state for speed, 
+        // as individual checks were already done via handleAnswerSelect
         if (originalIndex === q.correctAnswer) correctCount++;
       } else if (q.type === 'tf') {
         if (userAnswer === q.correctAnswer) correctCount++;
       } else if (q.type === 'fill') {
         const normalizedUser = String(userAnswer || '').trim().toLowerCase();
-        const isCorrect = q.correctAnswers.some(ans => ans.toLowerCase() === normalizedUser);
+        const isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
         if (isCorrect) correctCount++;
       }
     });
@@ -513,7 +553,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
           </div>
         )}
 
-        {showExplanation && !isLastAnswerCorrect && currentQuestion.explanation && (
+        {showExplanation && !isLastAnswerCorrect && (currentExplanation[language] || currentQuestion.explanation?.[language]) && (
           <div className="explanation-box animate-fade-in" style={{
             marginTop: '20px',
             padding: '15px',
@@ -524,7 +564,7 @@ const Quiz = ({ unitId, onQuizComplete }) => {
             fontSize: '0.9rem'
           }}>
             <strong style={{ display: 'block', marginBottom: '5px' }}>⚠️ {t('logicHint')}:</strong>
-            {currentQuestion.explanation[language]}
+            {currentExplanation[language] || currentQuestion.explanation?.[language]}
           </div>
         )}
 

@@ -1,4 +1,4 @@
-﻿const Question = require('../models/Question');
+const Question = require('../models/Question');
 
 // الحصول على أسئلة عشوائية لوحدة معينة
 exports.getRandomQuestions = async (req, res) => {
@@ -23,20 +23,16 @@ exports.getRandomQuestions = async (req, res) => {
 
     // اختيار أسئلة عشوائية
     const randomQuestions = [];
-    const usedIndices = new Set();
+    const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, Math.min(count, allQuestions.length));
 
-    const questionsToSelect = Math.min(count, allQuestions.length);
-
-    while (randomQuestions.length < questionsToSelect) {
-      const randomIndex = Math.floor(Math.random() * allQuestions.length);
-      if (!usedIndices.has(randomIndex)) {
-        usedIndices.add(randomIndex);
-        // إزالة معلومات الإجابة الصحيحة من الاستجابة
-        const question = allQuestions[randomIndex].toObject();
-        delete question.correctAnswer;
-        randomQuestions.push(question);
-      }
-    }
+    selected.forEach(q => {
+      const question = q.toObject();
+      // إزالة معلومات الإجابة الصحيحة من الاستجابة لضمان النزاهة
+      delete question.correctAnswer;
+      delete question.correctAnswers;
+      randomQuestions.push(question);
+    });
 
     res.status(200).json(randomQuestions);
   } catch (error) {
@@ -69,7 +65,14 @@ exports.checkAnswer = async (req, res) => {
       return res.status(404).json({ error: 'Question not found' });
     }
 
-    const isCorrect = question.correctAnswer === userAnswer;
+    let isCorrect = false;
+
+    if (question.type === 'fill') {
+      const normalizedUser = String(userAnswer || '').trim().toLowerCase();
+      isCorrect = (question.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+    } else {
+      isCorrect = question.correctAnswer === userAnswer;
+    }
 
     res.status(200).json({
       isCorrect,

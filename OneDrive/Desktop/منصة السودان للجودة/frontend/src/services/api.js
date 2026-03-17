@@ -60,5 +60,21 @@ export const apiService = {
       console.warn('Falling back to Demo Mode data:', error);
       throw error; // Re-throw to be handled by component fallback
     }
+  },
+
+  // التحقق من إجابة السؤال عبر السيرفر
+  checkAnswer: async (questionId, userAnswer) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/questions/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionId, userAnswer }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Check answer error:', error);
+      throw error;
+    }
   }
 };
