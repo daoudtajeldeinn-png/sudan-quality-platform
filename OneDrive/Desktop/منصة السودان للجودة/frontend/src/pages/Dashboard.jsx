@@ -22,6 +22,7 @@ const UNIT_ICONS = {
   'sterile-annex1': { icon: '🛡️', color: '#6c757d', title: { ar: 'التصنيع المعقم', en: 'Sterile Mfg' } },
   'gamp5-basics': { icon: '💻', color: '#343a40', title: { ar: 'GAMP 5', en: 'GAMP 5' } },
   'batch-records': { icon: '📝', color: '#6610f2', title: { ar: 'سجلات التشغيل', en: 'Batch Records' } },
+  'nmpb-reg': { icon: '🇸🇩', color: '#009688', title: { ar: 'الرقابة الدوائية', en: 'NMPB Regulatory' } },
 };
 
 const Dashboard = ({ user, onLogout }) => {
