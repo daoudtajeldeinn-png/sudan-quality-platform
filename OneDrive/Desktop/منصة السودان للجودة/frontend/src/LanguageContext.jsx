@@ -123,6 +123,15 @@ export const translations = {
         confirmSign: 'تأكيد التوقيع (E-Sign)',
         auditTrail: 'سجل التدقيق (Audit Trail)',
         gamp5: 'متطلبات GAMP 5',
+        level: 'المستوى',
+        xp: 'نقاط الخبرة (XP)',
+        xpRange: 'النقاط للمستوى التالي',
+        leaderboard: 'لوحة الصدارة',
+        rank: 'الترتيب',
+        student: 'المتدرب',
+        perfectScoreBadge: 'وسام الدرجة الكاملة',
+        sudanExpertBadge: 'وسام خبير السودان',
+        speedLearnerBadge: 'وسام المتعلم السريع',
     },
     en: {
         // ... same structure for English
@@ -226,6 +235,15 @@ export const translations = {
         confirmSign: 'Confirm E-Sign',
         auditTrail: 'Audit Trail',
         gamp5: 'GAMP 5 Requirements',
+        level: 'Level',
+        xp: 'Experience Points (XP)',
+        xpRange: 'XP till Next Level',
+        leaderboard: 'Leaderboard',
+        rank: 'Rank',
+        student: 'Student',
+        perfectScoreBadge: 'Perfect Score Badge',
+        sudanExpertBadge: 'Sudan Expert Badge',
+        speedLearnerBadge: 'Speed Learner Badge',
     }
 };
 

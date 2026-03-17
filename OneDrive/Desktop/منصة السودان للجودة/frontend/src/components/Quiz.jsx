@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { useGamification } from '../GamificationContext';
 import { apiService } from '../services/api';
 import { educationalContent } from '../data/content_new.js';
 
 const Quiz = ({ unitId, onQuizComplete }) => {
   const { language, t, theme } = useLanguage();
+  const { addXp, awardBadge, updateStats, stats } = useGamification();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
@@ -183,6 +185,27 @@ const Quiz = ({ unitId, onQuizComplete }) => {
     const finalScore = Math.round((correctCount / questions.length) * 100);
     setScore(finalScore);
     setQuizState('completed');
+
+    // --- Gamification Rewards ---
+    if (finalScore >= 90) {
+      addXp(50); // Standard pass reward
+      if (finalScore === 100) {
+        addXp(50); // Bonus for perfect score
+        awardBadge('perfect_score', t('perfectScoreBadge') || 'Perfect Score', '💎');
+        updateStats({ perfectScores: stats.perfectScores + 1 });
+      }
+      
+      // Special badge for NMPB unit
+      if (unitId === 'nmpb-reg') {
+        awardBadge('sudan_expert', t('sudanExpertBadge') || 'Sudan Regulatory Expert', '🇸🇩');
+      }
+
+      // Achievement for completing first quiz
+      if (stats.totalQuizzes === 0) {
+        awardBadge('first_quiz', t('speedLearnerBadge') || 'First Achievement', '🚀');
+      }
+    }
+    updateStats({ totalQuizzes: stats.totalQuizzes + 1 });
 
     if (onQuizComplete) {
       onQuizComplete({

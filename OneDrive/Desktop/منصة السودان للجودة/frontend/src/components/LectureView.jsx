@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { useGamification } from '../GamificationContext';
 import { educationalContent } from '../data/content_new.js';
 
 // Unit-specific colors for visual consistency
@@ -21,6 +22,7 @@ const UNIT_COLORS = {
 
 const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const { language, t, theme } = useLanguage();
+  const { addXp, updateStats, stats } = useGamification();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [completedSlides, setCompletedSlides] = useState([0]); // First slide is always unlocked
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -78,6 +80,8 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
       // Final slide reached
       if (completedSlides.length >= slides.length) {
         setShowCompletion(true);
+        addXp(30); // Award XP for completing lecture
+        updateStats({ lecturesCompleted: stats.lecturesCompleted + 1 });
       } else {
         alert(language === 'ar' ? 'يرجى استعراض جميع الشرائح أولاً' : 'Please view all slides first');
       }

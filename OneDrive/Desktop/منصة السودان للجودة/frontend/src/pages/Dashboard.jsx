@@ -4,6 +4,7 @@ import LectureView from '../components/LectureView';
 import FMEATool from '../components/FMEATool';
 import BatchSignSim from '../components/BatchSignSim';
 import { useLanguage } from '../LanguageContext';
+import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
 
@@ -25,6 +26,7 @@ const UNIT_ICONS = {
 
 const Dashboard = ({ user, onLogout }) => {
   const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
+  const { xp, level, badges, getXpToNextLevel, stats, updateStats, addXp, awardBadge } = useGamification();
   const [currentUnit, setCurrentUnit] = useState(null);
   const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
@@ -453,6 +455,59 @@ const Dashboard = ({ user, onLogout }) => {
         </div>
       </header>
 
+      {/* Gamification Level Bar */}
+      <div className="glass-panel" style={{ 
+        margin: '15px 20px 0', 
+        padding: '12px 25px', 
+        borderRadius: '15px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '20px',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-color)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ 
+            width: '45px', 
+            height: '45px', 
+            borderRadius: '50%', 
+            backgroundColor: 'var(--primary-color)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.2rem',
+            boxShadow: '0 4px 10px var(--focus-ring)'
+          }}>
+            L{level}
+          </div>
+          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{t('level')} {level}</div>
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <span>{t('xp')}: {xp}</span>
+            <span>{t('xpRange')}: {getXpToNextLevel().progress} / {getXpToNextLevel().goal}</span>
+          </div>
+          <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ 
+              width: `${getXpToNextLevel().percentage}%`, 
+              height: '100%', 
+              backgroundColor: 'var(--primary-color)', 
+              borderRadius: '10px',
+              transition: 'width 0.5s ease-out'
+            }} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {badges.slice(-3).map(badge => (
+            <span key={badge.id} title={badge.name} style={{ fontSize: '1.5rem', cursor: 'help' }}>{badge.icon}</span>
+          ))}
+        </div>
+      </div>
+
       {/* Sub Navigation */}
       <nav style={{ 
         display: 'flex', 
@@ -659,49 +714,83 @@ const Dashboard = ({ user, onLogout }) => {
         ) : (
           /* Analytics View */
           <div className="animate-fade-in">
-            <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
-              <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.5rem' }}>📊</span> {language === 'ar' ? 'تحليل تقدمك' : 'Your Progress Analytics'}
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid var(--primary-color)' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
-                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة مكتملة' : 'Units Completed'}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+              <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
+                <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.5rem' }}>📊</span> {language === 'ar' ? 'تحليل تقدمك' : 'Your Progress Analytics'}
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                  <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid var(--primary-color)' }}>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
+                    <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة مكتملة' : 'Units Completed'}</div>
+                  </div>
+                  <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #ffc107' }}>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ffc107' }}>{totalAverage}%</div>
+                    <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'متوسط الدرجات' : 'Average Score'}</div>
+                  </div>
+                  <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: `2px solid ${allPassed ? '#28a745' : '#6c757d'}` }}>
+                    <div style={{ fontSize: '2.5rem' }}>{allPassed ? '🏆' : '🔒'}</div>
+                    <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'حالة الشهادة' : 'Certificate Status'}</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: allPassed ? '#28a745' : '#6c757d', marginTop: '4px' }}>{allPassed ? (language === 'ar' ? 'مكتملة ✓' : 'Earned ✓') : (language === 'ar' ? 'قيد التقدم' : 'In Progress')}</div>
+                  </div>
                 </div>
-                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #ffc107' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ffc107' }}>{totalAverage}%</div>
-                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'متوسط الدرجات' : 'Average Score'}</div>
-                </div>
-                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: `2px solid ${allPassed ? '#28a745' : '#6c757d'}` }}>
-                  <div style={{ fontSize: '2.5rem' }}>{allPassed ? '🏆' : '🔒'}</div>
-                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'حالة الشهادة' : 'Certificate Status'}</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: allPassed ? '#28a745' : '#6c757d', marginTop: '4px' }}>{allPassed ? (language === 'ar' ? 'مكتملة ✓' : 'Earned ✓') : (language === 'ar' ? 'قيد التقدم' : 'In Progress')}</div>
-                </div>
-                <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #e83e8c' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#e83e8c' }}>{unitIds.length - unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
-                  <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة متبقية' : 'Units Remaining'}</div>
-                </div>
-              </div>
-              <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>{language === 'ar' ? '📋 تفاصيل الدرجات لكل وحدة' : '📋 Score Details by Unit'}</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {units.map(unit => {
-                  const score = userProgress[unit.id] || 0;
-                  const isPassed = score >= 90;
-                  const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
-                  return (
-                    <div key={unit.id}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
-                        <span style={{ fontWeight: '500', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><span>{unitIcon.icon}</span> {unit.title}</span>
-                        <span style={{ fontWeight: 'bold', color: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'var(--text-secondary)', minWidth: '75px', textAlign: 'right' }}>{score > 0 ? `${score}%` : (language === 'ar' ? 'لم يبدأ' : 'Not Started')}</span>
+                <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>{language === 'ar' ? '📋 تفاصيل الدرجات لكل وحدة' : '📋 Score Details by Unit'}</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {units.map(unit => {
+                    const score = userProgress[unit.id] || 0;
+                    const isPassed = score >= 90;
+                    const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
+                    return (
+                      <div key={unit.id}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+                          <span style={{ fontWeight: '500', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><span>{unitIcon.icon}</span> {unit.title}</span>
+                          <span style={{ fontWeight: 'bold', color: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'var(--text-secondary)', minWidth: '75px', textAlign: 'right' }}>{score > 0 ? `${score}%` : (language === 'ar' ? 'لم يبدأ' : 'Not Started')}</span>
+                        </div>
+                        <div style={{ height: '10px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
+                          <div style={{ width: `${score}%`, height: '100%', backgroundColor: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'transparent', borderRadius: '10px', transition: 'width 1.5s cubic-bezier(0.25, 1, 0.5, 1)' }} />
+                        </div>
                       </div>
-                      <div style={{ height: '10px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
-                        <div style={{ width: `${score}%`, height: '100%', backgroundColor: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'transparent', borderRadius: '10px', transition: 'width 1.5s cubic-bezier(0.25, 1, 0.5, 1)' }} />
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Leaderboard Sidebar */}
+              <section className="glass-panel" style={{ padding: '25px', borderRadius: '24px' }}>
+                <h3 style={{ marginBottom: '20px', color: '#ffc107', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>🥇</span> {t('leaderboard')}
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[
+                    { name: 'Omer F.', level: 12, xp: 14500, avatar: '👴' },
+                    { name: 'Sara M.', level: 10, xp: 12200, avatar: '👩' },
+                    { name: 'Khalid A.', level: 9, xp: 10800, avatar: '👨' },
+                    { name: language === 'ar' ? 'أنت' : 'You', level: level, xp: xp, avatar: '⭐', isUser: true },
+                    { name: 'Muna H.', level: 7, xp: 8500, avatar: '👩' },
+                  ].sort((a, b) => b.xp - a.xp).map((entry, idx) => (
+                    <div key={idx} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px', 
+                      padding: '10px', 
+                      borderRadius: '12px',
+                      backgroundColor: entry.isUser ? 'rgba(40,167,69,0.1)' : 'transparent',
+                      border: entry.isUser ? '1px solid #28a745' : '1px solid transparent'
+                    }}>
+                      <div style={{ fontWeight: 'bold', width: '25px', color: idx === 0 ? '#ffc107' : 'var(--text-secondary)' }}>#{idx + 1}</div>
+                      <div style={{ fontSize: '1.2rem' }}>{entry.avatar}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{entry.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Lvl {entry.level} • {entry.xp} XP</div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </section>
+                  ))}
+                </div>
+                <div style={{ marginTop: '20px', padding: '15px', backgroundColor: 'var(--bg-body)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  💡 {language === 'ar' ? 'هذه لوحة صدارة تجريبية للمتدربين المتواجدين حالياً.' : 'This is a simulated leaderboard for active trainees.'}
+                </div>
+              </section>
+            </div>
           </div>
         )}
       </main>

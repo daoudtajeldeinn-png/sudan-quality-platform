@@ -2,12 +2,31 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import { LanguageProvider, useLanguage } from './LanguageContext';
+import { GamificationProvider } from './GamificationContext';
 import { apiService } from './services/api';
 
-function AppContent() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+function AppContent({ user, setUser }) {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    const registerUser = async () => {
+      try {
+        const userData = {
+          userId: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        };
+        await apiService.registerUser(userData);
+        console.log('User registered in backend');
+      } catch (error) {
+        console.error('Backend registration error:', error);
+      }
+    };
+    registerUser();
+  }, [user]);
 
   useEffect(() => {
     // محاولة تحميل Firebase
@@ -17,21 +36,7 @@ function AppContent() {
         const unsubscribe = firebaseModule.auth.onAuthStateChanged(async (currentUser) => {
           if (currentUser) {
             setUser(currentUser);
-            // تسجيل المستخدم في Backend
-            try {
-              const userData = {
-                userId: currentUser.uid,
-                email: currentUser.email,
-                displayName: currentUser.displayName,
-                photoURL: currentUser.photoURL
-              };
-
-              // إرسال بيانات المستخدم للـ Backend باستخدام apiService
-              const response = await apiService.registerUser(userData);
-              console.log('User registered in backend');
-            } catch (error) {
-              console.error('Backend registration error:', error);
-            }
+            // The backend registration logic was moved to a separate useEffect that depends on 'user'
           }
           setLoading(false);
         });
@@ -163,8 +168,37 @@ function AppContent() {
 function App() {
   return (
     <LanguageProvider>
-      <AppContent />
+      <AppContentWrapper />
     </LanguageProvider>
+  );
+}
+
+function AppContentWrapper() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFirebase = async () => {
+      try {
+        const firebaseModule = await import('./firebase/config');
+        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      } catch (error) {
+        setLoading(false);
+      }
+    };
+    loadFirebase();
+  }, []);
+
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>جاري التحميل...</div>;
+
+  return (
+    <GamificationProvider userEmail={user?.email}>
+      <AppContent user={user} setUser={setUser} />
+    </GamificationProvider>
   );
 }
 
