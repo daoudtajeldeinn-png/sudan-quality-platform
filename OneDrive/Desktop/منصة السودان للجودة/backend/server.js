@@ -149,13 +149,8 @@ app.use((req, res, next) => {
   next();
 });
 
-const authRoutes = require('./src/routes/authRoutes');
-const questionRoutes = require('./src/routes/questionRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-...
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
