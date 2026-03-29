@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Dashboard from './pages/Dashboard';
+import { VerifyCertificate } from './pages/VerifyCertificate';
 import { LanguageProvider, useLanguage } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
 import { apiService } from './services/api';
@@ -161,7 +162,10 @@ function AppContent({ user, setUser }) {
   }
 
   return (
-    <Dashboard user={user} onLogout={handleLogout} />
+    <>
+      {/* Add Verify route if using router in future; keep Dashboard rendering for current flow */}
+      <Dashboard user={user} onLogout={handleLogout} />
+    </>
   );
 }
 
