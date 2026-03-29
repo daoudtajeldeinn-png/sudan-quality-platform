@@ -3,6 +3,11 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import { apiService } from '../services/api';
 import { educationalContent } from '../data/content_new.js';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import '../styles/CertificateStyles.css';
+import pharmaLogo from '../assets/pharma_logo.png';
+import certBg from '../assets/certificate_bg.png';
 
 const Quiz = ({ unitId, onQuizComplete, user }) => {
   const { language, t, theme } = useLanguage();
@@ -17,6 +22,8 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
   const [isLastAnswerCorrect, setIsLastAnswerCorrect] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
   const [currentExplanation, setCurrentExplanation] = useState({ ar: '', en: '' });
+  const [certName, setCertName] = useState(user?.displayName || '');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -242,6 +249,44 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
     }
   };
 
+  const generatePDF = async () => {
+    if (!certName.trim()) {
+      alert(language === 'ar' ? 'يرجى إدخال الاسم لإصدار الشهادة' : 'Please enter a name for the certificate');
+      return;
+    }
+
+    setIsGenerating(true);
+    const element = document.getElementById('certificate-template');
+    
+    try {
+      // Ensure the hidden element is briefly visible for capture or use a scale factor
+      const canvas = await html2canvas(element, {
+        scale: 2, // High resolution
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const filename = `Certificate_${unitId}_${certName.replace(/\s+/g, '_')}.pdf`;
+      pdf.save(filename);
+      
+      awardBadge('certified', t('certifiedBadge') || 'Certified Professional', '📜');
+    } catch (error) {
+      console.error('Certificate generation failed:', error);
+      alert(language === 'ar' ? 'عذراً، فشل إصدار الشهادة. يرجى المحاولة مرة أخرى.' : 'Error generating certificate. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (quizState === 'loading') {
     return (
       <div style={{
@@ -448,50 +493,136 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
 
   if (quizState === 'completed') {
     const passed = score >= 90;
+    const unitTitle = educationalContent.units[unitId]?.title || { ar: unitId, en: unitId };
+    
     return (
-      <div className="result-card animate-fade-in" style={{
-        maxWidth: '600px',
-        margin: '0 auto',
-        padding: '40px',
-        textAlign: 'center',
-        backgroundColor: 'var(--bg-card)',
-        borderRadius: '24px',
-        boxShadow: 'var(--shadow-lg)',
-        direction: language === 'ar' ? 'rtl' : 'ltr'
-      }}>
-        <h2 style={{ fontSize: '3rem', color: passed ? 'var(--primary-color)' : 'var(--text-error)', marginBottom: '10px' }}>
-          %{score}
-        </h2>
-        <h3>{passed ? (language === 'ar' ? 'تهانينا! لقد اجتزت الامتحان' : 'Congratulations! You passed') : (language === 'ar' ? 'للأسف لم تتخطى درجة النجاح (90%)' : 'Sorry, you didn\'t reach the passing score (90%)')}</h3>
+      <div className="result-container" style={{ position: 'relative' }}>
+        <div className="result-card animate-fade-in" style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+          padding: '40px',
+          textAlign: 'center',
+          backgroundColor: 'var(--bg-card)',
+          borderRadius: '24px',
+          boxShadow: 'var(--shadow-lg)',
+          direction: language === 'ar' ? 'rtl' : 'ltr'
+        }}>
+          <h2 style={{ fontSize: '3rem', color: passed ? 'var(--primary-color)' : 'var(--text-error)', marginBottom: '10px' }}>
+            %{score}
+          </h2>
+          <h3>{passed ? (language === 'ar' ? 'تهانينا! لقد اجتزت الامتحان بنجاح' : 'Congratulations! You passed the exam') : (language === 'ar' ? 'للأسف لم تتخطى درجة النجاح (90%)' : 'Sorry, you didn\'t reach the passing score (90%)')}</h3>
 
-        {!passed && (
-          <p style={{ color: 'var(--text-error)', fontWeight: 'bold', margin: '15px 0' }}>
-            {t('scoreLowWarning')}
-          </p>
-        )}
-
-        <p style={{ margin: '20px 0', color: 'var(--text-secondary)' }}>
-          {language === 'ar' ? 'لقد تمت مراجعة إجاباتك بناءً على المعايير العالمية.' : 'Your answers have been reviewed based on international standards.'}
-        </p>
-
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-          <button onClick={() => window.location.reload()} className="btn-primary" style={{
-            padding: '12px 30px',
-            backgroundColor: !passed ? 'var(--btn-secondary-bg)' : 'var(--primary-color)'
-          }}>
-            {language === 'ar' ? 'العودة للوحة القيادة' : 'Back to Dashboard'}
-          </button>
+          {passed && (
+            <div className="certificate-action-box" style={{ 
+              marginTop: '30px', 
+              padding: '25px', 
+              backgroundColor: 'rgba(40, 167, 69, 0.05)', 
+              borderRadius: '16px',
+              border: '1px dashed var(--primary-color)' 
+            }}>
+              <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: 'var(--text-secondary)' }}>
+                {language === 'ar' ? 'أدخل اسمك كما تود أن يظهر في الشهادة:' : 'Enter your name as you want it to appear on the certificate:'}
+              </p>
+              <input 
+                type="text" 
+                value={certName}
+                onChange={(e) => setCertName(e.target.value)}
+                placeholder={language === 'ar' ? 'الاسم الثنائي أو الثلاثي' : 'Your Full Name'}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  marginBottom: '15px',
+                  textAlign: 'center',
+                  fontSize: '1.1rem'
+                }}
+              />
+              <button 
+                onClick={generatePDF} 
+                disabled={isGenerating || !certName.trim()}
+                className="btn-primary"
+                style={{ 
+                  width: '100%', 
+                  padding: '15px', 
+                  fontSize: '1.1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px'
+                }}
+              >
+                {isGenerating ? '⌛...' : '🎓'} {language === 'ar' ? 'تحميل الشهادة المعتمدة (PDF)' : 'Download Certified Certificate (PDF)'}
+              </button>
+            </div>
+          )}
 
           {!passed && (
-            <button onClick={() => {
-              setCurrentQuestionIndex(0);
-              setUserAnswers([]);
-              setQuizState('active');
-              loadQuestions();
-            }} className="btn-primary" style={{ padding: '12px 30px', backgroundColor: 'var(--btn-error-bg)' }}>
-              {t('retakeBtn')}
-            </button>
+            <p style={{ color: 'var(--text-error)', fontWeight: 'bold', margin: '15px 0' }}>
+              {t('scoreLowWarning')}
+            </p>
           )}
+
+          <p style={{ margin: '20px 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            {language === 'ar' ? 'لقد تمت مراجعة إجاباتك بناءً على معايير الجودة العالمية.' : 'Your answers have been reviewed based on international quality standards.'}
+          </p>
+
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '20px' }}>
+            <button onClick={() => window.location.reload()} className="btn-secondary" style={{ padding: '12px 30px' }}>
+              {language === 'ar' ? 'العودة للوحة القيادة' : 'Back to Dashboard'}
+            </button>
+
+            {!passed && (
+              <button onClick={() => {
+                setCurrentQuestionIndex(0);
+                setUserAnswers([]);
+                setQuizState('active');
+                loadQuestions();
+              }} className="btn-primary" style={{ padding: '12px 30px', backgroundColor: 'var(--btn-error-bg)' }}>
+                {t('retakeBtn')}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Hidden Certificate Template for PDF Rendering */}
+        <div id="certificate-template" className={`certificate-container ${language === 'ar' ? 'rtl-cert' : ''}`} style={{ 
+          position: 'fixed', 
+          top: '-2000px', 
+          left: '-2000px',
+          width: '1123px',
+          height: '794px'
+        }}>
+          <img src={certBg} className="certificate-bg" alt="bg" />
+          <div className="certificate-content">
+            <img src={pharmaLogo} className="cert-logo" alt="logo" />
+            <h1 className="cert-header">
+              {language === 'ar' ? 'شهادة إتمام' : 'Certificate of Completion'}
+            </h1>
+            <p className="cert-text">
+              {language === 'ar' ? 'يُشهد المجلس القومي للأدوية والسموم بأن:' : 'This is to certify that:'}
+            </p>
+            <div className="cert-name">{certName}</div>
+            <p className="cert-text" style={{ marginTop: '20px' }}>
+              {language === 'ar' ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في:' : 'has successfully completed the professional training in:'}
+            </p>
+            <div className="cert-track">
+              {unitTitle[language]}
+            </div>
+            <div className="cert-details">
+              <div className={`cert-detail-item ${language === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">{language === 'ar' ? 'التاريخ' : 'Date'}</div>
+                <div className="cert-value">{new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</div>
+              </div>
+              <div className={`cert-detail-item ${language === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">{language === 'ar' ? 'النتيجة' : 'Final Score'}</div>
+                <div className="cert-value">%{score}</div>
+              </div>
+            </div>
+          </div>
+          <div className="cert-verification">
+            Verification ID: SQP-{unitId.toUpperCase()}-{Math.random().toString(36).substr(2, 9).toUpperCase()}
+          </div>
         </div>
       </div>
     );
