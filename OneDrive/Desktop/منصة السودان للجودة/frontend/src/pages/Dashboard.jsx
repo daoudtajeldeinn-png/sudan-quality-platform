@@ -9,15 +9,14 @@ import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
 
 // Unit grouping
-const NMPB_UNITS = ['nmpb-reg'];
-const BASIC_UNITS = [
-  'gmp-intro', 'glp-basics', 'iso-17025', 'ich-guidelines',
-  'validation-qualification', 'data-integrity', 'qrm-basics',
-  'gdp-basics', 'ich-q10', 'sterile-annex1', 'gamp5-basics',
-  'batch-records'
-];
-const INTERMEDIATE_UNITS = [
-  'adv-gmp', 'adv-glp', 'adv-iso-17025', 'adv-validation', 'adv-qrm', 'adv-gdp'
+const TRACKS = [
+  { id: 'qms', titleKey: 'track_qms', units: ['gmp-intro', 'ich-q10', 'adv-gmp'], icon: '🏆', color: '#17a2b8' },
+  { id: 'sterile', titleKey: 'track_sterile', units: ['sterile-annex1'], icon: '🛡️', color: '#6c757d' },
+  { id: 'data_integrity', titleKey: 'track_data_integrity', units: ['data-integrity', 'gamp5-basics', 'batch-records'], icon: '💻', color: '#6610f2' },
+  { id: 'qrm', titleKey: 'track_qrm', units: ['qrm-basics', 'adv-qrm'], icon: '⚠️', color: '#e83e8c' },
+  { id: 'validation', titleKey: 'track_validation', units: ['validation-qualification', 'adv-validation'], icon: '✅', color: '#20c997' },
+  { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
+  { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
 ];
 
 // Unit icons mapping - visual icons for each unit
@@ -53,7 +52,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
   const [viewMode, setViewMode] = useState('academy'); // 'academy' or 'toolkit'
-  const [currentSection, setCurrentSection] = useState('basic'); // 'nmpb', 'basic', 'intermediate'
+  const [currentTrack, setCurrentTrack] = useState(null); // null means showing the 7 track cards
   const [userProgress, setUserProgress] = useState({
     'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
     'validation-qualification': 0, 'data-integrity': 0, 'qrm-basics': 0,
@@ -136,9 +135,10 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'adv-gdp', title: t('adv_gdp'), subtitle: t('unit6'), color: '#fd7e14' },
   ];
 
-  const currentSectionUnits = currentSection === 'nmpb' ? NMPB_UNITS : currentSection === 'basic' ? BASIC_UNITS : INTERMEDIATE_UNITS;
+  const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
+  const currentSectionUnits = currentTrackObj ? currentTrackObj.units : [];
   const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
-
+  const allTrackUnits = TRACKS.flatMap(t => t.units);
   const handleStartUnit = (unitId) => {
     setCurrentUnit(unitId);
     setIsLectureMode(true);
@@ -169,12 +169,12 @@ const Dashboard = ({ user, onLogout }) => {
       };
 
       // If this was the last unit needed to complete the program
-      const allOthersPassed = currentSectionUnits
+      const allOthersPassed = allTrackUnits
         .filter(id => id !== unitId)
         .every(id => (newProgress[id] || 0) >= 90);
 
       if (isNewSuccess && allOthersPassed) {
-        newProgress[`completionDate_${currentSection}`] = new Date().toISOString();
+        newProgress[`completionDate_academy`] = new Date().toISOString();
       }
 
       // Save to localStorage
@@ -185,8 +185,8 @@ const Dashboard = ({ user, onLogout }) => {
     setCurrentUnit(null);
   };
 
-  const allPassed = currentSectionUnits.every(id => (userProgress[id] || 0) >= 90);
-  const totalAverage = Math.round(currentSectionUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (currentSectionUnits.length || 1));
+  const allPassed = allTrackUnits.every(id => (userProgress[id] || 0) >= 90);
+  const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
 
   const DeveloperProfileModal = () => (
     <div style={{
@@ -633,105 +633,156 @@ const Dashboard = ({ user, onLogout }) => {
             </section>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px', alignItems: 'start' }}>
-              {/* Visual Icon Grid for Units */}
+              {/* Visual Icon Grid for Units / Tracks */}
               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
-                <h3 style={{ marginBottom: '15px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '1.5rem' }}>📚</span> {t('availableUnits')}
-                </h3>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', flexWrap: 'wrap' }}>
-                  <button 
-                    onClick={() => setCurrentSection('nmpb')}
-                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'nmpb' ? 'none' : '2px solid #009688', backgroundColor: currentSection === 'nmpb' ? '#009688' : 'transparent', color: currentSection === 'nmpb' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
-                  >
-                    {t('sectionNmpb')}
-                  </button>
-                  <button 
-                    onClick={() => setCurrentSection('basic')}
-                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'basic' ? 'none' : '2px solid #007bff', backgroundColor: currentSection === 'basic' ? '#007bff' : 'transparent', color: currentSection === 'basic' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
-                  >
-                    {t('sectionBasic')}
-                  </button>
-                  <button 
-                    onClick={() => setCurrentSection('intermediate')}
-                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'intermediate' ? 'none' : '2px solid #e83e8c', backgroundColor: currentSection === 'intermediate' ? '#e83e8c' : 'transparent', color: currentSection === 'intermediate' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
-                  >
-                    {t('sectionIntermediate')}
-                  </button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                  {units.map((unit) => {
-                    const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
-                    const finishedLecture = unitStates[unit.id]?.lectureFinished;
-                    const progress = userProgress[unit.id] || 0;
-                    const isPassed = progress >= 90;
-                    
-                    return (
-                      <div 
-                        key={unit.id}
-                        onClick={() => handleStartUnit(unit.id)}
-                        style={{
-                          backgroundColor: 'var(--bg-card)',
-                          borderRadius: '20px',
-                          padding: '25px',
-                          cursor: 'pointer',
-                          border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                          boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
-                          transition: 'all 0.3s ease',
-                          textAlign: 'center',
-                          position: 'relative',
-                          overflow: 'hidden'
+                {!currentTrack ? (
+                  <>
+                    <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.5rem' }}>🎓</span> {t('academy')} - {language === 'ar' ? 'المسارات الاحترافية' : 'Professional Tracks'}
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                      {TRACKS.map((track) => {
+                        const trackProgress = Math.round(track.units.reduce((acc, unitId) => acc + (userProgress[unitId] || 0), 0) / (track.units.length || 1));
+                        const isTrackPassed = trackProgress >= 90;
+                        
+                        return (
+                          <div 
+                            key={track.id}
+                            onClick={() => setCurrentTrack(track.id)}
+                            style={{
+                              backgroundColor: 'var(--bg-card)',
+                              borderRadius: '20px',
+                              padding: '25px',
+                              cursor: 'pointer',
+                              border: `2px solid ${isTrackPassed ? track.color : 'var(--border-color)'}`,
+                              boxShadow: isTrackPassed ? `0 8px 25px ${track.color}40` : 'var(--shadow-sm)',
+                              transition: 'all 0.3s ease',
+                              textAlign: 'center',
+                              position: 'relative',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              minHeight: '240px'
+                            }}
+                            className="interactive-card"
+                          >
+                            <div style={{
+                              position: 'absolute', top: '15px', right: language === 'ar' ? 'auto' : '15px', left: language === 'ar' ? '15px' : 'auto',
+                              backgroundColor: isTrackPassed ? track.color : '#6c757d', color: 'white', padding: '6px 15px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold'
+                            }}>
+                              {trackProgress}%
+                            </div>
+                            <div style={{
+                              width: '85px', height: '85px', borderRadius: '50%', backgroundColor: `${track.color}20`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', marginBottom: '15px', marginTop: '10px'
+                            }}>
+                              {track.icon}
+                            </div>
+                            <h4 style={{ margin: '0 0 15px', fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: '1.4' }}>{t(track.titleKey)}</h4>
+                            <div style={{ backgroundColor: track.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              📚 {track.units.length} {language === 'ar' ? 'وحدات' : 'Units'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
+                      <h3 style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '15px', margin: 0 }}>
+                        <span style={{ fontSize: '2rem' }}>{currentTrackObj.icon}</span> 
+                        {t(currentTrackObj.titleKey)}
+                      </h3>
+                      <button 
+                        onClick={() => setCurrentTrack(null)} 
+                        style={{ 
+                          background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '20px', padding: '8px 20px', 
+                          fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '8px'
                         }}
-                        className="interactive-card"
+                        className="btn-back-track"
                       >
-                        {/* Progress indicator */}
-                        <div style={{
-                          position: 'absolute',
-                          top: '10px',
-                          right: language === 'ar' ? 'auto' : '10px',
-                          left: language === 'ar' ? '10px' : 'auto',
-                          backgroundColor: isPassed ? '#28a745' : '#6c757d',
-                          color: 'white',
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold'
-                        }}>
-                          {progress}%
-                        </div>
+                        {language === 'ar' ? '← العودة للمسارات' : '← Back to Tracks'}
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                      {units.map((unit) => {
+                        const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
+                        const finishedLecture = unitStates[unit.id]?.lectureFinished;
+                        const progress = userProgress[unit.id] || 0;
+                        const isPassed = progress >= 90;
                         
-                        {/* Icon */}
-                        <div style={{
-                          width: '70px',
-                          height: '70px',
-                          borderRadius: '50%',
-                          backgroundColor: `${unitIcon.color}20`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 15px',
-                          fontSize: '2.5rem'
-                        }}>
-                          {unitIcon.icon}
-                        </div>
-                        
-                        <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{unit.title}</h4>
-                        <p style={{ margin: '0 0 15px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{unit.subtitle}</p>
-                        
-                        {finishedLecture && (
-                          <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '6px 15px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block' }}>
-                            ✓ {language === 'ar' ? 'مكتمل' : 'Completed'}
+                        return (
+                          <div 
+                            key={unit.id}
+                            onClick={() => handleStartUnit(unit.id)}
+                            style={{
+                              backgroundColor: 'var(--bg-card)',
+                              borderRadius: '20px',
+                              padding: '25px',
+                              cursor: 'pointer',
+                              border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                              boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
+                              transition: 'all 0.3s ease',
+                              textAlign: 'center',
+                              position: 'relative',
+                              overflow: 'hidden'
+                            }}
+                            className="interactive-card"
+                          >
+                            {/* Progress indicator */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '10px',
+                              right: language === 'ar' ? 'auto' : '10px',
+                              left: language === 'ar' ? '10px' : 'auto',
+                              backgroundColor: isPassed ? '#28a745' : '#6c757d',
+                              color: 'white',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold'
+                            }}>
+                              {progress}%
+                            </div>
+                            
+                            {/* Icon */}
+                            <div style={{
+                              width: '70px',
+                              height: '70px',
+                              borderRadius: '50%',
+                              backgroundColor: `${unitIcon.color}20`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              margin: '0 auto 15px',
+                              fontSize: '2.5rem'
+                            }}>
+                              {unitIcon.icon}
+                            </div>
+                            
+                            <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{unit.title}</h4>
+                            <p style={{ margin: '0 0 15px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{unit.subtitle}</p>
+                            
+                            {finishedLecture && (
+                              <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '6px 15px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block' }}>
+                                ✓ {language === 'ar' ? 'مكتمل' : 'Completed'}
+                              </div>
+                            )}
+                            
+                            {!finishedLecture && (
+                              <div style={{ backgroundColor: unitIcon.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block' }}>
+                                {t('startStudy')} →
+                              </div>
+                            )}
                           </div>
-                        )}
-                        
-                        {!finishedLecture && (
-                          <div style={{ backgroundColor: unitIcon.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block' }}>
-                            {t('startStudy')} →
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </section>
 
               {/* Certificate Summary Sidebar */}

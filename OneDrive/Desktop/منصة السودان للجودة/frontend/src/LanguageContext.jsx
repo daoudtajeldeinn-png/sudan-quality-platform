@@ -143,6 +143,13 @@ export const translations = {
         adv_validation: 'التحقق المتقدم',
         adv_qrm: 'تطبيقات QRM',
         adv_gdp: 'أساسيات سلسلة التبريد',
+        track_qms: 'مسار نظم الجودة المتقدمة (QMS)',
+        track_sterile: 'مسار التصنيع المعقم والميكروبيولوجي',
+        track_data_integrity: 'مسار النزاهة والأنظمة المحوسبة (CSV)',
+        track_qrm: 'مسار إدارة الجودة وتخفيف المخاطر',
+        track_validation: 'مسار التحقق والتأهيل (Validation)',
+        track_gdp: 'مسار سلاسل الإمداد وممارسات التوزيع',
+        track_regulatory: 'مسار الشؤون التنظيمية واليقظة (PV)',
     },
     en: {
         // ... same structure for English
@@ -266,6 +273,13 @@ export const translations = {
         adv_validation: 'Advanced Validation',
         adv_qrm: 'Applied QRM',
         adv_gdp: 'Cold Chain GDP',
+        track_qms: 'Advanced Quality Management (QMS)',
+        track_sterile: 'Sterile Manufacturing & Microbiology',
+        track_data_integrity: 'Data Integrity & Computerized Systems',
+        track_qrm: 'Quality Risk Management (QRM)',
+        track_validation: 'Validation & Qualification',
+        track_gdp: 'Supply Chain & GDP',
+        track_regulatory: 'Regulatory Affairs & Pharmacovigilance',
     }
 };
 
