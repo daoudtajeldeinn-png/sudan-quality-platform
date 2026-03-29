@@ -1,6 +1,6 @@
 # Sudan Quality Platform - Enhancement Roadmap
 
-## Current Status: Phase 2, 3 & 4 Completed ✅
+## Current Status: Phase 2, 3, 4, 5 & 6 Completed ✅
 Objective: Successfully aligned platform content with international (ICH, WHO) standards and Sudan-specific requirements, and implemented advanced quality tools.
 
 1.  **[x] Technical Fix Performance**
@@ -22,11 +22,11 @@ Objective: Successfully aligned platform content with international (ICH, WHO) s
 4.  **[ ] Mobile & Reliability**
     - [ ] **PWA (Progressive Web App)**: Installable on phones and offline support.
     - [x] **Dynamic Quiz Engine**: Randomized refresh from MongoDB on every attempt. (Completed ✅)
-5.  **[ ] Gamification & Engagement**
-    - [ ] **Leaderboards**: Competitive ranking for students.
-    - [ ] **Micro-Badges**: Achievement rewards for module completions.
-6.  **[ ] Sudan-Specific Compliance**
-    - [ ] **NMPB Unit**: National Medicine and Poisons Board regulatory module.
+5.  **[x] Gamification & Engagement**
+    - [x] **Leaderboards**: Competitive ranking for students. (Completed ✅)
+    - [x] **Micro-Badges**: Achievement rewards for module completions. (Completed ✅)
+6.  **[x] Sudan-Specific Compliance**
+    - [x] **NMPB Unit**: National Medicine and Poisons Board regulatory module. (Completed ✅)
     - [ ] **Inspection Checklist**: GMP/GSP readiness tool for local factories.
 7.  **[ ] Advanced Toolkit**
     - [ ] **Stability Calculator**: Shelf-life prediction tool.
