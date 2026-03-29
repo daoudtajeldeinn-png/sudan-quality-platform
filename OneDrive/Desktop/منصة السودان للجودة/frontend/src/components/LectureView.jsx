@@ -5,19 +5,25 @@ import { educationalContent } from '../data/content_new.js';
 
 // Unit-specific colors for visual consistency
 const UNIT_COLORS = {
-  'gmp-intro': '#28a745',
-  'glp-basics': '#007bff',
-  'iso-17025': '#ffc107',
-  'ich-guidelines': '#dc3545',
-  'validation-qualification': '#20c997',
-  'data-integrity': '#6610f2',
-  'qrm-basics': '#e83e8c',
-  'gdp-basics': '#fd7e14',
-  'ich-q10': '#17a2b8',
-  'sterile-annex1': '#6c757d',
-  'gamp5-basics': '#343a40',
-  'batch-records': '#5a2d8c',
-  'nmpb-reg': '#009688',
+  'gmp-intro': '#10b981', // Emerald
+  'glp-basics': '#3b82f6', // Blue
+  'iso-17025': '#f59e0b', // Amber
+  'ich-guidelines': '#ef4444', // Red
+  'validation-qualification': '#06b6d4', // Cyan
+  'data-integrity': '#8b5cf6', // Violet
+  'qrm-basics': '#ec4899', // Pink
+  'gdp-basics': '#f97316', // Orange
+  'ich-q10': '#0891b2', // Dark Cyan
+  'sterile-annex1': '#64748b', // Slate
+  'gamp5-basics': '#475569', // Slate (Professional Steel)
+  'batch-records': '#6366f1', // Indigo (Modern Digital)
+  'nmpb-reg': '#059669', // Sudan Emerald
+  'adv-gmp': '#059669',
+  'adv-glp': '#2563eb',
+  'adv-iso-17025': '#d97706',
+  'adv-validation': '#0891b2',
+  'adv-qrm': '#db2777',
+  'adv-gdp': '#ea580c'
 };
 
 const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
@@ -37,7 +43,6 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const slides = unit?.slides || [];
 
   // Get unit info - use defaults if not available
-  // Content.js may not have title/description, so use fallbacks
   const unitTitle = slides?.[0]?.[language]?.title || unitId.toUpperCase().replace('-', ' ');
   const unitDescription = unit?.description?.[language] || (language === 'ar' 
     ? 'دراسة شاملة لمبادئ الجودة الدوائية' 
@@ -124,25 +129,25 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
         width: '120px',
         height: '120px',
         borderRadius: '50%',
-        backgroundColor: '#28a745',
+        backgroundColor: unitColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: '30px',
-        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+        boxShadow: `0 10px 40px ${unitColor}40`
       }}>
-        <span style={{ fontSize: '3rem' }}>📚</span>
+        <span style={{ fontSize: '3rem' }}>📖</span>
       </div>
       
-      <h2 style={{ 
-        color: '#28a745', 
+      <h2 style={{
+        color: unitColor,
         fontSize: '2.5rem', 
         marginBottom: '20px',
         fontWeight: '800'
       }}>
         {language === 'ar' ? 'مرحباً بك' : 'Welcome'}
       </h2>
-      
+
       <p style={{
         fontSize: '1.5rem',
         color: 'var(--text-primary)',
@@ -207,25 +212,25 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
         width: '120px',
         height: '120px',
         borderRadius: '50%',
-        backgroundColor: '#28a745',
+        backgroundColor: unitColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: '30px',
-        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+        boxShadow: `0 10px 40px ${unitColor}40`
       }}>
         <span style={{ fontSize: '3rem' }}>🎉</span>
       </div>
-      
+
       <h2 style={{ 
-        color: '#28a745', 
-        fontSize: '2.5rem', 
+        color: unitColor,
+        fontSize: '2.5rem',
         marginBottom: '20px',
         fontWeight: '800'
       }}>
         {language === 'ar' ? 'تهانينا!' : 'Congratulations!'}
       </h2>
-      
+
       <p style={{
         fontSize: '1.3rem',
         color: 'var(--text-primary)',
@@ -233,7 +238,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
       }}>
         {language === 'ar' ? 'لقد أكملت:' : 'You have completed:'}
       </p>
-      
+
       <h3 style={{
         fontSize: '1.8rem',
         color: 'var(--text-primary)',
@@ -245,7 +250,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
       
       <p style={{
         fontSize: '1.5rem',
-        color: '#28a745',
+        color: unitColor,
         marginBottom: '30px'
       }}>
         {language === 'ar' ? 'الطالب:' : 'Student:'} <strong>{t('userName')}</strong>
@@ -280,7 +285,6 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
 
   const renderContent = () => {
     if (currentSlide.type === 'learning') {
-      // Parse bullet lists from text (e.g., "- Item")
       const parseBullets = (text) => {
         return text.split('\n').map((line, idx) => {
           if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
@@ -310,21 +314,11 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             </div>
           )}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px',
-            marginBottom: '25px'
-          }}>
-          </div>
-          <div style={{ 
             fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', 
             lineHeight: '1.6', 
             color: 'var(--text-primary)', 
             textAlign: language === 'ar' ? 'right' : 'left',
             wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            hyphens: 'auto',
-            textJustify: 'inter-word',
             padding: '0 10px'
           }}>
             {parseBullets(currentSlide[language].text)}
@@ -347,15 +341,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             border: '1px solid var(--border-color)'
           }}>
             <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>💡</span>
-            {language === 'ar' ? 'وقت النقاش وعصف ذهني' : 'Discussion & Brainstorming'}
-          </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '15px',
-            marginBottom: '25px'
-          }}>
+            {language === 'ar' ? 'وقت النقاش وعصصف ذهني' : 'Discussion & Brainstorming'}
           </div>
           <div style={{
             fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
@@ -367,9 +353,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             borderRight: language === 'ar' ? `6px solid ${unitColor}` : 'none',
             borderLeft: language === 'en' ? `6px solid ${unitColor}` : 'none',
             boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-            textAlign: language === 'ar' ? 'right' : 'left',
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word'
+            textAlign: language === 'ar' ? 'right' : 'left'
           }}>
             {currentSlide[language].text.split('\n').map((line, idx) => (
               line.trim() ? <p key={idx} style={{ marginBottom: '1rem' }}>{line}</p> : <br key={idx} />
@@ -390,7 +374,6 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
       fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       overflow: 'hidden'
     }}>
-      {/* LMS Header */}
       <header style={{
         height: '70px',
         backgroundColor: 'var(--bg-card)',
@@ -399,8 +382,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 30px',
-        zIndex: 100,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+        zIndex: 100
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button
@@ -454,7 +436,6 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
       </header>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Curriculum Sidebar */}
         <aside style={{
           width: isSidebarOpen ? '320px' : '0',
           backgroundColor: 'var(--bg-card)',
@@ -480,8 +461,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                   backgroundColor: currentSlideIndex === idx ? 'var(--focus-ring)' : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  transition: 'background 0.2s'
+                  gap: '12px'
                 }}
               >
                 <div style={{
@@ -506,7 +486,6 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
           </div>
         </aside>
 
-        {/* Toggle Sidebar Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           style={{
@@ -528,12 +507,10 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
             justifyContent: 'center',
             color: 'var(--text-primary)'
           }}
-          title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
         >
           {isSidebarOpen ? '←' : '→'}
         </button>
 
-        {/* Main Content Area - Vertical Slides Display */}
         <main style={{
           flex: 1,
           overflowY: 'auto',
@@ -568,7 +545,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                 {currentSlide[language].title}
               </h2>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               {showWelcome && renderWelcomeScreen()}
               {showCompletion && renderCompletionScreen()}
               {!showWelcome && !showCompletion && renderContent()}
@@ -590,7 +567,9 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                   borderRadius: '10px',
                   color: showWelcome ? '#ccc' : '#555',
                   cursor: showWelcome ? 'not-allowed' : 'pointer',
-                  fontWeight: '600'
+                  fontWeight: '600',
+                  border: 'none',
+                  background: 'none'
                 }}
               >
                 {language === 'ar' ? '← السابق' : '← Previous'}
@@ -607,8 +586,7 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
                   cursor: 'pointer',
                   fontWeight: 'bold',
                   fontSize: '1.1rem',
-                  boxShadow: `0 6px 20px ${unitColor}40`,
-                  transition: 'transform 0.2s, box-shadow 0.2s'
+                  boxShadow: `0 6px 20px ${unitColor}40`
                 }}
               >
                 {showWelcome 
@@ -633,24 +611,9 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        aside::-webkit-scrollbar {
-          width: 6px;
-        }
-        aside::-webkit-scrollbar-thumb {
-          background-color: #e1e8ed;
-          border-radius: 10px;
-        }
-        main::-webkit-scrollbar {
-          width: 8px;
-        }
-        main::-webkit-scrollbar-thumb {
-          background-color: #d1d8dd;
-          border-radius: 10px;
-        }
       `}} />
     </div>
   );
 };
 
 export default LectureView;
-

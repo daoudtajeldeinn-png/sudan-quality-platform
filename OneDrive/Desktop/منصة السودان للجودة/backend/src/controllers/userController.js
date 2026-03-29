@@ -50,7 +50,22 @@ const syncUserStats = async (req, res) => {
   }
 };
 
+// الحصول على القائمة المتصدرة (Leaderboard)
+const getLeaderboard = async (req, res) => {
+  try {
+    const topUsers = await User.find({}, 'displayName xp level photoURL')
+      .sort({ xp: -1 })
+      .limit(10);
+    
+    res.json(topUsers);
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+    res.status(500).json({ error: "فشل جلب قائمة المتصدرين" });
+  }
+};
+
 module.exports = {
   getUserProfile,
-  syncUserStats
+  syncUserStats,
+  getLeaderboard
 };

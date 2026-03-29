@@ -8,4 +8,7 @@ router.get('/profile/:userId', userController.getUserProfile);
 // POST /api/user/sync/:userId - مزامنة التقدم (XP, Badges, etc)
 router.post('/sync/:userId', userController.syncUserStats);
 
+// GET /api/user/leaderboard - قائمة المتصدرين
+router.get('/leaderboard', userController.getLeaderboard);
+
 module.exports = router;

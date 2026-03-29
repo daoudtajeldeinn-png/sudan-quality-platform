@@ -5,7 +5,7 @@
     height: 794px;
     position: relative;
     background-color: #fff;
-    font-family: 'Inter', 'Amiri', 'Segoe UI', Tahoma, sans-serif;
+    font-family: 'Inter', 'Amiri', 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     color: #1a202c;
     overflow: hidden;
     margin: 0;
@@ -120,5 +120,5 @@
 /* RTL Support */
 .rtl-cert {
     direction: rtl;
-    font-family: 'Amiri', serif;
+    font-family: 'Amiri', 'IBM Plex Sans Arabic', serif;
 }

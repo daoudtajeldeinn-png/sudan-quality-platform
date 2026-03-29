@@ -259,11 +259,15 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
     const element = document.getElementById('certificate-template');
     
     try {
-      // Ensure the hidden element is briefly visible for capture or use a scale factor
+      // Ensure fonts are ideally loaded by this point; with scale and useCORS, html2canvas should see them.
+      // Small delay can help ensure the engine has calculated the layout for the off-screen element
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution
         useCORS: true,
-        logging: false,
+        logging: false, // Set to true if debugging is needed
+        letterRendering: true, // Can help with specific font issues
         backgroundColor: '#ffffff'
       });
       
@@ -271,10 +275,11 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'px',
-        format: [canvas.width, canvas.height]
+        format: [canvas.width, canvas.height],
+        hotfixes: ["px_scaling"] // Important for consistent pixel sizes
       });
       
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height, undefined, 'FAST');
       const filename = `Certificate_${unitId}_${certName.replace(/\s+/g, '_')}.pdf`;
       pdf.save(filename);
       
@@ -587,11 +592,13 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
 
         {/* Hidden Certificate Template for PDF Rendering */}
         <div id="certificate-template" className={`certificate-container ${language === 'ar' ? 'rtl-cert' : ''}`} style={{ 
-          position: 'fixed', 
-          top: '-2000px', 
-          left: '-2000px',
+          position: 'absolute', // Absolute instead of Fixed to avoid viewport clipping
+          top: '-9999px', // Far off-screen
+          left: '0',
           width: '1123px',
-          height: '794px'
+          height: '794px',
+          zIndex: -1,
+          opacity: 1 // Must be 1 for capture
         }}>
           <img src={certBg} className="certificate-bg" alt="bg" />
           <div className="certificate-content">
