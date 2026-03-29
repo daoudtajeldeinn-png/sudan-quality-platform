@@ -1,66 +1,47 @@
-const admin = require('firebase-admin');
+const Certificate = require('../models/Certificate');
 
-// Initialize Firebase Admin if not already
-function initFirebaseAdmin() {
-  if (admin.apps && admin.apps.length) return admin.app();
-
-  if (process.env.FIREBASE_ADMIN_JSON) {
-    try {
-      const cred = JSON.parse(process.env.FIREBASE_ADMIN_JSON);
-      return admin.initializeApp({ credential: admin.credential.cert(cred) });
-    } catch (e) {
-      console.warn('FIREBASE_ADMIN_JSON parse error:', e.message);
-    }
-  }
-
+// Create a certificate (backend-only)
+exports.createCertificate = async (req, res) => {
   try {
-    return admin.initializeApp();
-  } catch (e) {
-    console.warn('Firebase Admin init failed:', e.message);
-    return null;
+    const { userId, userName, unitId, unitName, score, percentage } = req.body;
+    if (!userId || !unitId) return res.status(400).json({ error: 'userId and unitId required' });
+
+    const certNumber = `SQP-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || ''}/verify?id=${certNumber}`;
+
+    const cert = new Certificate({ userId, userName, unitId, unitName, score, percentage, certNumber, verifyUrl });
+    await cert.save();
+    return res.json({ success: true, certificate: cert });
+  } catch (err) {
+    console.error('createCertificate error', err);
+    return res.status(500).json({ error: 'internal' });
   }
-}
+};
 
-const app = initFirebaseAdmin();
-const db = app ? admin.firestore() : null;
-
+// Verify by number
 exports.verifyByNumber = async (req, res) => {
-  const certNumber = req.query.certNumber || req.query.id;
-  if (!certNumber) return res.status(400).json({ error: 'certNumber required' });
-
-  if (!db) return res.status(500).json({ error: 'Firestore not initialized' });
-
   try {
-    const certsRef = db.collection('certificates');
-    const snapshot = await certsRef.where('certNumber', '==', certNumber).where('status', '==', 'active').limit(1).get();
-    if (snapshot.empty) return res.status(404).json({ found: false });
-    const doc = snapshot.docs[0];
-    const data = doc.data();
-    return res.json({ found: true, id: doc.id, data });
+    const certNumber = req.query.certNumber || req.query.id;
+    if (!certNumber) return res.status(400).json({ error: 'certNumber required' });
+
+    const cert = await Certificate.findOne({ certNumber, status: 'active' }).lean();
+    if (!cert) return res.status(404).json({ found: false });
+    return res.json({ found: true, id: cert._id, data: cert });
   } catch (err) {
     console.error('verifyByNumber error', err);
     return res.status(500).json({ error: 'internal' });
   }
 };
 
+// Check by user and unit
 exports.checkUserCertificate = async (req, res) => {
-  const { userId, unitId } = req.query;
-  if (!userId || !unitId) return res.status(400).json({ error: 'userId and unitId required' });
-
-  if (!db) return res.status(500).json({ error: 'Firestore not initialized' });
-
   try {
-    const certsRef = db.collection('certificates');
-    const snapshot = await certsRef
-      .where('userId', '==', userId)
-      .where('unitId', '==', unitId)
-      .where('status', '==', 'active')
-      .limit(1)
-      .get();
+    const { userId, unitId } = req.query;
+    if (!userId || !unitId) return res.status(400).json({ error: 'userId and unitId required' });
 
-    if (snapshot.empty) return res.json({ found: false });
-    const data = snapshot.docs[0].data();
-    return res.json({ found: true, data });
+    const cert = await Certificate.findOne({ userId, unitId, status: 'active' }).lean();
+    if (!cert) return res.json({ found: false });
+    return res.json({ found: true, data: cert });
   } catch (err) {
     console.error('checkUserCertificate error', err);
     return res.status(500).json({ error: 'internal' });

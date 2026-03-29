@@ -151,11 +151,13 @@ app.use((req, res, next) => {
 });
 
 const userRoutes = require('./src/routes/userRoutes');
+const certificateRoutes = require('./src/routes/certificateRoutes');
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/certificates', certificateRoutes);
 app.use('/api/certificates', certificateRoutes);
 
 app.get('/', (req, res) => {
