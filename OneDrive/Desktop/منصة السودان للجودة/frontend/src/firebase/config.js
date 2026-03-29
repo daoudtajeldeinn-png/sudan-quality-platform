@@ -1,6 +1,7 @@
 ﻿import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from 'firebase/firestore';
 
 // Sudan Quality Platform Configuration
 const firebaseConfig = {
@@ -19,4 +20,6 @@ const analytics = getAnalytics(app);
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
+// Initialize Firestore and export
+export const db = getFirestore(app);
 export default app;
