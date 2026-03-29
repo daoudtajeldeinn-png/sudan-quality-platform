@@ -134,6 +134,15 @@ export const translations = {
         perfectScoreBadge: 'وسام الدرجة الكاملة',
         sudanExpertBadge: 'وسام خبير السودان',
         speedLearnerBadge: 'وسام المتعلم السريع',
+        sectionNmpb: 'الرقابة الدوائية (NMPB)',
+        sectionBasic: 'المستوى الأساسي (Basic)',
+        sectionIntermediate: 'المستوى المتوسط (Intermediate)',
+        adv_gmp: 'ممارسات التصنيع المتقدمة',
+        adv_glp: 'تحليل بيانات GLP',
+        adv_iso_17025: 'التطبيق العملي لـ ISO/IEC',
+        adv_validation: 'التحقق المتقدم',
+        adv_qrm: 'تطبيقات QRM',
+        adv_gdp: 'أساسيات سلسلة التبريد',
     },
     en: {
         // ... same structure for English
@@ -248,6 +257,15 @@ export const translations = {
         perfectScoreBadge: 'Perfect Score Badge',
         sudanExpertBadge: 'Sudan Expert Badge',
         speedLearnerBadge: 'Speed Learner Badge',
+        sectionNmpb: 'NMPB Regulatory',
+        sectionBasic: 'Basic Requirements',
+        sectionIntermediate: 'Intermediate Level',
+        adv_gmp: 'Advanced GMP',
+        adv_glp: 'Adv. GLP Data Analysis',
+        adv_iso_17025: 'Practical ISO 17025',
+        adv_validation: 'Advanced Validation',
+        adv_qrm: 'Applied QRM',
+        adv_gdp: 'Cold Chain GDP',
     }
 };
 

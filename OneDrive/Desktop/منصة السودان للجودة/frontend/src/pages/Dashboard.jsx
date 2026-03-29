@@ -8,6 +8,18 @@ import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
 
+// Unit grouping
+const NMPB_UNITS = ['nmpb-reg'];
+const BASIC_UNITS = [
+  'gmp-intro', 'glp-basics', 'iso-17025', 'ich-guidelines',
+  'validation-qualification', 'data-integrity', 'qrm-basics',
+  'gdp-basics', 'ich-q10', 'sterile-annex1', 'gamp5-basics',
+  'batch-records'
+];
+const INTERMEDIATE_UNITS = [
+  'adv-gmp', 'adv-glp', 'adv-iso-17025', 'adv-validation', 'adv-qrm', 'adv-gdp'
+];
+
 // Unit icons mapping - visual icons for each unit
 const UNIT_ICONS = {
   'gmp-intro': { icon: '🏭', color: '#28a745', title: { ar: 'مقدمة في GMP', en: 'Intro to GMP' } },
@@ -23,6 +35,12 @@ const UNIT_ICONS = {
   'gamp5-basics': { icon: '💻', color: '#343a40', title: { ar: 'GAMP 5', en: 'GAMP 5' } },
   'batch-records': { icon: '📝', color: '#6610f2', title: { ar: 'سجلات التشغيل', en: 'Batch Records' } },
   'nmpb-reg': { icon: '🇸🇩', color: '#009688', title: { ar: 'الرقابة الدوائية', en: 'NMPB Regulatory' } },
+  'adv-gmp': { icon: '🏭+', color: '#28a745', title: { ar: 'ممارسات التصنيع المتقدمة', en: 'Adv. GMP' } },
+  'adv-glp': { icon: '🔬+', color: '#007bff', title: { ar: 'تحليل بيانات GLP', en: 'Adv. GLP' } },
+  'adv-iso-17025': { icon: '📊+', color: '#ffc107', title: { ar: 'التطبيق العملي لـ ISO', en: 'Adv. ISO' } },
+  'adv-validation': { icon: '✅+', color: '#20c997', title: { ar: 'التحقق المتقدم', en: 'Adv. Validation' } },
+  'adv-qrm': { icon: '⚠️+', color: '#e83e8c', title: { ar: 'تطبيقات QRM', en: 'Adv. QRM' } },
+  'adv-gdp': { icon: '🚚+', color: '#fd7e14', title: { ar: 'سلسلة التبريد', en: 'Adv. GDP' } },
 };
 
 const Dashboard = ({ user, onLogout }) => {
@@ -35,20 +53,14 @@ const Dashboard = ({ user, onLogout }) => {
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
   const [viewMode, setViewMode] = useState('academy'); // 'academy' or 'toolkit'
+  const [currentSection, setCurrentSection] = useState('basic'); // 'nmpb', 'basic', 'intermediate'
   const [userProgress, setUserProgress] = useState({
-    'gmp-intro': 0,
-    'glp-basics': 0,
-    'iso-17025': 0,
-    'ich-guidelines': 0,
-    'validation-qualification': 0,
-    'data-integrity': 0,
-    'qrm-basics': 0,
-    'gdp-basics': 0,
-    'ich-q10': 0,
-    'sterile-annex1': 0,
-    'gamp5-basics': 0,
-    'batch-records': 0,
-    'nmpb-reg': 0
+    'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
+    'validation-qualification': 0, 'data-integrity': 0, 'qrm-basics': 0,
+    'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
+    'batch-records': 0, 'nmpb-reg': 0,
+    'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
+    'adv-qrm': 0, 'adv-gdp': 0
   });
 
   const unitIds = Object.keys(UNIT_ICONS);
@@ -102,7 +114,8 @@ const Dashboard = ({ user, onLogout }) => {
     logAuditTrail('eventPledge');
   };
 
-  const units = [
+  const allUnitsDefinition = [
+    { id: 'nmpb-reg', title: t('nmpbReg'), subtitle: t('unit1'), color: '#009688' },
     { id: 'gmp-intro', title: t('introGMP'), subtitle: t('unit1'), color: '#28a745' },
     { id: 'glp-basics', title: t('glpBasics'), subtitle: t('unit2'), color: '#007bff' },
     { id: 'iso-17025', title: t('iso17025'), subtitle: t('unit3'), color: '#ffc107' },
@@ -115,8 +128,16 @@ const Dashboard = ({ user, onLogout }) => {
     { id: 'sterile-annex1', title: t('annex1'), subtitle: t('unit10'), color: '#6c757d' },
     { id: 'gamp5-basics', title: t('gamp5'), subtitle: t('unit11'), color: '#343a40' },
     { id: 'batch-records', title: t('batchRecords'), subtitle: t('unit12'), color: '#6610f2' },
-    { id: 'nmpb-reg', title: t('nmpbReg') || 'NMPB Regulatory', subtitle: t('unit13') || 'Phase 8', color: '#009688' },
+    { id: 'adv-gmp', title: t('adv_gmp'), subtitle: t('unit1'), color: '#28a745' },
+    { id: 'adv-glp', title: t('adv_glp'), subtitle: t('unit2'), color: '#007bff' },
+    { id: 'adv-iso-17025', title: t('adv_iso_17025'), subtitle: t('unit3'), color: '#ffc107' },
+    { id: 'adv-validation', title: t('adv_validation'), subtitle: t('unit4'), color: '#20c997' },
+    { id: 'adv-qrm', title: t('adv_qrm'), subtitle: t('unit5'), color: '#e83e8c' },
+    { id: 'adv-gdp', title: t('adv_gdp'), subtitle: t('unit6'), color: '#fd7e14' },
   ];
+
+  const currentSectionUnits = currentSection === 'nmpb' ? NMPB_UNITS : currentSection === 'basic' ? BASIC_UNITS : INTERMEDIATE_UNITS;
+  const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
 
   const handleStartUnit = (unitId) => {
     setCurrentUnit(unitId);
@@ -148,12 +169,12 @@ const Dashboard = ({ user, onLogout }) => {
       };
 
       // If this was the last unit needed to complete the program
-      const allOthersPassed = Object.entries(newProgress)
-        .filter(([id]) => id !== unitId && id !== 'completionDate')
-        .every(([_, s]) => s >= 90);
+      const allOthersPassed = currentSectionUnits
+        .filter(id => id !== unitId)
+        .every(id => (newProgress[id] || 0) >= 90);
 
       if (isNewSuccess && allOthersPassed) {
-        newProgress.completionDate = new Date().toISOString();
+        newProgress[`completionDate_${currentSection}`] = new Date().toISOString();
       }
 
       // Save to localStorage
@@ -164,8 +185,8 @@ const Dashboard = ({ user, onLogout }) => {
     setCurrentUnit(null);
   };
 
-  const allPassed = unitIds.every(id => (userProgress[id] || 0) >= 90);
-  const totalAverage = Math.round(unitIds.reduce((a, id) => a + (userProgress[id] || 0), 0) / (unitIds.length || 1));
+  const allPassed = currentSectionUnits.every(id => (userProgress[id] || 0) >= 90);
+  const totalAverage = Math.round(currentSectionUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (currentSectionUnits.length || 1));
 
   const DeveloperProfileModal = () => (
     <div style={{
@@ -290,7 +311,12 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
 
             <div style={{ marginTop: '160px' }}>
-              <h1 style={{ fontSize: '3.8rem', color: '#1a5928', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px' }}>{t('certTitle')}</h1>
+              <h1 style={{ fontSize: '3.8rem', color: '#1a5928', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                {t('certTitle')}
+                <div style={{ fontSize: '1.8rem', color: '#dc3545', marginTop: '10px' }}>
+                  {currentSection === 'nmpb' ? t('sectionNmpb') : currentSection === 'intermediate' ? t('sectionIntermediate') : t('sectionBasic')}
+                </div>
+              </h1>
               <div style={{ width: '220px', height: '3px', backgroundColor: '#d4af37', margin: '20px auto' }}></div>
               <div style={{ margin: '30px 0' }}>
                 <p style={{ fontSize: '1.5rem', color: '#555', marginBottom: '15px', fontWeight: 'bold' }}>{t('certIntro')}</p>
@@ -326,9 +352,9 @@ const Dashboard = ({ user, onLogout }) => {
             <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
               <div style={{ textAlign: 'right', color: '#444' }}>
                 <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                  {t('dateLabel')}: {userProgress.completionDate ? new Date(userProgress.completionDate).toLocaleDateString() : new Date().toLocaleDateString()}
+                  {t('dateLabel')}: {userProgress[`completionDate_${currentSection}`] ? new Date(userProgress[`completionDate_${currentSection}`]).toLocaleDateString() : new Date().toLocaleDateString()}
                 </p>
-                <p style={{ fontSize: '0.9rem', fontWeight: 'bold', letterSpacing: '1px', color: '#666' }}>ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress.completionDate || new Date()).getTime().toString().substring(8)}`}</p>
+                <p style={{ fontSize: '0.9rem', fontWeight: 'bold', letterSpacing: '1px', color: '#666' }}>ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress[`completionDate_${currentSection}`] || new Date()).getTime().toString().substring(8)}`}</p>
                 <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <img src={LOGO_PATH} alt="Small Logo" style={{ width: '35px', height: '35px', opacity: 0.8 }} />
                   <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 'bold' }}>Built by {t('developerName')}</span>
@@ -595,9 +621,29 @@ const Dashboard = ({ user, onLogout }) => {
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px', alignItems: 'start' }}>
               {/* Visual Icon Grid for Units */}
               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
-                <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ marginBottom: '15px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '1.5rem' }}>📚</span> {t('availableUnits')}
                 </h3>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={() => setCurrentSection('nmpb')}
+                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'nmpb' ? 'none' : '2px solid #009688', backgroundColor: currentSection === 'nmpb' ? '#009688' : 'transparent', color: currentSection === 'nmpb' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
+                  >
+                    {t('sectionNmpb')}
+                  </button>
+                  <button 
+                    onClick={() => setCurrentSection('basic')}
+                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'basic' ? 'none' : '2px solid #007bff', backgroundColor: currentSection === 'basic' ? '#007bff' : 'transparent', color: currentSection === 'basic' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
+                  >
+                    {t('sectionBasic')}
+                  </button>
+                  <button 
+                    onClick={() => setCurrentSection('intermediate')}
+                    style={{ padding: '8px 20px', borderRadius: '20px', border: currentSection === 'intermediate' ? 'none' : '2px solid #e83e8c', backgroundColor: currentSection === 'intermediate' ? '#e83e8c' : 'transparent', color: currentSection === 'intermediate' ? 'white' : 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.3s' }}
+                  >
+                    {t('sectionIntermediate')}
+                  </button>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                   {units.map((unit) => {
                     const unitIcon = UNIT_ICONS[unit.id] || { icon: '📖', color: '#28a745' };
