@@ -82,5 +82,33 @@ export const apiService = {
       console.error('Check answer error:', error);
       throw error;
     }
+  },
+
+  // الحصول على الملف الشخصي الكامل (XP, Level, Badges)
+  getUserProfile: async (userId) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/profile/${userId}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Get profile error:', error);
+      throw error;
+    }
+  },
+
+  // مزامنة البيانات مع السيرفر
+  syncUserStats: async (userId, data) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/sync/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Sync stats error:', error);
+      throw error;
+    }
   }
 };

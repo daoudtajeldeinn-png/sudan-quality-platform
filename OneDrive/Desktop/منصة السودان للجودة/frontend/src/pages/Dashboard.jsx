@@ -3,6 +3,9 @@ import Quiz from '../components/Quiz';
 import LectureView from '../components/LectureView';
 import FMEATool from '../components/FMEATool';
 import BatchSignSim from '../components/BatchSignSim';
+import StabilityCalculator from '../components/StabilityCalculator';
+import SamplingCalculator from '../components/SamplingCalculator';
+import InspectionChecklist from '../components/InspectionChecklist';
 import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
@@ -818,9 +821,12 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           </div>
         ) : viewMode === 'toolkit' ? (
-          <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px' }}>
+          <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' }}>
             <FMEATool />
             <BatchSignSim />
+            <StabilityCalculator />
+            <SamplingCalculator />
+            <InspectionChecklist />
           </div>
         ) : (
           /* Analytics View */

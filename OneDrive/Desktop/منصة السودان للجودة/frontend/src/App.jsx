@@ -196,7 +196,7 @@ function AppContentWrapper() {
   if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>جاري التحميل...</div>;
 
   return (
-    <GamificationProvider userEmail={user?.email}>
+    <GamificationProvider userId={user?.uid} userEmail={user?.email}>
       <AppContent user={user} setUser={setUser} />
     </GamificationProvider>
   );

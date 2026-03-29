@@ -1,0 +1,21 @@
+{
+  "name": "Sudan Quality Platform",
+  "short_name": "SQP",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#28a745",
+  "description": "Training portal for Pharmaceutical Quality in Sudan.",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
