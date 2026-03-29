@@ -110,5 +110,17 @@ export const apiService = {
       console.error('Sync stats error:', error);
       throw error;
     }
+  },
+
+  // الحصول على القائمة المتصدرة (Leaderboard)
+  getLeaderboard: async () => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/leaderboard`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Get leaderboard error:', error);
+      throw error;
+    }
   }
 };

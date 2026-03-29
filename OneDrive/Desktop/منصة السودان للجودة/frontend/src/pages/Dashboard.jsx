@@ -66,6 +66,7 @@ const Dashboard = ({ user, onLogout }) => {
     'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
     'adv-qrm': 0, 'adv-gdp': 0
   });
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const unitIds = Object.keys(UNIT_ICONS);
   const [unitStates, setUnitStates] = useState({}); // { unitId: { lectureFinished: bool } }
@@ -73,32 +74,63 @@ const Dashboard = ({ user, onLogout }) => {
   const LOGO_PATH = pharmaLogo;
   const CERT_BG = certBg;
 
-  // Load progress and state from localStorage on mount
+  // Load progress and state from Backend + localStorage on mount
   useEffect(() => {
-    const savedProgress = localStorage.getItem(`sqp_progress_${user.email}`);
-    const savedStates = localStorage.getItem(`sqp_states_${user.email}`);
-    const pledgeSigned = localStorage.getItem(`sqp_pledge_${user.email}`);
+    const loadInitialData = async () => {
+      // 1. Initial Local Load (Fastest UI)
+      const savedProgress = localStorage.getItem(`sqp_progress_${user.email}`);
+      const savedStates = localStorage.getItem(`sqp_states_${user.email}`);
+      const pledgeSigned = localStorage.getItem(`sqp_pledge_${user.email}`);
 
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress);
-        setUserProgress(prev => ({ ...prev, ...parsed }));
-      } catch (e) { console.error('Error parsing progress', e); }
-    }
+      if (savedProgress) {
+        try {
+          const parsed = JSON.parse(savedProgress);
+          setUserProgress(prev => ({ ...prev, ...parsed }));
+        } catch (e) { console.error('Error parsing progress', e); }
+      }
+      if (savedStates) {
+        try { setUnitStates(JSON.parse(savedStates)); } catch (e) {}
+      }
+      if (!pledgeSigned) setShowPledge(true);
 
-    if (savedStates) {
-      try {
-        const parsed = JSON.parse(savedStates);
-        setUnitStates(parsed);
-      } catch (e) { console.error('Error parsing unit states', e); }
-    }
+      // 2. Remote Backend Load (Reliability)
+      if (user.uid) {
+        try {
+          const profile = await apiService.getUserProfile(user.uid);
+          if (profile && profile.progress) {
+            // Reconcile: High-score wins
+            const remoteProgress = profile.progress.unitScores || {};
+            setUserProgress(prev => {
+              const reconciled = { ...prev };
+              Object.keys(remoteProgress).forEach(unitId => {
+                reconciled[unitId] = Math.max(prev[unitId] || 0, remoteProgress[unitId]);
+              });
+              return reconciled;
+            });
+            
+            // Reconcile unit states if available
+            if (profile.progress.unitStates) {
+              setUnitStates(prev => ({ ...profile.progress.unitStates, ...prev }));
+            }
+          }
+        } catch (error) {
+          console.warn('Backend load failed, continuing with local data', error);
+        }
+      }
+    };
 
-    if (!pledgeSigned) {
-      setShowPledge(true);
-    }
-
+    loadInitialData();
     logAuditTrail('eventLogin');
-  }, [user.email]);
+  }, [user.uid, user.email]);
+
+  // Fetch leaderboard on viewMode change to Analytics
+  useEffect(() => {
+    if (viewMode === 'academy' && !currentTrack) {
+      apiService.getLeaderboard()
+        .then(data => setLeaderboard(data))
+        .catch(err => console.error('Leaderboard fetch failed', err));
+    }
+  }, [viewMode, currentTrack]);
 
   const logAuditTrail = (eventType, unitId = null) => {
     const log = {
@@ -182,8 +214,19 @@ const Dashboard = ({ user, onLogout }) => {
         newProgress[`completionDate_academy`] = new Date().toISOString();
       }
 
-      // Save to localStorage
+      // Save to localStorage and Backend
       localStorage.setItem(`sqp_progress_${user.email}`, JSON.stringify(newProgress));
+      
+      if (user.uid) {
+        apiService.syncUserStats(user.uid, {
+          progress: {
+            unitScores: newProgress,
+            unitStates: unitStates,
+            lastPlayed: unitId,
+            totalScore: Object.values(newProgress).reduce((a, b) => a + b, 0)
+          }
+        }).catch(err => console.error('Sync failed:', err));
+      }
       return newProgress;
     });
 
@@ -508,6 +551,7 @@ const Dashboard = ({ user, onLogout }) => {
           <div className="user-profile">
             {user.photoURL && <img src={user.photoURL} alt="P" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
             <span style={{ fontWeight: '500' }}>{user.displayName || user.email}</span>
+            <span title="Cloud Sync Active" style={{ fontSize: '0.8rem', marginLeft: '8px', opacity: 0.8 }}>☁️</span>
           </div>
 
           <button onClick={onLogout} className="btn-logout">
@@ -896,33 +940,33 @@ const Dashboard = ({ user, onLogout }) => {
                   <span>🥇</span> {t('leaderboard')}
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {[
-                    { name: 'Omer F.', level: 12, xp: 14500, avatar: '👴' },
-                    { name: 'Sara M.', level: 10, xp: 12200, avatar: '👩' },
-                    { name: 'Khalid A.', level: 9, xp: 10800, avatar: '👨' },
-                    { name: language === 'ar' ? 'أنت' : 'You', level: level, xp: xp, avatar: '⭐', isUser: true },
-                    { name: 'Muna H.', level: 7, xp: 8500, avatar: '👩' },
-                  ].sort((a, b) => b.xp - a.xp).map((entry, idx) => (
-                    <div key={idx} style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '12px', 
-                      padding: '10px', 
-                      borderRadius: '12px',
-                      backgroundColor: entry.isUser ? 'rgba(40,167,69,0.1)' : 'transparent',
-                      border: entry.isUser ? '1px solid #28a745' : '1px solid transparent'
-                    }}>
-                      <div style={{ fontWeight: 'bold', width: '25px', color: idx === 0 ? '#ffc107' : 'var(--text-secondary)' }}>#{idx + 1}</div>
-                      <div style={{ fontSize: '1.2rem' }}>{entry.avatar}</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{entry.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Lvl {entry.level} • {entry.xp} XP</div>
+                  {leaderboard.length > 0 ? (
+                    leaderboard.sort((a, b) => b.xp - a.xp).map((entry, idx) => (
+                      <div key={idx} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px', 
+                        padding: '10px', 
+                        borderRadius: '12px',
+                        backgroundColor: entry.userId === user.uid ? 'rgba(40,167,69,0.1)' : 'transparent',
+                        border: entry.userId === user.uid ? '1px solid #28a745' : '1px solid transparent'
+                      }}>
+                        <div style={{ fontWeight: 'bold', width: '25px', color: idx === 0 ? '#ffc107' : 'var(--text-secondary)' }}>#{idx + 1}</div>
+                        <div style={{ fontSize: '1.2rem' }}>{entry.photoURL ? <img src={entry.photoURL} style={{ width: '24px', height: '24px', borderRadius: '50%' }} /> : (entry.isUser || entry.userId === user.uid ? '⭐' : '👤')}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{entry.displayName || (entry.userId === user.uid ? t('you') : 'Trainee')}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Lvl {entry.level || 1} • {entry.xp || 0} XP</div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+                      {language === 'ar' ? 'جاري تحميل المتصدرين...' : 'Loading Leaderboard...'}
                     </div>
-                  ))}
+                  )}
                 </div>
                 <div style={{ marginTop: '20px', padding: '15px', backgroundColor: 'var(--bg-body)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  💡 {language === 'ar' ? 'هذه لوحة صدارة تجريبية للمتدربين المتواجدين حالياً.' : 'This is a simulated leaderboard for active trainees.'}
+                  💡 {language === 'ar' ? 'نتائج بقية المتدربين تظهر هنا بناءً على أدائهم الفعلي.' : 'Live trainee rankings based on actual platform performance.'}
                 </div>
               </section>
             </div>
