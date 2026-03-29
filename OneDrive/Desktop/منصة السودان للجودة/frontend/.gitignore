@@ -13,6 +13,13 @@ dist
 dist-ssr
 *.local
 
+# Ignore OneDrive and user-specific files
+OneDrive/
+*.env
+*.local.env
+AppData/
+.vscode/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
