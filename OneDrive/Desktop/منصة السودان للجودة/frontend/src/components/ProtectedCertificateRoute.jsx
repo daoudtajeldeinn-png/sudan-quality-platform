@@ -25,5 +25,18 @@ export const ProtectedCertificateRoute = ({ children }) => {
   }, [unitId, navigate]);
 
   if (loading) return <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>Ã«—Ì «· Õﬁﬁ...</div>;
-  return allowed ? children : null;
+  if (allowed) return children;
+
+  // If not allowed, show a friendly message (navigation should already redirect to quiz)
+  return (
+    <div style={{display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',height:'70vh',padding:20}}>
+      <h2 style={{color:'#dc2626'}}>€Ì— „”„ÊÕ »«·œŒÊ·</h2>
+      <p style={{color:'#6b7280',textAlign:'center',maxWidth:600}}>
+        Ì»œÊ √‰ﬂ ·„  ıﬂ„· «·„ ÿ·»«  «··«“„… ··Õ’Ê· ⁄·Ï «·‘Â«œ… √Ê «·‰”»… √ﬁ· „‰ «·Õœ «·„ÿ·Ê». ”Ì „  ÊÃÌÂﬂ ·«Ã Ì«“ «·«Œ »«—.
+      </p>
+      <button onClick={() => navigate(`/unit/${unitId}/quiz`)} style={{marginTop:20,padding:'10px 20px',backgroundColor:'#10b981',color:'white',border:'none',borderRadius:8,cursor:'pointer'}}>
+        «·«‰ ﬁ«· ··«Œ »«—
+      </button>
+    </div>
+  );
 }
