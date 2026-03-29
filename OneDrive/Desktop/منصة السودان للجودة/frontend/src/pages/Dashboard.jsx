@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import Quiz from '../components/Quiz';
 import LectureView from '../components/LectureView';
 import FMEATool from '../components/FMEATool';
@@ -247,6 +249,21 @@ const Dashboard = ({ user, onLogout }) => {
   const CertificateModal = ({ isSample = false }) => {
     const [showSurvey, setShowSurvey] = useState(!isSample && !localStorage.getItem(`sqp_survey_${user.email}`));
 
+    const downloadCertificatePDF = () => {
+      const input = document.getElementById('certificate-printable');
+      if (!input) return;
+      
+      html2canvas(input, { scale: 2, useCORS: true, logging: false }).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${isSample ? 'SAMPLE_' : ''}Sudan_Quality_Platform_Certificate.pdf`);
+        logAuditTrail('eventCert');
+      });
+    };
+
     if (showSurvey) {
       return (
         <div style={{
@@ -396,11 +413,12 @@ const Dashboard = ({ user, onLogout }) => {
           </div>
 
           <div className="no-print" style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '15px' }}>
-            {!isSample && (
-              <button onClick={() => { window.print(); logAuditTrail('eventCert'); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,168,120,0.3)' }}>
-                {t('printCert')}
-              </button>
-            )}
+            <button onClick={downloadCertificatePDF} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-navy)', color: 'white', border: 'gold 1px solid', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+              📄 {language === 'ar' ? 'تحميل PDF (رسمي)' : 'Download PDF (Official)'}
+            </button>
+            <button onClick={() => { window.print(); logAuditTrail('eventCert'); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+              {t('printCert')}
+            </button>
             <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
               {t('back')}
             </button>
