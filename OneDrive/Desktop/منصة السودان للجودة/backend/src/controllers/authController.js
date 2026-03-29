@@ -1,4 +1,4 @@
-﻿const User = require("../models/User");
+const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -22,13 +22,27 @@ const { email, displayName = email.split('@')[0] } = req.body;
     
     // إنشاء مستخدم جديد
     const user = new User({
-      userId: `user_${Date.now()}`,
+      userId: req.body.userId || `user_${Date.now()}`,
       email,
       displayName,
+      photoURL: req.body.photoURL || null,
       password: hashedPassword,
-      photoURL: null,
       createdAt: new Date(),
-      lastLogin: new Date()
+      lastLogin: new Date(),
+      xp: 0,
+      level: 1,
+      badges: [],
+      stats: {
+        totalQuizzes: 0,
+        perfectScores: 0,
+        lecturesCompleted: 0
+      },
+      progress: {
+        completedUnits: [],
+        currentUnit: null,
+        totalScore: 0,
+        certificates: []
+      }
     });
     
     await user.save();
