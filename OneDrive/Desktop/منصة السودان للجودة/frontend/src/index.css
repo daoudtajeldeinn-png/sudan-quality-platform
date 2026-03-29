@@ -1,38 +1,52 @@
 :root {
   /* Light Theme Variables */
-  --bg-color: #f8f9fa;
+  --bg-color: #f8fafc;
   --bg-card: #ffffff;
-  --text-primary: #2c3e50;
-  --text-secondary: #666666;
-  --border-color: #e9ecef;
-  --primary-color: #28a745;
-  --primary-hover: #1e7e34;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-color: #e2e8f0;
+  
+  /* Pharma Color System */
+  --pharma-navy: #0A1628;
+  --pharma-blue: #1B4F8A;
+  --pharma-gold: #C9A227;
+  --pharma-green: #00A878;
+  --regulatory-amber: #E67E22;
+  
+  --primary-color: #1B4F8A; /* Default: Pharma Blue */
+  --primary-hover: #143e6c;
+  
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.4);
   --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --focus-ring: rgba(40, 167, 69, 0.25);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --focus-ring: rgba(27, 79, 138, 0.25);
 }
 
 [data-theme='dark'] {
   /* Dark Theme Variables */
-  --bg-color: #0f172a;
-  --bg-card: #1e293b;
+  --bg-color: #0A1628;
+  --bg-card: #152740;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --border-color: #334155;
-  --primary-color: #10b981;
-  --primary-hover: #059669;
-  --glass-bg: rgba(30, 41, 59, 0.7);
+  --border-color: #1e3a5f;
+  
+  /* Dark mode uses Green as primary to pop against dark navy */
+  --primary-color: #00A878; 
+  --primary-hover: #008a63;
+  
+  --glass-bg: rgba(21, 39, 64, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
   --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
-  --focus-ring: rgba(16, 185, 129, 0.25);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --focus-ring: rgba(0, 168, 120, 0.25);
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', 'Inter', 'Segoe UI', Arial, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
   direction: rtl;

@@ -4,7 +4,7 @@ import { useGamification } from '../GamificationContext';
 import { apiService } from '../services/api';
 import { educationalContent } from '../data/content_new.js';
 
-const Quiz = ({ unitId, onQuizComplete }) => {
+const Quiz = ({ unitId, onQuizComplete, user }) => {
   const { language, t, theme } = useLanguage();
   const { addXp, awardBadge, updateStats, stats } = useGamification();
   const [questions, setQuestions] = useState([]);
@@ -32,9 +32,22 @@ const Quiz = ({ unitId, onQuizComplete }) => {
   };
 
   const loadQuestions = async () => {
+    // Session-based rotation via localStorage
+    const storageKey = `sqp_quiz_history_${unitId}${user ? '_' + (user.uid || user.email) : ''}`;
+    let excludeIds = [];
     try {
-      const response = await apiService.getQuestions(unitId);
+      const stored = localStorage.getItem(storageKey);
+      if (stored) excludeIds = JSON.parse(stored);
+    } catch (e) { console.warn('LocalStorage error:', e); }
+
+    try {
+      const userIdParam = user ? (user.uid || user.email) : null;
+      const response = await apiService.getQuestions(unitId, 10, userIdParam, excludeIds);
       if (response && response.length > 0) {
+        // Track seen questions for next time (useful for Demo Mode where DB history isn't saved)
+        const selectedIds = response.map(q => q._id);
+        localStorage.setItem(storageKey, JSON.stringify([...excludeIds, ...selectedIds]));
+
         setQuestions(processQuestions(response));
         setQuizState('active');
         setIsDemoMode(false);
@@ -58,8 +71,21 @@ const Quiz = ({ unitId, onQuizComplete }) => {
         return;
       }
 
-      // Select 10 random questions from the pool to prevent repetition
-      const randomSubset = shuffleArray(pool).slice(0, 10);
+      // Local rotation logic
+      let availableIds = pool.filter(id => !excludeIds.includes(id));
+      if (availableIds.length < 10 && pool.length >= 10) {
+        // Reset history if we run out but have enough overall
+        availableIds = [...pool];
+        excludeIds = [];
+      } else if (availableIds.length === 0) {
+        availableIds = [...pool];
+        excludeIds = [];
+      }
+
+      // Select up to 10 random questions
+      const randomSubset = shuffleArray(availableIds).slice(0, 10);
+      
+      localStorage.setItem(storageKey, JSON.stringify([...excludeIds, ...randomSubset]));
 
       const rawQuestions = randomSubset.map(id => {
         const q = educationalContent.allQuestions[id];

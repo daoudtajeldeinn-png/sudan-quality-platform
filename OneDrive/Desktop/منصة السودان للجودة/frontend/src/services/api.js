@@ -51,9 +51,15 @@ export const apiService = {
   },
 
   // الحصول على الأسئلة مع دعم الـ Demo Mode
-  getQuestions: async (unitId, count = 10) => {
+  getQuestions: async (unitId, count = 10, userId = null, excludeIds = []) => {
     try {
-      const response = await fetchWithTimeout(`${API_BASE_URL}/questions/${unitId}/${count}`);
+      let url = `${API_BASE_URL}/questions/rotate/${unitId}/${count}`;
+      const params = new URLSearchParams();
+      if (userId) params.append('userId', userId);
+      if (excludeIds && excludeIds.length > 0) params.append('excludeIds', excludeIds.join(','));
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const response = await fetchWithTimeout(url);
       if (!response.ok) throw new Error('Backend unreachable');
       return await response.json();
     } catch (error) {

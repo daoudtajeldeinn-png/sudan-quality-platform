@@ -292,6 +292,23 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
 
       return (
         <div key={slideKey} className="slide-content animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+          {currentSlide.regulatoryRef && (
+            <div style={{
+              backgroundColor: 'var(--bg-warning)',
+              border: '1px solid var(--border-warning)',
+              color: 'var(--text-warning)',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              marginBottom: '20px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span>⚖️</span> {currentSlide.regulatoryRef.code}
+            </div>
+          )}
           <div style={{
             display: 'flex',
             alignItems: 'center',

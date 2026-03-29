@@ -275,116 +275,130 @@ const Dashboard = ({ user, onLogout }) => {
     return (
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+        backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
         <div id="certificate-printable" style={{
-          backgroundColor: 'white', width: '100%', maxWidth: '1050px', minHeight: '850px',
+          backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '1050px', minHeight: '850px',
           padding: '60px 80px', borderRadius: '4px', position: 'relative',
-          border: '20px solid #d4af37', textAlign: 'center',
+          border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
+          textAlign: 'center',
           boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: 'rtl',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          fontFamily: "'IBM Plex Sans Arabic', 'IBM Plex Sans', serif"
         }}>
           {/* Subtle Watermark */}
           <div style={{
             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             width: '600px', height: '600px', backgroundImage: `url(${LOGO_PATH})`,
             backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
-            opacity: 0.015, pointerEvents: 'none', zIndex: 1
+            opacity: 0.03, pointerEvents: 'none', zIndex: 1
           }}></div>
 
           {isSample && (
             <div style={{
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-30deg)',
-              fontSize: '12rem', color: 'rgba(255,0,0,0.07)', fontWeight: 'bold', pointerEvents: 'none', zIndex: 10
+              fontSize: '12rem', color: 'rgba(230,126,34,0.07)', fontWeight: 'bold', pointerEvents: 'none', zIndex: 10
             }}>SAMPLE</div>
           )}
 
           <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+            {/* Header */}
             <div style={{ position: 'absolute', top: '-30px', right: '-40px', display: 'flex', alignItems: 'center', gap: '20px', zIndex: 100 }}>
-              <img src={LOGO_PATH} alt="Logo" style={{ width: '150px', height: '150px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))' }} />
-              <div style={{ textAlign: 'right', color: '#1a5928' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '2.4rem', lineHeight: '1.1' }}>{t('issuingAuthority')}</div>
-                <div style={{ fontSize: '1.2rem', opacity: 1, fontWeight: 'bold', color: '#dc3545' }}>Quality & Excellence Authority</div>
+              <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))' }} />
+              <div style={{ textAlign: 'right', color: 'var(--pharma-navy)' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{t('issuingAuthority')}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>Quality & Accreditation Board</div>
               </div>
             </div>
 
             <div style={{ marginTop: '160px' }}>
-              <h1 style={{ fontSize: '3.8rem', color: '#1a5928', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px' }}>
+              <h1 style={{ fontSize: '3.5rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
                 {t('certTitle')}
-                <div style={{ fontSize: '1.8rem', color: '#dc3545', marginTop: '10px' }}>
+                <div style={{ fontSize: '1.6rem', color: 'var(--regulatory-amber)', marginTop: '10px', fontWeight: 'bold' }}>
                   {currentSection === 'nmpb' ? t('sectionNmpb') : currentSection === 'intermediate' ? t('sectionIntermediate') : t('sectionBasic')}
                 </div>
               </h1>
-              <div style={{ width: '220px', height: '3px', backgroundColor: '#d4af37', margin: '20px auto' }}></div>
+              <div style={{ width: '250px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '20px auto' }}></div>
               <div style={{ margin: '30px 0' }}>
-                <p style={{ fontSize: '1.5rem', color: '#555', marginBottom: '15px', fontWeight: 'bold' }}>{t('certIntro')}</p>
-                <h2 style={{ fontSize: '3.8rem', color: '#000', fontFamily: '"Playfair Display", serif', fontWeight: 'bold', borderBottom: '2px solid #eee', display: 'inline-block', paddingBottom: '5px' }}>
+                <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '600' }}>{t('certIntro')}</p>
+                <h2 style={{ fontSize: '3.8rem', color: 'var(--pharma-blue)', fontFamily: "'IBM Plex Sans', serif", fontWeight: '700', display: 'inline-block' }}>
                   {isSample ? 'Ahmed Daoud Tajeldeinn' : (user.displayName || user.email.split('@')[0])}
                 </h2>
-                <div style={{ fontSize: '1.1rem', color: '#666', marginTop: '10px', fontWeight: 'bold' }}>
-                  Email: {isSample ? 'daoud.specialist@quality.sd' : user.email}
+                <div style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '5px', fontWeight: '500' }}>
+                  {isSample ? 'daoud.specialist@quality.sd' : user.email}
                 </div>
               </div>
-              <p style={{ fontSize: '1.4rem', margin: '25px auto', color: '#333', lineHeight: '1.6', maxWidth: '850px' }}>
+              <p style={{ fontSize: '1.4rem', margin: '25px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
                 {t('certDesc')}
               </p>
             </div>
 
+            {/* Results Grid */}
             <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px',
-              padding: '25px', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: '15px',
-              textAlign: 'right', border: '1px solid #d4af37', margin: '20px auto', maxWidth: '800px'
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px',
+              padding: '25px', backgroundColor: 'var(--bg-color)', borderRadius: '15px',
+              textAlign: 'right', border: '1px solid var(--border-color)', margin: '20px auto', width: '100%', maxWidth: '850px'
             }}>
               {units.map(u => (
-                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', padding: '6px 0', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#444' }}>{t(u.id.replaceAll('-', '_'))}</span>
-                  <span style={{ fontWeight: '900', color: '#1a5928', fontSize: '1rem' }}>%{isSample ? 100 : userProgress[u.id]}</span>
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-color)', padding: '8px 0', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{t(u.id.replaceAll('-', '_'))}</span>
+                  <span style={{ fontWeight: '800', color: 'var(--pharma-green)', fontSize: '1.1rem' }}>%{isSample ? 100 : userProgress[u.id]}</span>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', gridColumn: 'span 2', marginTop: '10px', paddingTop: '10px', borderTop: '2px solid #d4af37', fontSize: '1.8rem', fontWeight: '900', color: '#c53030' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gridColumn: '1 / -1', marginTop: '15px', paddingTop: '15px', borderTop: '2px solid var(--pharma-gold)', fontSize: '1.8rem', fontWeight: '900', color: 'var(--pharma-navy)' }}>
                 <span>{t('totalScore')}</span>
-                <span>%{isSample ? 100 : totalAverage}</span>
+                <span style={{ color: 'var(--pharma-green)' }}>%{isSample ? 100 : totalAverage}</span>
               </div>
             </div>
 
+            {/* Footer Signatures & QR */}
             <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
-              <div style={{ textAlign: 'right', color: '#444' }}>
-                <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '1.1rem' }}>
+              <div style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
+                <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1.1rem', color: 'var(--pharma-navy)' }}>
                   {t('dateLabel')}: {userProgress[`completionDate_${currentSection}`] ? new Date(userProgress[`completionDate_${currentSection}`]).toLocaleDateString() : new Date().toLocaleDateString()}
                 </p>
-                <p style={{ fontSize: '0.9rem', fontWeight: 'bold', letterSpacing: '1px', color: '#666' }}>ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress[`completionDate_${currentSection}`] || new Date()).getTime().toString().substring(8)}`}</p>
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={LOGO_PATH} alt="Small Logo" style={{ width: '35px', height: '35px', opacity: 0.8 }} />
-                  <span style={{ fontSize: '0.8rem', color: '#555', fontWeight: 'bold' }}>Built by {t('developerName')}</span>
+                <p style={{ fontSize: '0.9rem', fontWeight: '600', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                  ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress[`completionDate_${currentSection}`] || new Date()).getTime().toString().substring(8)}`}
+                </p>
+                
+                {/* Simulated QR Code for verification */}
+                <div style={{ marginTop: '20px', padding: '10px', backgroundColor: 'white', border: '2px solid var(--pharma-navy)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', fontSize: '0.6rem', color: 'var(--pharma-navy)', fontWeight: 'bold' }}>
+                    <div style={{ marginBottom: '2px' }}>SCAN TO</div>
+                    <div>VERIFY</div>
+                    <div>[QR]</div>
+                  </div>
                 </div>
               </div>
 
               <div style={{ textAlign: 'center' }}>
                 <div style={{
-                  width: '120px', height: '120px', border: '5px double #d4af37',
+                  width: '120px', height: '120px', border: '4px double var(--pharma-gold)',
                   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 15px', backgroundColor: 'white'
+                  margin: '0 auto 15px', backgroundColor: 'white', position: 'relative'
                 }}>
                   <img src={LOGO_PATH} alt="Seal" style={{ width: '85px', height: '85px', opacity: 1.0 }} />
-                  <div style={{ position: 'absolute', fontSize: '0.75rem', fontWeight: 'bold', color: '#d4af37', transform: 'rotate(-15deg)', backgroundColor: 'rgba(255,255,255,0.7)', padding: '2px 5px' }}>OFFICIAL SEAL</div>
+                  <div style={{ position: 'absolute', bottom: '-10px', fontSize: '0.75rem', fontWeight: 'bold', color: 'white', backgroundColor: 'var(--pharma-navy)', padding: '4px 12px', border: '1px solid var(--pharma-gold)', borderRadius: '10px' }}>
+                    OFFICIAL
+                  </div>
                 </div>
-                <div style={{ width: '240px', borderTop: '2px solid #1a5928', paddingTop: '10px', fontWeight: 'bold', color: '#1a5928', fontSize: '1.2rem' }}>
+                <div style={{ width: '240px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '10px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.2rem' }}>
                   {t('developerName')}
-                  <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#dc3545' }}>Founder & GMP/ISO Specialist</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '4px' }}>GMP/ISO Technical Authority</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="no-print" style={{ marginTop: '50px', paddingBottom: '20px', position: 'relative', zIndex: 10 }}>
+          <div className="no-print" style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '15px' }}>
             {!isSample && (
-              <button onClick={() => { window.print(); logAuditTrail('eventCert'); }} className="btn-primary" style={{ padding: '15px 50px', fontSize: '1.2rem', boxShadow: '0 10px 20px rgba(40,167,69,0.3)' }}>
+              <button onClick={() => { window.print(); logAuditTrail('eventCert'); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,168,120,0.3)' }}>
                 {t('printCert')}
               </button>
             )}
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} className="btn-secondary" style={{ padding: '15px 50px', fontSize: '1.2rem', marginLeft: '15px' }}>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
               {t('back')}
             </button>
           </div>
@@ -433,7 +447,7 @@ const Dashboard = ({ user, onLogout }) => {
         >
           {t('back')}
         </button>
-        <Quiz unitId={currentUnit} onQuizComplete={handleQuizComplete} />
+        <Quiz unitId={currentUnit} onQuizComplete={handleQuizComplete} user={user} />
       </div>
     );
   }

@@ -63,6 +63,10 @@ const DemoDB = {
     return getQuestionsByUnit(unitId, count);
   },
 
+  async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
+    return getQuestionsByUnit(unitId, count, excludeIds);
+  },
+
   async checkAnswer(questionId, answer) {
     const result = checkDemoAnswer(questionId, answer);
     if (!result.found) return { correct: false, message: 'Question not found' };

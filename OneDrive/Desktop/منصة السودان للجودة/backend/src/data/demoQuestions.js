@@ -45,10 +45,15 @@ const flatQuestions = Object.values(demoQuestions).flat();
 
 module.exports = {
   demoQuestions: flatQuestions,
-  getQuestionsByUnit: (unitId, count = 10) => {
+  getQuestionsByUnit: (unitId, count = 10, excludeIds = []) => {
     const questions = demoQuestions[unitId] || [];
+    const available = questions.filter(q => !excludeIds.includes(q._id));
+    if (available.length < count) {
+      // If not enough questions available, reset by just returning any questions
+      return questions.sort(() => Math.random() - 0.5).slice(0, count);
+    }
     // Shuffle and return requested count
-    return questions.sort(() => Math.random() - 0.5).slice(0, count);
+    return available.sort(() => Math.random() - 0.5).slice(0, count);
   },
   checkAnswer: (id, answer) => {
     const q = flatQuestions.find(it => it._id === id);

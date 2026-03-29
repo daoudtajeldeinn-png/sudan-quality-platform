@@ -1,5 +1,68 @@
 const Question = require('../models/Question');
+const QuizHistory = require('../models/QuizHistory');
 
+// الحصول على أسئلة مع مراعاة التدوير لعدم التكرار
+exports.getRotatedQuestions = async (req, res) => {
+  try {
+    const { unitId, count = 10 } = req.params;
+    const { userId, excludeIds } = req.query;
+
+    if (req.isDemoMode) {
+      let idsToExclude = excludeIds ? excludeIds.split(',') : [];
+      const randomQuestions = await req.demoDB.getRotatedQuestions(unitId, count, idsToExclude);
+      if (randomQuestions.length === 0) {
+        return res.status(404).json({ error: 'No questions found for this unit (Demo Mode)' });
+      }
+      return res.status(200).json(randomQuestions);
+    }
+
+    if (!userId) {
+      // إذا لم يكن هناك مستخدم مسجل، نكتفي بالعشوائية العادية
+      return exports.getRandomQuestions(req, res);
+    }
+
+    const allQuestions = await Question.find({ unitId });
+    if (allQuestions.length === 0) {
+      return res.status(404).json({ error: 'No questions found for this unit' });
+    }
+
+    // جلب سجل المستخدم للوحدة
+    let history = await QuizHistory.findOne({ userId, unitId });
+    if (!history) {
+      history = new QuizHistory({ userId, unitId, seenQuestions: [] });
+    }
+
+    let unseenQuestions = allQuestions.filter(q => !history.seenQuestions.includes(q._id.toString()));
+
+    if (unseenQuestions.length < count) {
+      // إذا استُنفدت الأسئلة، نقوم بتصفير السجل وإتاحة كل الأسئلة مجدداً
+      history.seenQuestions = [];
+      unseenQuestions = allQuestions.slice();
+    }
+
+    const shuffled = unseenQuestions.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, Math.min(count, allQuestions.length));
+
+    // تحديث سجل الأسئلة المرئية
+    const selectedIds = selected.map(q => q._id.toString());
+    history.seenQuestions.push(...selectedIds);
+    history.lastReset = new Date();
+    await history.save();
+
+    const formattedQuestions = [];
+    selected.forEach(q => {
+      const question = q.toObject();
+      delete question.correctAnswer;
+      delete question.correctAnswers;
+      formattedQuestions.push(question);
+    });
+
+    res.status(200).json(formattedQuestions);
+  } catch (error) {
+    console.error('Get rotated questions error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 // الحصول على أسئلة عشوائية لوحدة معينة
 exports.getRandomQuestions = async (req, res) => {
   try {
