@@ -5,6 +5,9 @@ import { VerifyCertificate } from './pages/VerifyCertificate';
 import { LanguageProvider, useLanguage } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
 import { apiService } from './services/api';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { auth } from './firebase/config';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
 function AppContent({ user, setUser }) {
   const [loading, setLoading] = useState(false);
@@ -30,39 +33,24 @@ function AppContent({ user, setUser }) {
   }, [user]);
 
   useEffect(() => {
-    // محاولة تحميل Firebase
-    const loadFirebase = async () => {
-      try {
-        const firebaseModule = await import('./firebase/config');
-        const unsubscribe = firebaseModule.auth.onAuthStateChanged(async (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-            // The backend registration logic was moved to a separate useEffect that depends on 'user'
-          }
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      } catch (error) {
-        console.log('Firebase not configured yet');
-        setError('Firebase configuration error');
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
       }
-    };
-
-    loadFirebase();
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleGoogleLogin = async () => {
     try {
-      const firebaseModule = await import('./firebase/config');
-      const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const provider = new GoogleAuthProvider();
 
       provider.setCustomParameters({
         prompt: 'select_account'
       });
 
-      const result = await signInWithPopup(firebaseModule.auth, provider);
+      const result = await signInWithPopup(auth, provider);
       console.log('User signed in:', result.user);
 
       // تسجيل المستخدم في Backend
@@ -91,9 +79,7 @@ function AppContent({ user, setUser }) {
 
   const handleLogout = async () => {
     try {
-      const firebaseModule = await import('./firebase/config');
-      const { signOut } = await import('firebase/auth');
-      await signOut(firebaseModule.auth);
+      await signOut(auth);
       setUser(null);
       console.log('User signed out');
       setError('');
@@ -172,7 +158,12 @@ function AppContent({ user, setUser }) {
 function App() {
   return (
     <LanguageProvider>
-      <AppContentWrapper />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/verify" element={<VerifyCertificate />} />
+          <Route path="/*" element={<AppContentWrapper />} />
+        </Routes>
+      </BrowserRouter>
     </LanguageProvider>
   );
 }

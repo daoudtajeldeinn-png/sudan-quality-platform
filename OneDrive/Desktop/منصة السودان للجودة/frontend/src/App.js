@@ -1,6 +1,8 @@
 ﻿import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import './App.css';
+import { auth } from './firebase/config';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -9,23 +11,11 @@ function App() {
 
   useEffect(() => {
     // محاولة تحميل Firebase
-    const loadFirebase = async () => {
-      try {
-        const firebaseModule = await import('./firebase/config');
-        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-          }
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      } catch (error) {
-        console.log('Firebase not configured yet');
-        setLoading(false);
-      }
-    };
-    
-    loadFirebase();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleGoogleLogin = async () => {

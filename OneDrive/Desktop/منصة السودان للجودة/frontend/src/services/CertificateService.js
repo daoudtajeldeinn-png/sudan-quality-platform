@@ -1,4 +1,4 @@
-import { db } from "../firebase";
+import { db } from "../firebase/config";
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 
 export class CertificateService {

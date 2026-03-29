@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "../firebase/config";
 import { CertificateService } from "../services/CertificateService";
 
 export const ProtectedCertificateRoute = ({ children }) => {
