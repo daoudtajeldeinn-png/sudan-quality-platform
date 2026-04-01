@@ -150,15 +150,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const userRoutes = require('./src/routes/userRoutes');
-const certificateRoutes = require('./src/routes/certificateRoutes');
+const userRoutes = require('./src/routes/userRoutes');\n// const certificateRoutes = require('./src/routes/certificateRoutes'); // Already declared above
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/certificates', certificateRoutes);
-app.use('/api/certificates', certificateRoutes);
+app.use('/api/user', userRoutes);\napp.use('/api/certificates', certificateRoutes);
 
 app.get('/', (req, res) => {
   const status = isDemoMode ? 'demo' : 'production';

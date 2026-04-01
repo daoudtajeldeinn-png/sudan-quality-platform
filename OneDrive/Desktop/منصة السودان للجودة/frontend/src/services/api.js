@@ -18,32 +18,7 @@ const fetchWithTimeout = async (resource, options = {}) => {
   } catch (error) {
     clearTimeout(id);
     throw error;
-  }
-,
-
-  // Certificate verification endpoints
-  verifyCertificateByNumber: async (certNumber) => {
-    try {
-      const response = await fetchWithTimeout(`${API_BASE_URL}/certificates/verify?certNumber=${encodeURIComponent(certNumber)}`);
-      if (!response.ok) return null;
-      return await response.json();
-    } catch (error) {
-      console.error('verifyCertificateByNumber error:', error);
-      throw error;
-    }
-  },
-
-  checkUserCertificate: async (userId, unitId) => {
-    try {
-      const response = await fetchWithTimeout(`${API_BASE_URL}/certificates/check?userId=${encodeURIComponent(userId)}&unitId=${encodeURIComponent(unitId)}`);
-      if (!response.ok) return null;
-      return await response.json();
-    } catch (error) {
-      console.error('checkUserCertificate error:', error);
-      throw error;
-    }
-  }
-};
+}; // fetchWithTimeout end
 
 export const apiService = {
   // تسجيل مستخدم جديد
