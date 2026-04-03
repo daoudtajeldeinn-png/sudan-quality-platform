@@ -18,22 +18,11 @@ console.log("MongoDB URI:", MONGO_URI ? "Set" : "Not set");
 
 // ─── CORS (FIXED) ─────────────────────────────────────────────────────────────
 const corsOptions = {
-    origin: (origin, callback) => {
-        const allowed = [
-            'https://decisive-octane-472816-d3.web.app',
-            'https://decisive-octane-472816-d3.firebaseapp.com',
-            'https://sudanes-chemical-industries-pos-gpd.vercel.app',
-            '*', // temporary for all origins during deploy
-            'http://localhost:5173',
-            'http://localhost:5000'
-        ];
-        if (!origin || allowed.includes(origin)) return callback(null, true);
-        callback(new Error('CORS: origin not allowed — ' + origin));
-    },
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200
+  origin: true, // FULLY PERMISSIVE - Allows ALL origins (including preflight)
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers
 };
 
 app.use(cors(corsOptions));
