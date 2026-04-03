@@ -247,6 +247,7 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
         unitId
       });
     }
+    // Legacy PDF removed - handled by Dashboard award system
   };
 
   const generatePDF = async () => {

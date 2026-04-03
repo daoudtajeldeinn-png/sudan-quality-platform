@@ -1,0 +1,209 @@
+﻿import React, { useState, useEffect } from 'react';
+import './App.css';
+import Dashboard from './pages/Dashboard';
+import { VerifyCertificate } from './pages/VerifyCertificate';
+import { LanguageProvider, useLanguage } from './LanguageContext';
+import { GamificationProvider } from './GamificationContext';
+import { apiService } from './services/api';
+
+function AppContent({ user, setUser }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    const registerUser = async () => {
+      try {
+        const userData = {
+          userId: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        };
+        await apiService.registerUser(userData);
+        console.log('User registered in backend');
+      } catch (error) {
+        console.error('Backend registration error:', error);
+      }
+    };
+    registerUser();
+  }, [user]);
+
+  useEffect(() => {
+    // محاولة تحميل Firebase
+    const loadFirebase = async () => {
+      try {
+        const firebaseModule = await import('./firebase/config');
+        const unsubscribe = firebaseModule.auth.onAuthStateChanged(async (currentUser) => {
+          if (currentUser) {
+            setUser(currentUser);
+            // The backend registration logic was moved to a separate useEffect that depends on 'user'
+          }
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      } catch (error) {
+        console.log('Firebase not configured yet');
+        setError('Firebase configuration error');
+        setLoading(false);
+      }
+    };
+
+    loadFirebase();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
+      const firebaseModule = await import('./firebase/config');
+      const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+      const provider = new GoogleAuthProvider();
+
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      const result = await signInWithPopup(firebaseModule.auth, provider);
+      console.log('User signed in:', result.user);
+
+      // تسجيل المستخدم في Backend
+      try {
+        const userData = {
+          userId: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL
+        };
+
+        // تسجيل المستخدم في Backend باستخدام apiService
+        const response = await apiService.registerUser(userData);
+        console.log('User registered in backend');
+      } catch (error) {
+        console.error('Backend registration error:', error);
+      }
+
+      setUser(result.user);
+      setError('');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('حدث خطأ في تسجيل الدخول: ' + error.message);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const firebaseModule = await import('./firebase/config');
+      const { signOut } = await import('firebase/auth');
+      await signOut(firebaseModule.auth);
+      setUser(null);
+      console.log('User signed out');
+      setError('');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setError('حدث خطأ في تسجيل الخروج');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{
+        textAlign: 'center',
+        marginTop: '50px',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        <div>جاري التحميل...</div>
+        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div style={{
+        textAlign: 'center',
+        marginTop: '50px',
+        fontFamily: 'Arial, sans-serif',
+        direction: 'rtl'
+      }}>
+        <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
+        <p style={{ fontSize: '18px', color: '#666' }}>
+          التدريب التفاعلي في الجودة الدوائية
+        </p>
+        <button
+          onClick={handleGoogleLogin}
+          style={{
+            backgroundColor: '#4285f4',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            marginTop: '20px'
+          }}
+        >
+          الدخول بحساب Google
+        </button>
+
+        {error && (
+          <div style={{
+            color: 'red',
+            marginTop: '20px',
+            padding: '10px',
+            backgroundColor: '#ffe6e6',
+            borderRadius: '4px',
+            maxWidth: '400px',
+            margin: '20px auto 0'
+          }}>
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Add Verify route if using router in future; keep Dashboard rendering for current flow */}
+      <Dashboard user={user} onLogout={handleLogout} />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContentWrapper />
+    </LanguageProvider>
+  );
+}
+
+function AppContentWrapper() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFirebase = async () => {
+      try {
+        const firebaseModule = await import('./firebase/config');
+        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      } catch (error) {
+        setLoading(false);
+      }
+    };
+    loadFirebase();
+  }, []);
+
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>جاري التحميل...</div>;
+
+  return (
+    <GamificationProvider userId={user?.uid} userEmail={user?.email}>
+      <AppContent user={user} setUser={setUser} />
+    </GamificationProvider>
+  );
+}
+
+export default App;

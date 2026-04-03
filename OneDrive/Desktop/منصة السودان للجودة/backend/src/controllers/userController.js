@@ -51,6 +51,17 @@ const syncUserStats = async (req, res) => {
 };
 
 // الحصول على القائمة المتصدرة (Leaderboard)
+const getCertificates = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ certificates: user.progress.certificates || [], completedCount: user.progress.completedUnits.length });
+  } catch (err) {
+    res.status(500).json({ error: 'internal' });
+  }
+};
+
 const getLeaderboard = async (req, res) => {
   try {
     const topUsers = await User.find({}, 'displayName xp level photoURL')
@@ -67,5 +78,6 @@ const getLeaderboard = async (req, res) => {
 module.exports = {
   getUserProfile,
   syncUserStats,
+  getCertificates,
   getLeaderboard
 };

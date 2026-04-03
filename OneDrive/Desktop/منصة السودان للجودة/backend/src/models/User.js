@@ -59,11 +59,13 @@ const userSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    level: { type: Number, default: 1 }, // Moved here for easier access, 1=basic, 2=advanced
     certificates: [{
       certificateId: String,
       issueDate: Date,
       score: Number,
-      unitType: String
+      unitType: String,
+      level: Number
     }]
   }
 });
