@@ -22,6 +22,8 @@ const corsOptions = {
         const allowed = [
             'https://decisive-octane-472816-d3.web.app',
             'https://decisive-octane-472816-d3.firebaseapp.com',
+            'https://sudanes-chemical-industries-pos-gpd.vercel.app',
+            '*', // temporary for all origins during deploy
             'http://localhost:5173',
             'http://localhost:5000'
         ];
