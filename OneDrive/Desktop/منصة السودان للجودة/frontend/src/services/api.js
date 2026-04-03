@@ -18,6 +18,7 @@ const fetchWithTimeout = async (resource, options = {}) => {
   } catch (error) {
     clearTimeout(id);
     throw error;
+  }
 }; // fetchWithTimeout end
 
 export const apiService = {
@@ -119,6 +120,47 @@ export const apiService = {
       return await response.json();
     } catch (error) {
       console.error('Get leaderboard error:', error);
+      throw error;
+    }
+  },
+
+  // Award certificate after quiz (public endpoint)
+  awardCertificate: async (data) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/certificates/award-public`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Award certificate error:', error);
+      throw error;
+    }
+  },
+
+  // Get user certificates
+  getUserCertificates: async (userId) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/certificates/${userId}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Get certificates error:', error);
+      throw error;
+    }
+  },
+
+  // Set user level (via sync)
+  setUserLevel: async (userId, level) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/profile/${userId}`);
+      const profile = await response.json();
+      profile.progress.level = level;
+      return apiService.syncUserStats(userId, profile);
+    } catch (error) {
+      console.error('Set level error:', error);
       throw error;
     }
   }

@@ -4,11 +4,12 @@ const jwt = require("jsonwebtoken");
 
 // تسجيل مستخدم جديد
 const registerUser = async (req, res) => {
-  try {
-if (!password || password.length < 6) {
-  return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
-}
-const { email, displayName = email.split('@')[0] } = req.body;
+try {
+  const { email, displayName = email.split('@')[0], password } = req.body;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
+  }
+
     
     // التحقق من وجود البريد الإلكتروني
     const existingUser = await User.findOne({ email });
