@@ -11,19 +11,24 @@ const certificateRoutes = require('./src/routes/certificateRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Use env var only, remove hardcoded for security
 const MONGO_URI = process.env.MONGODB_URI;
+
 console.log("MongoDB URI:", MONGO_URI ? "Set" : "Not set");
 
 // ─── CORS (EXTREME FIX) ─────────────────────────────────────────────────────
+// This specifically tells the browser that your Firebase site is allowed
 app.use(cors({
     origin: function (origin, callback) {
         const whitelist = [
-            'https://decisive-octane-472816-d3.web.app',
-            'https://sudan-quality-frontend.vercel.app',
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'http://127.0.0.1:5173'
+            'https://decisive-octane-472816-d3.web.app', // Your Live Firebase Site
+            'http://localhost:5173',                      // Local Vite
+            'http://localhost:3000',                      // Local React
+            'http://127.0.0.1:5173'                       // Local IP
         ];
+
+        // Allow requests with no origin (like mobile apps or curl requests) 
+        // and check if the origin is in the whitelist
         if (!origin || whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -36,38 +41,50 @@ app.use(cors({
     credentials: true
 }));
 
+// IMPORTANT: This handles the "Preflight" request that the browser sends 
+// before the actual POST/PUT request. This is where your error is happening.
 app.options('*', cors());
 // ────────────────────────────────────────────────────────────────────────────
 
 app.use(express.json());
 
+// Demo mode flag - set to true if MongoDB is not available
 let isDemoMode = false;
+
+// In-memory storage for demo mode
 const demoUsers = new Map();
 const { demoQuestions, getQuestionsByUnit, checkAnswer: checkDemoAnswer } = require('./src/data/demoQuestions');
 
+// Demo mode database simulation
 const DemoDB = {
     users: demoUsers,
+
     async findUserByEmail(email) {
         for (let user of this.users.values()) {
             if (user.email === email) return user;
         }
         return null;
     },
+
     async findUserById(id) {
         return this.users.get(id) || null;
     },
+
     async createUser(userData) {
         const id = 'demo_' + Date.now();
         const user = { ...userData, _id: id, createdAt: new Date() };
         this.users.set(id, user);
         return user;
     },
+
     async getRandomQuestions(unitId, count = 10) {
         return getQuestionsByUnit(unitId, count);
     },
+
     async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
         return getQuestionsByUnit(unitId, count, excludeIds);
     },
+
     async checkAnswer(questionId, answer) {
         const result = checkDemoAnswer(questionId, answer);
         if (!result.found) return { correct: false, message: 'Question not found' };
@@ -79,22 +96,44 @@ const DemoDB = {
     }
 };
 
+// MongoDB Connection
 const connectDB = async () => {
     try {
-        if (MONGO_URI) {
+        let mongoUri = MONGO_URI;
+
+        console.log("Attempting to connect to MongoDB...");
+        console.log("MongoDB URI:", mongoUri ? "Found" : "Not found");
+
+        if (mongoUri) {
             try {
-                await mongoose.connect(MONGO_URI, {
+                await mongoose.connect(mongoUri, {
                     useNewUrlParser: true,
                     useUnifiedTopology: true,
                 });
-                console.log('✅ MongoDB Atlas connected successfully');
+                console.log('MongoDB connected successfully');
                 return;
             } catch (connError) {
-                console.log('❌ MongoDB Atlas connection failed:', connError.message);
+                console.log('Failed to connect to MongoDB:', connError.message);
+                console.log('Starting in DEMO mode...');
             }
         }
 
-        // FALLBACK TO DEMO MODE IMMEDIATELY (No more MemoryServer crash!)
+        console.log('Trying MongoDB Memory Server...');
+        try {
+            const { MongoMemoryServer } = require('mongodb-memory-server');
+            const mongoServer = await MongoMemoryServer.create();
+            mongoUri = mongoServer.getUri();
+
+            await mongoose.connect(mongoUri, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            });
+            console.log('MongoDB Memory Server connected successfully');
+            return;
+        } catch (memServerError) {
+            console.log('MongoDB Memory Server not available (expected on Vercel/prod):', memServerError.message);
+        }
+
         isDemoMode = true;
         console.log('===========================================');
         console.log('🚀 RUNNING IN DEMO MODE (No Persistent DB)');
@@ -113,21 +152,36 @@ app.use((req, res, next) => {
     next();
 });
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/certificates', certificateRoutes);
 
 app.get('/', (req, res) => {
+    const status = isDemoMode ? 'demo' : 'production';
     res.json({
-        message: 'منصة السودان للجودة - API Server Ready!',
-        status: isDemoMode ? 'demo' : 'production',
+        message: 'منصة السودان للجودة - API Server Ready! 🎯',
+        version: '1.0.0',
+        status: status,
+        database: isDemoMode ? 'Demo (In-Memory)' : 'MongoDB Connected',
+        endpoints: {
+            auth: '/api/auth',
+            questions: '/api/questions',
+            user: '/api/user',
+            certificates: '/api/certificates'
+        },
         vercel: process.env.VERCEL ? 'Deployed on Vercel ✅' : 'Local dev'
     });
 });
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', mode: isDemoMode ? 'demo' : 'production' });
+    res.json({
+        status: 'healthy',
+        mode: isDemoMode ? 'demo' : 'production',
+        timestamp: new Date().toISOString(),
+        vercel: !!process.env.VERCEL
+    });
 });
 
 app.use((err, req, res, next) => {
@@ -136,7 +190,7 @@ app.use((err, req, res, next) => {
 });
 
 const serverListener = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
 });
 
 module.exports = app;
