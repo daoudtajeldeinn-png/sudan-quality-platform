@@ -7,6 +7,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showDashboard, setShowDashboard] = useState(false);
 
+  // Replace this with your Vercel URL
+  const API_BASE_URL = 'https://sudanes-chemical-industries-pos-gpd.vercel.app';
+
   useEffect(() => {
     // محاولة تحميل Firebase
     const loadFirebase = async () => {
@@ -25,7 +28,7 @@ function App() {
         setLoading(false);
       }
     };
-    
+
     loadFirebase();
   }, []);
 
@@ -34,15 +37,15 @@ function App() {
       const firebaseModule = await import('./firebase/config');
       const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const provider = new GoogleAuthProvider();
-      
+
       provider.setCustomParameters({
         prompt: 'select_account'
       });
-      
+
       const result = await signInWithPopup(firebaseModule.auth, provider);
       setUser(result.user);
       setShowDashboard(true); // الانتقال للوحة التحكم تلقائياً
-      
+
       // إرسال بيانات المستخدم للـ Backend
       try {
         const userData = {
@@ -51,15 +54,16 @@ function App() {
           displayName: result.user.displayName,
           photoURL: result.user.photoURL
         };
-        
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+
+        // FIXED: Now using the Vercel Production URL instead of localhost
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
         });
-        
+
         if (response.ok) {
           console.log('User registered in backend');
         }
@@ -85,12 +89,12 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif'
       }}>
-        <div>جاري التحميل...</div>
+        <div style={{ fontSize: '20px' }}>جاري التحميل...</div>
       </div>
     );
   }
@@ -100,22 +104,21 @@ function App() {
   }
 
   if (user && !showDashboard) {
-    // هذا هو الجزء المفقود - زر الذهاب للوحة التحكم
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif',
         direction: 'rtl'
       }}>
         <h1 style={{ color: '#28a745' }}>مرحباً، {user.displayName || 'مستخدم'}</h1>
         {user.photoURL && (
-          <img 
-            src={user.photoURL} 
-            alt="Profile" 
-            style={{ 
-              width: '100px', 
-              height: '100px', 
+          <img
+            src={user.photoURL}
+            alt="Profile"
+            style={{
+              width: '100px',
+              height: '100px',
               borderRadius: '50%',
               border: '3px solid #28a745',
               margin: '20px 0'
@@ -123,7 +126,7 @@ function App() {
           />
         )}
         <p style={{ fontSize: '18px', color: '#333' }}>{user.email}</p>
-        <button 
+        <button
           onClick={() => setShowDashboard(true)}
           style={{
             backgroundColor: '#28a745',
@@ -139,7 +142,7 @@ function App() {
         >
           الذهاب للوحة التحكم
         </button>
-        <button 
+        <button
           onClick={handleLogout}
           style={{
             backgroundColor: '#dc3545',
@@ -159,8 +162,8 @@ function App() {
   }
 
   return (
-    <div style={{ 
-      textAlign: 'center', 
+    <div style={{
+      textAlign: 'center',
       marginTop: '50px',
       fontFamily: 'Arial, sans-serif',
       direction: 'rtl'
@@ -169,7 +172,7 @@ function App() {
       <p style={{ fontSize: '18px', color: '#666' }}>
         التدريب التفاعلي في الجودة الدوائية
       </p>
-      <button 
+      <button
         onClick={handleGoogleLogin}
         style={{
           backgroundColor: '#4285f4',
