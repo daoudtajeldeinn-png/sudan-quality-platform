@@ -1,5 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' 
-  ? 'https://sudan-quality-platform-backend.onrender.com/api' 
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
+  ? 'https://sudanes-chemical-industries-pos-gpd.vercel.app/api'
   : 'http://localhost:5000/api');
 
 // Helper for timeout-aware fetch
@@ -7,16 +7,16 @@ const fetchWithTimeout = async (resource, options = {}, authToken = null) => {
   const { timeout = 12000 } = options; // Increased timeout
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
-  
+
   const headers = {
     ...options.headers,
     'Content-Type': 'application/json',
   };
-  
+
   if (authToken) {
     headers.Authorization = `Bearer ${authToken}`;
   }
-  
+
   try {
     const response = await fetch(resource, {
       ...options,
