@@ -8,23 +8,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { auth } from './firebase/config';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
-// Safe apiService stub (real impl in services/api.js - stub prevents crash)
-const safeApiService = {
-  registerUser: async (userData) => {
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.warn('Backend unavailable, using mock token:', error);
-      return { token: `mock-${userData.userId}-${Date.now()}` };
-    }
-  }
-};
+import { apiService } from './services/api';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -69,7 +53,7 @@ function AppContent({ user, setUser, authToken, onTokenUpdate }) {
 
   useEffect(() => {
     if (user) {
-      safeApiService.registerUser({
+      apiService.registerUser({
         userId: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -117,7 +101,13 @@ function AppContent({ user, setUser, authToken, onTokenUpdate }) {
 
   return (
     <ErrorBoundary>
-      <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+      <GamificationProvider 
+        userId={user.uid} 
+        userEmail={user.email} 
+        authToken={authToken}
+      >
+        <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+      </GamificationProvider>
     </ErrorBoundary>
   );
 }
