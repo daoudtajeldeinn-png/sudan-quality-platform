@@ -13,9 +13,5 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 const root = createRoot(document.getElementById('root'));
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+root.render(<App />);
 

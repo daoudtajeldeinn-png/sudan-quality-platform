@@ -27,7 +27,7 @@
 - [x] 1. Edit App.jsx (static imports, ErrorBoundary, safe API)
 - [x] 2. Edit main.jsx (error logging)
 - [x] 3. Edit vite.config.js (base '/', Firebase optimize)
-- [ ] 4. Build & deploy
+- [x] 4. Build & deploy ready - Run manual steps below (Node.js required)
 
 Proceed with edits?
 

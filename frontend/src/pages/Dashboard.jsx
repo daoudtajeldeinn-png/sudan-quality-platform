@@ -313,13 +313,8 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   };
 
   // Rest of component code remains the same...
-  const CertificateModal = ({ isSample = false }) => {
-    // ... (same as before)
-  };
-
-  const PledgeModal = () => (
-    // ... (same as before)
-  );
+  const CertificateModal = ({ isSample = false }) => null;
+  const PledgeModal = () => null;
 
   if (currentUnit) {
     if (isLectureMode) {

@@ -5,7 +5,8 @@ import { VerifyCertificate } from './pages/VerifyCertificate';
 import { LanguageProvider } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from './firebase/config';
+import { auth } from './firebase/config';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
 // Safe apiService stub (real impl in services/api.js - stub prevents crash)
 const safeApiService = {
@@ -127,11 +128,7 @@ function AppContentWrapper({ children }) {
 
   const handleTokenUpdate = (token) => setAuthToken(token);
 
-  return (
-    <GamificationProvider userId={user?.uid} userEmail={user?.email} authToken={authToken}>
-      {children(user, setUser, authToken, handleTokenUpdate)}
-    </GamificationProvider>
-  );
+  return children(user, setUser, authToken, handleTokenUpdate);
 }
 
 function App() {
