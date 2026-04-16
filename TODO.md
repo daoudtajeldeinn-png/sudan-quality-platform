@@ -1,42 +1,33 @@
-# 🚀 SUDAN QUALITY PLATFORM - PROJECT TODO
+# Fix Firebase White Page - Detailed Plan & Progress
 
-## ✅ COMPLETED (Deployed & Language Verified)
-```
-✅ Frontend Slides Design & GDP Unit8 Deployment
-✅ Firebase Hosting: https://decisive-octane-472816-d3.web.app/
-✅ Bilingual System (ar/en): LanguageContext.jsx - Toggle/RTL Complete
-✅ Quiz.jsx: Multi-type questions (MCQ/TF/Fill), PDF Certs, Gamification
-✅ Content Translation: content_new.js - All units bilingual
-✅ RTL CSS: index.css, CertificateStyles.css - Proper dir: rtl + fonts
-✅ Backend Health Check: server.js /health endpoint ready
-✅ Render.yaml: Backend deployment configured
-```
+**Root Cause:** Dynamic `await import('./firebase/config')` in `frontend/src/App.jsx` fails in production (chunk load error → infinite loading/white screen). No error handling.
 
-## 🔄 DEPLOYMENT STEPS (Backend Only Remaining)
+**Information Gathered:**
+- firebase.json: Correct (public: 'dist', rewrites ** → /index.html)
+- App.jsx: Dynamic Firebase import, apiService dependency (services/api.js exists), BrowserRouter, contexts, Dashboard import.
+- main.jsx: Standard.
 
-### Backend Test & Deploy
-```
-1. cd backend && npm start
-   → Check: http://localhost:5000/health ✅
-2. git add . && git commit -m "Final lang/deploy prep"
-3. Push to main → Render auto-deploys
-```
+**Plan:**
+1. Update App.jsx: Static Firebase imports, ErrorBoundary, safe apiService stub, fallback UI.
+2. Add global error logging to main.jsx.
+3. Optimize vite.config.js.
+4. Build & deploy.
 
-### Language Verification (Live Site Test)
-```
-1. https://decisive-octane-472816-d3.web.app/
-2. Toggle ar ↔ en → Check no mixed fonts/garbled text
-3. Quiz Demo Mode → Questions bilingual
-4. Certificate PDF → ar/en names render correctly
-```
+**Dependent Files:**
+- frontend/src/App.jsx
+- frontend/src/main.jsx
+- frontend/vite.config.js
 
-## 🎯 NEXT STEPS (After Backend Deploy)
-```
-✅ Update this TODO.md → Mark "ALL COMPLETE"
-✅ Test end-to-end: Login → Quiz → Cert → Language Toggle
-✅ Final Verification: No mixed chars/fonts
-✅ attempt_completion: "Translation fixed + Deployed to Firebase"
-```
+**Followup:**
+- `cd frontend && npm i && npm run build`
+- `firebase deploy --only hosting`
+- Test console.
 
-**Status: 95% Complete - Backend Deploy → Done!** 🚀
+**Progress:**
+- [x] 1. Edit App.jsx (static imports, ErrorBoundary, safe API)
+- [x] 2. Edit main.jsx (error logging)
+- [x] 3. Edit vite.config.js (base '/', Firebase optimize)
+- [ ] 4. Build & deploy
+
+Proceed with edits?
 
