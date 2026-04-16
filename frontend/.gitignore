@@ -31,3 +31,4 @@ AppData/
 *.sln
 *.sw?
 .firebase/
+.vercel
