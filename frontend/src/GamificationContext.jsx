@@ -3,7 +3,9 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { apiService } from './services/api';
 const GamificationContext = createContext();
 
-export const GamificationProvider = ({ children, userId, userEmail, authToken }) => {
+export const GamificationProvider = ({ children, userId, userEmail, authToken, loading: parentLoading = false }) => {
+  const [loading, setLoading] = useState(true);
+  const isLoading = parentLoading || loading;
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [badges, setBadges] = useState([]);
@@ -16,6 +18,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
   // Load state from Backend (preferable) or localStorage on mount
   useEffect(() => {
     const loadInitialStats = async () => {
+      setLoading(true);
       if (userId && authToken) {
         try {
           const profile = await apiService.getUserProfile(userId, authToken);
@@ -24,9 +27,11 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
             setLevel(profile.level || 1);
             setBadges(profile.badges || []);
             setStats(profile.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+            setLoading(false);
             return; // Exit if backend load successful
           }
         } catch (error) {
+          console.warn('Backend profile fetch failed, using localStorage fallback', error);
           console.warn('Backend profile fetch failed, using localStorage fallback', error);
         }
       }
@@ -46,7 +51,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
       }
     };
 
-    loadInitialStats();
+    loadInitialStats().finally(() => setLoading(false));
   }, [userId, userEmail]);
 
   // Sync state to local and backend whenever it changes
@@ -105,9 +110,13 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
     return { progress, goal, percentage: Math.min((progress / goal) * 100, 100) };
   };
 
+  if (isLoading) {
+    return <div style={{ padding: '2rem', textAlign: 'center', direction: 'rtl' }}>جاري تحميل البيانات...</div>;
+  }
+
   return (
     <GamificationContext.Provider value={{ 
-      xp, level, badges, stats, 
+      xp, level, badges, stats, loading,
       addXp, awardBadge, updateStats, getXpToNextLevel 
     }}>
       {children}

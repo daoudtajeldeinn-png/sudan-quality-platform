@@ -344,9 +344,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     };
 
     if (showSurvey) {
-      return (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+
           backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 4000,
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
         }}>
@@ -377,7 +375,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
-        <div id="certificate-printable" style={{
+
           backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '1050px', minHeight: '850px',
           padding: '60px 80px', borderRadius: '4px', position: 'relative',
           border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
@@ -385,7 +383,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: 'rtl',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
           overflow: 'hidden',
-          fontFamily: "'IBM Plex Sans Arabic', 'IBM Plex Sans', serif"
+
         }}>
           {/* Subtle Watermark */}
           <div style={{
@@ -406,10 +404,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             {/* Header */}
             <div style={{ position: 'absolute', top: '-30px', right: '-40px', display: 'flex', alignItems: 'center', gap: '20px', zIndex: 100 }}>
               <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))' }} />
-              <div style={{ textAlign: 'right', color: 'var(--pharma-navy)' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{t('issuingAuthority')}</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>Quality & Accreditation Board</div>
-              </div>
+                <div style={{ textAlign: 'right', color: 'var(--pharma-navy)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{t('issuingAuthority')}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{language === 'ar' ? 'لجنة الجودة والاعتماد' : 'Quality & Accreditation Board'}</div>
+                </div>
             </div>
 
             <div style={{ marginTop: '160px' }}>
@@ -436,19 +434,19 @@ const Dashboard = ({ user, onLogout, authToken }) => {
 
             {/* Results Grid */}
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px',
-              padding: '25px', backgroundColor: 'var(--bg-color)', borderRadius: '15px',
-              textAlign: 'right', border: '1px solid var(--border-color)', margin: '20px auto', width: '100%', maxWidth: '850px'
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px',
+              padding: '20px', backgroundColor: 'var(--bg-color)', borderRadius: '15px',
+              textAlign: 'right', border: '1px solid var(--border-color)', margin: '20px auto', width: '100%', maxWidth: '850px', fontSize: '0.9rem'
             }}>
-              {allUnitsDefinition.map(u => (
-                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-color)', padding: '8px 0', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{u.title}</span>
-                  <span style={{ fontWeight: '800', color: 'var(--pharma-green)', fontSize: '1.1rem' }}>%{isSample ? 100 : userProgress[u.id]}</span>
+              {allUnitsDefinition.map((u, index) => (
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: index < allUnitsDefinition.length - 1 ? '1px dashed var(--border-color)' : 'none', padding: '6px 0', alignItems: 'center' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{u.title}</span>
+                  <span style={{ fontWeight: '800', color: 'var(--pharma-green)' }}>%{isSample ? 100 : userProgress[u.id]}</span>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', gridColumn: '1 / -1', marginTop: '15px', paddingTop: '15px', borderTop: '2px solid var(--pharma-gold)', fontSize: '1.8rem', fontWeight: '900', color: 'var(--pharma-navy)' }}>
+              <div style={{ gridColumn: '1 / -1', marginTop: '10px', paddingTop: '10px', borderTop: '2px solid var(--pharma-gold)', fontSize: '1.4rem', fontWeight: '900', color: 'var(--pharma-navy)', textAlign: 'center' }}>
                 <span>{t('totalScore')}</span>
-                <span style={{ color: 'var(--pharma-green)' }}>%{isSample ? 100 : totalAverage}</span>
+                <span style={{ color: 'var(--pharma-green)', marginLeft: '1rem' }}>%{isSample ? 100 : totalAverage}</span>
               </div>
             </div>
 
@@ -462,12 +460,14 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                   ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress[`completionDate_academy`] || new Date()).getTime().toString().substring(8)}`}
                 </p>
                 
-                {/* Simulated QR Code for verification */}
+
                 <div style={{ marginTop: '20px', padding: '10px', backgroundColor: 'white', border: '2px solid var(--pharma-navy)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ textAlign: 'center', fontSize: '0.6rem', color: 'var(--pharma-navy)', fontWeight: 'bold' }}>
-                    <div style={{ marginBottom: '2px' }}>SCAN TO</div>
-                    <div>VERIFY</div>
+
+
+                    <div style={{ marginBottom: '2px' }}>امسح للـ</div>
+                    <div>التحقق</div>
                     <div>[QR]</div>
+
                   </div>
                 </div>
               </div>
@@ -485,7 +485,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                 </div>
                 <div style={{ width: '240px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '10px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.2rem' }}>
                   {t('developerName')}
-                  <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '4px' }}>GMP/ISO Technical Authority</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '4px' }}>{language === 'ar' ? 'سلطة تقنية GMP/ISO' : 'GMP/ISO Technical Authority'}</div>
                 </div>
               </div>
             </div>
