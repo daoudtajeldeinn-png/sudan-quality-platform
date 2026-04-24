@@ -115,4 +115,4 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
   );
 };
 
-export const useGamification = () => useContext(GamificationContext);
+export const useGamification = () => { const ctx = useContext(GamificationContext); if (!ctx) return { xp: 0, level: 1, badges: [], stats: { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 }, getXpToNextLevel: () => 100, updateStats: () => {}, addXp: () => {}, awardBadge: () => {} }; return ctx; };
