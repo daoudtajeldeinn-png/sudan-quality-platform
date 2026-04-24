@@ -150,6 +150,12 @@ export const translations = {
         track_validation: 'مسار التحقق والتأهيل (Validation)',
         track_gdp: 'مسار سلاسل الإمداد وممارسات التوزيع',
         track_regulatory: 'مسار الشؤون التنظيمية واليقظة (PV)',
+        analytics: 'التحليلات',
+        yourStats: 'إحصائياتك الشخصية',
+        quizzesTaken: 'الاختبارات المنجزة',
+        lecturesRead: 'المحاضرات المقروءة',
+        perfectScoresCount: 'عدد الدرجات الكاملة',
+        rankInNetwork: 'ترتيبك في الشبكة',
     },
     en: {
         // ... same structure for English
@@ -280,6 +286,12 @@ export const translations = {
         track_validation: 'Validation & Qualification',
         track_gdp: 'Supply Chain & GDP',
         track_regulatory: 'Regulatory Affairs & Pharmacovigilance',
+        analytics: 'Analytics',
+        yourStats: 'Your Personal Stats',
+        quizzesTaken: 'Quizzes Completed',
+        lecturesRead: 'Lectures Read',
+        perfectScoresCount: 'Perfect Scores',
+        rankInNetwork: 'Rank in Network',
     }
 };
 

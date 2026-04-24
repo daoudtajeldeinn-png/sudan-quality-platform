@@ -2,82 +2,76 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import { VerifyCertificate } from './pages/VerifyCertificate';
-import { LanguageProvider, useLanguage } from './LanguageContext';
+import { LanguageProvider } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
-import { apiService } from './services/api';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { auth } from './firebase/config';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
+import { apiService } from './services/api';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: '' };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error: error.message };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('App.jsx ErrorBoundary:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', direction: 'rtl' }}>
+          <h2>خطأ في التطبيق</h2>
+          <p>{this.state.error}</p>
+          <button onClick={() => window.location.reload()}>إعادة التحميل</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppContent({ user, setUser, authToken, onTokenUpdate }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!user) return;
-    const registerUser = async () => {
-      try {
-        const userData = {
-          userId: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL
-        };
-        const response = await apiService.registerUser(userData);
-        if (response.token) {
-          onTokenUpdate(response.token);
-          console.log('User registered + token stored:', response.token.substring(0, 20) + '...');
-        }
-        console.log('User registered in backend');
-      } catch (error) {
-        console.error('Backend registration error:', error);
-      }
-    };
-    registerUser();
-  }, [user, onTokenUpdate]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
-    return () => unsubscribe();
-  }, []);
+    return unsubscribe;
+  }, [setUser]);
+
+  useEffect(() => {
+    if (user) {
+      apiService.registerUser({
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }).then(onTokenUpdate).catch(console.error);
+    }
+  }, [user, onTokenUpdate]);
 
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
+      provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
-      console.log('User signed in:', result.user);
-
-      // تسجيل المستخدم في Backend
-      try {
-        const userData = {
-          userId: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName,
-          photoURL: result.user.photoURL
-        };
-
-        // تسجيل المستخدم في Backend باستخدام apiService
-        const response = await apiService.registerUser(userData);
-        console.log('User registered in backend');
-      } catch (error) {
-        console.error('Backend registration error:', error);
-      }
-
       setUser(result.user);
       setError('');
     } catch (error) {
       console.error('Login error:', error);
-      setError('حدث خطأ في تسجيل الدخول: ' + error.message);
+      setError(error.message);
     }
   };
 
@@ -85,78 +79,46 @@ function AppContent({ user, setUser, authToken, onTokenUpdate }) {
     try {
       await signOut(auth);
       setUser(null);
-      console.log('User signed out');
-      setError('');
     } catch (error) {
-      console.error('Logout error:', error);
-      setError('حدث خطأ في تسجيل الخروج');
+      setError(error.message);
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{
-        textAlign: 'center',
-        marginTop: '50px',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <div>جاري التحميل...</div>
-        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-      </div>
-    );
-  }
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', direction: 'rtl' }}>جاري التحميل...</div>;
 
   if (!user) {
     return (
-      <div style={{
-        textAlign: 'center',
-        marginTop: '50px',
-        fontFamily: 'Arial, sans-serif',
-        direction: 'rtl'
-      }}>
+      <div style={{ textAlign: 'center', marginTop: '50px', direction: 'rtl' }}>
         <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
-        <p style={{ fontSize: '18px', color: '#666' }}>
-          التدريب التفاعلي في الجودة الدوائية
-        </p>
-        <button
-          onClick={handleGoogleLogin}
-          style={{
-            backgroundColor: '#4285f4',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            marginTop: '20px'
-          }}
-        >
+        <p style={{ fontSize: '18px', color: '#666' }}>التدريب التفاعلي في الجودة الدوائية</p>
+        <button onClick={handleGoogleLogin} style={{ background: '#4285f4', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '6px', fontSize: '16px' }}>
           الدخول بحساب Google
         </button>
-
-        {error && (
-          <div style={{
-            color: 'red',
-            marginTop: '20px',
-            padding: '10px',
-            backgroundColor: '#ffe6e6',
-            borderRadius: '4px',
-            maxWidth: '400px',
-            margin: '20px auto 0'
-          }}>
-            {error}
-          </div>
-        )}
+        {error && <div style={{ color: 'red', marginTop: '20px' }}>{error}</div>}
       </div>
     );
   }
 
   return (
-    <>
-      {/* Add Verify route if using router in future; keep Dashboard rendering for current flow */}
-      <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
-    </>
+    <ErrorBoundary>
+      <GamificationProvider 
+        userId={user.uid} 
+        userEmail={user.email} 
+        authToken={authToken}
+      >
+        <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+      </GamificationProvider>
+    </ErrorBoundary>
   );
+}
+
+function AppContentWrapper({ children }) {
+  const [user, setUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+
+  const handleTokenUpdate = (token) => setAuthToken(token);
+
+  return children(user, setUser, authToken, handleTokenUpdate);
 }
 
 function App() {
@@ -165,45 +127,16 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/verify" element={<VerifyCertificate />} />
-          <Route path="/*" element={<AppContentWrapper />} />
+          <Route path="/*" element={
+            <AppContentWrapper>
+              {AppContent}
+            </AppContentWrapper>
+          } />
         </Routes>
       </BrowserRouter>
     </LanguageProvider>
   );
 }
 
-function AppContentWrapper() {
-  const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const handleTokenUpdate = (token) => {
-    setAuthToken(token);
-  };
-
-  useEffect(() => {
-    const loadFirebase = async () => {
-      try {
-        const firebaseModule = await import('./firebase/config');
-        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
-          setUser(currentUser);
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    loadFirebase();
-  }, []);
-
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>جاري التحميل...</div>;
-
-  return (
-    <GamificationProvider userId={user?.uid} userEmail={user?.email} authToken={authToken}>
-      <AppContent user={user} setUser={setUser} authToken={authToken} onTokenUpdate={handleTokenUpdate} />
-    </GamificationProvider>
-  );
-}
-
 export default App;
+

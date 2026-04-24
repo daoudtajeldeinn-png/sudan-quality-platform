@@ -3,8 +3,15 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// Global error handlers for debugging white screen
+window.addEventListener('error', (e) => {
+  console.error('Uncaught error:', e.error, 'at', e.filename + ':' + e.lineno);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+});
+
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+
