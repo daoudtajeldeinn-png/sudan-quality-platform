@@ -150,12 +150,15 @@ export const translations = {
         track_validation: 'مسار التحقق والتأهيل (Validation)',
         track_gdp: 'مسار سلاسل الإمداد وممارسات التوزيع',
         track_regulatory: 'مسار الشؤون التنظيمية واليقظة (PV)',
+<<<<<<< HEAD
         analytics: 'التحليلات',
         yourStats: 'إحصائياتك الشخصية',
         quizzesTaken: 'الاختبارات المنجزة',
         lecturesRead: 'المحاضرات المقروءة',
         perfectScoresCount: 'عدد الدرجات الكاملة',
         rankInNetwork: 'ترتيبك في الشبكة',
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
     },
     en: {
         // ... same structure for English
@@ -286,12 +289,15 @@ export const translations = {
         track_validation: 'Validation & Qualification',
         track_gdp: 'Supply Chain & GDP',
         track_regulatory: 'Regulatory Affairs & Pharmacovigilance',
+<<<<<<< HEAD
         analytics: 'Analytics',
         yourStats: 'Your Personal Stats',
         quizzesTaken: 'Quizzes Completed',
         lecturesRead: 'Lectures Read',
         perfectScoresCount: 'Perfect Scores',
         rankInNetwork: 'Rank in Network',
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
     }
 };
 

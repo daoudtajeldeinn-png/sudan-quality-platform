@@ -4,6 +4,7 @@ const User = require("../models/User");
 const getUserProfile = async (req, res) => {
   try {
     const { userId } = req.params;
+<<<<<<< HEAD
     
     if (req.isDemoMode) {
       const user = await req.demoDB.findUserById(userId);
@@ -20,12 +21,22 @@ const getUserProfile = async (req, res) => {
       
       res.json(user);
     }
+=======
+    const user = await User.findOne({ userId });
+    
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود" });
+    }
+    
+    res.json(user);
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   } catch (error) {
     console.error("Get profile error:", error);
     res.status(500).json({ error: "حدث خطأ في جلب بيانات المستخدم" });
   }
 };
 
+<<<<<<< HEAD
 
 // مزامنة البيانات (XP, Level, Badges, Stats)
   const syncUserStats = async (req, res) => {
@@ -35,11 +46,25 @@ const getUserProfile = async (req, res) => {
       
       if (req.isDemoMode) {
         const updatedUser = await req.demoDB.updateUser(userId, {
+=======
+// مزامنة البيانات (XP, Level, Badges, Stats)
+const syncUserStats = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { xp, level, badges, stats, progress } = req.body;
+    
+    // البحث عن المستخدم وتحديثه
+    const user = await User.findOneAndUpdate(
+      { userId },
+      { 
+        $set: { 
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
           xp, 
           level, 
           badges, 
           stats,
           progress,
+<<<<<<< HEAD
           lastLogin: new Date()
         });
         res.json({ success: true, user: updatedUser });
@@ -72,11 +97,30 @@ const getUserProfile = async (req, res) => {
     }
   };
 
+=======
+          lastLogin: new Date() // تحديث تاريخ التواجد
+        } 
+      },
+      { new: true, upsert: false }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود للمزامنة" });
+    }
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error("Sync stats error:", error);
+    res.status(500).json({ error: "فشلت عملية المزامنة مع الخادم" });
+  }
+};
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
 
 // الحصول على القائمة المتصدرة (Leaderboard)
 const getCertificates = async (req, res) => {
   try {
     const { userId } = req.params;
+<<<<<<< HEAD
     
     if (req.isDemoMode) {
       const user = await req.demoDB.findUserById(userId);
@@ -90,11 +134,17 @@ const getCertificates = async (req, res) => {
       if (!user) return res.status(404).json({ error: 'User not found' });
       res.json({ certificates: user.progress.certificates || [], completedCount: user.progress.completedUnits.length });
     }
+=======
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ certificates: user.progress.certificates || [], completedCount: user.progress.completedUnits.length });
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   } catch (err) {
     res.status(500).json({ error: 'internal' });
   }
 };
 
+<<<<<<< HEAD
 
 const getLeaderboard = async (req, res) => {
   try {
@@ -116,13 +166,25 @@ const getLeaderboard = async (req, res) => {
       
       res.json(topUsers);
     }
+=======
+const getLeaderboard = async (req, res) => {
+  try {
+    const topUsers = await User.find({}, 'displayName xp level photoURL')
+      .sort({ xp: -1 })
+      .limit(10);
+    
+    res.json(topUsers);
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   } catch (error) {
     console.error("Leaderboard error:", error);
     res.status(500).json({ error: "فشل جلب قائمة المتصدرين" });
   }
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
 module.exports = {
   getUserProfile,
   syncUserStats,

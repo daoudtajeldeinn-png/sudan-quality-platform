@@ -3,9 +3,13 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { apiService } from './services/api';
 const GamificationContext = createContext();
 
+<<<<<<< HEAD
 export const GamificationProvider = ({ children, userId, userEmail, authToken, loading: parentLoading = false }) => {
   const [loading, setLoading] = useState(true);
   const isLoading = parentLoading || loading;
+=======
+export const GamificationProvider = ({ children, userId, userEmail }) => {
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [badges, setBadges] = useState([]);
@@ -18,21 +22,33 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
   // Load state from Backend (preferable) or localStorage on mount
   useEffect(() => {
     const loadInitialStats = async () => {
+<<<<<<< HEAD
       setLoading(true);
       if (userId && authToken) {
         try {
           const profile = await apiService.getUserProfile(userId, authToken);
+=======
+      if (userId) {
+        try {
+          const profile = await apiService.getUserProfile(userId);
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
           if (profile) {
             setXp(profile.xp || 0);
             setLevel(profile.level || 1);
             setBadges(profile.badges || []);
             setStats(profile.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+<<<<<<< HEAD
             setLoading(false);
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
             return; // Exit if backend load successful
           }
         } catch (error) {
           console.warn('Backend profile fetch failed, using localStorage fallback', error);
+<<<<<<< HEAD
           console.warn('Backend profile fetch failed, using localStorage fallback', error);
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
         }
       }
 
@@ -51,7 +67,11 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
       }
     };
 
+<<<<<<< HEAD
     loadInitialStats().finally(() => setLoading(false));
+=======
+    loadInitialStats();
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   }, [userId, userEmail]);
 
   // Sync state to local and backend whenever it changes
@@ -64,9 +84,15 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
 
     // Sync to backend if logged in
     const syncToBackend = async () => {
+<<<<<<< HEAD
       if (userId && authToken) {
         try {
           await apiService.syncUserStats(userId, dataToSave, authToken);
+=======
+      if (userId) {
+        try {
+          await apiService.syncUserStats(userId, dataToSave);
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
         } catch (error) {
           console.error('Failed to sync to backend', error);
         }
@@ -110,6 +136,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
     return { progress, goal, percentage: Math.min((progress / goal) * 100, 100) };
   };
 
+<<<<<<< HEAD
   if (isLoading) {
     return <div style={{ padding: '2rem', textAlign: 'center', direction: 'rtl' }}>جاري تحميل البيانات...</div>;
   }
@@ -117,6 +144,11 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
   return (
     <GamificationContext.Provider value={{ 
       xp, level, badges, stats, loading,
+=======
+  return (
+    <GamificationContext.Provider value={{ 
+      xp, level, badges, stats, 
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
       addXp, awardBadge, updateStats, getXpToNextLevel 
     }}>
       {children}
