@@ -1,21 +1,35 @@
 ﻿import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import './App.css';
-import { auth } from './firebase/config';
-import { onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDashboard, setShowDashboard] = useState(false);
 
+  // Replace this with your Vercel URL
+  const API_BASE_URL = 'https://sudanes-chemical-industries-pos-gpd.vercel.app';
+
   useEffect(() => {
     // محاولة تحميل Firebase
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    const loadFirebase = async () => {
+      try {
+        const firebaseModule = await import('./firebase/config');
+        const unsubscribe = firebaseModule.auth.onAuthStateChanged((currentUser) => {
+          if (currentUser) {
+            setUser(currentUser);
+            setShowDashboard(true); // إظهار لوحة التحكم تلقائياً عند تسجيل الدخول
+          }
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      } catch (error) {
+        console.log('Firebase not configured yet');
+        setLoading(false);
+      }
+    };
+
+    loadFirebase();
   }, []);
 
   const handleGoogleLogin = async () => {
@@ -23,14 +37,15 @@ function App() {
       const firebaseModule = await import('./firebase/config');
       const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
       const provider = new GoogleAuthProvider();
-      
+
       provider.setCustomParameters({
         prompt: 'select_account'
       });
-      
+
       const result = await signInWithPopup(firebaseModule.auth, provider);
       setUser(result.user);
-      
+      setShowDashboard(true); // الانتقال للوحة التحكم تلقائياً
+
       // إرسال بيانات المستخدم للـ Backend
       try {
         const userData = {
@@ -39,15 +54,16 @@ function App() {
           displayName: result.user.displayName,
           photoURL: result.user.photoURL
         };
-        
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+
+        // FIXED: Now using the Vercel Production URL instead of localhost
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
         });
-        
+
         if (response.ok) {
           console.log('User registered in backend');
         }
@@ -73,32 +89,36 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif'
       }}>
-        <div>جاري التحميل...</div>
+        <div style={{ fontSize: '20px' }}>جاري التحميل...</div>
       </div>
     );
   }
 
+  if (user && showDashboard) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
+  }
+
   if (user && !showDashboard) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         marginTop: '50px',
         fontFamily: 'Arial, sans-serif',
         direction: 'rtl'
       }}>
         <h1 style={{ color: '#28a745' }}>مرحباً، {user.displayName || 'مستخدم'}</h1>
         {user.photoURL && (
-          <img 
-            src={user.photoURL} 
-            alt="Profile" 
-            style={{ 
-              width: '100px', 
-              height: '100px', 
+          <img
+            src={user.photoURL}
+            alt="Profile"
+            style={{
+              width: '100px',
+              height: '100px',
               borderRadius: '50%',
               border: '3px solid #28a745',
               margin: '20px 0'
@@ -106,7 +126,7 @@ function App() {
           />
         )}
         <p style={{ fontSize: '18px', color: '#333' }}>{user.email}</p>
-        <button 
+        <button
           onClick={() => setShowDashboard(true)}
           style={{
             backgroundColor: '#28a745',
@@ -122,7 +142,7 @@ function App() {
         >
           الذهاب للوحة التحكم
         </button>
-        <button 
+        <button
           onClick={handleLogout}
           style={{
             backgroundColor: '#dc3545',
@@ -141,13 +161,9 @@ function App() {
     );
   }
 
-  if (user && showDashboard) {
-    return <Dashboard user={user} onLogout={handleLogout} />;
-  }
-
   return (
-    <div style={{ 
-      textAlign: 'center', 
+    <div style={{
+      textAlign: 'center',
       marginTop: '50px',
       fontFamily: 'Arial, sans-serif',
       direction: 'rtl'
@@ -156,7 +172,7 @@ function App() {
       <p style={{ fontSize: '18px', color: '#666' }}>
         التدريب التفاعلي في الجودة الدوائية
       </p>
-      <button 
+      <button
         onClick={handleGoogleLogin}
         style={{
           backgroundColor: '#4285f4',
