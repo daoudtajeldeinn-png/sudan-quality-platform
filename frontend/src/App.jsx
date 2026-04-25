@@ -82,13 +82,13 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import { VerifyCertificate } from './pages/VerifyCertificate';
-import { LanguageProvider, useLanguage } from './LanguageContext';
+import { LanguageProvider } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
-import { apiService } from './services/api';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { auth } from './firebase/config';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
+<<<<<<< HEAD
 function AppContent({ user, setUser }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -117,43 +117,72 @@ function AppContent({ user, setUser }) {
       if (currentUser) {
         setUser(currentUser);
       }
+=======
+import { apiService } from './services/api';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: '' };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error: error.message };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('App.jsx ErrorBoundary:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', direction: 'rtl' }}>
+          <h2>خطأ في التطبيق</h2>
+          <p>{this.state.error}</p>
+          <button onClick={() => window.location.reload()}>إعادة التحميل</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function AppContent({ user, setUser, authToken, onTokenUpdate }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
       setLoading(false);
     });
-    return () => unsubscribe();
-  }, []);
+    return unsubscribe;
+  }, [setUser]);
+
+  useEffect(() => {
+    if (user) {
+      apiService.registerUser({
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }).then(onTokenUpdate).catch(console.error);
+    }
+  }, [user, onTokenUpdate]);
 
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
+      provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
-      console.log('User signed in:', result.user);
-
-      // تسجيل المستخدم في Backend
-      try {
-        const userData = {
-          userId: result.user.uid,
-          email: result.user.email,
-          displayName: result.user.displayName,
-          photoURL: result.user.photoURL
-        };
-
-        // تسجيل المستخدم في Backend باستخدام apiService
-        const response = await apiService.registerUser(userData);
-        console.log('User registered in backend');
-      } catch (error) {
-        console.error('Backend registration error:', error);
-      }
-
       setUser(result.user);
       setError('');
     } catch (error) {
       console.error('Login error:', error);
-      setError('حدث خطأ في تسجيل الدخول: ' + error.message);
+      setError(error.message);
     }
   };
 
@@ -161,14 +190,12 @@ function AppContent({ user, setUser }) {
     try {
       await signOut(auth);
       setUser(null);
-      console.log('User signed out');
-      setError('');
     } catch (error) {
-      console.error('Logout error:', error);
-      setError('حدث خطأ في تسجيل الخروج');
+      setError(error.message);
     }
   };
 
+<<<<<<< HEAD
   if (loading) {
     return (
       <div style={{
@@ -214,25 +241,19 @@ function AppContent({ user, setUser }) {
         fontFamily: 'Arial, sans-serif',
         direction: 'rtl'
       }}>
+=======
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', direction: 'rtl' }}>جاري التحميل...</div>;
+
+  if (!user) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px', direction: 'rtl' }}>
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
         <h1 style={{ color: '#28a745' }}>منصة السودان للجودة</h1>
-        <p style={{ fontSize: '18px', color: '#666' }}>
-          التدريب التفاعلي في الجودة الدوائية
-        </p>
-        <button
-          onClick={handleGoogleLogin}
-          style={{
-            backgroundColor: '#4285f4',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            marginTop: '20px'
-          }}
-        >
+        <p style={{ fontSize: '18px', color: '#666' }}>التدريب التفاعلي في الجودة الدوائية</p>
+        <button onClick={handleGoogleLogin} style={{ background: '#4285f4', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '6px', fontSize: '16px' }}>
           الدخول بحساب Google
         </button>
+<<<<<<< HEAD
 
         {error && (
           <div style={{
@@ -248,11 +269,15 @@ function AppContent({ user, setUser }) {
           </div>
         )}
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+        {error && <div style={{ color: 'red', marginTop: '20px' }}>{error}</div>}
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
       </div>
     );
   }
 
   return (
+<<<<<<< HEAD
 <<<<<<< HEAD
     <ErrorBoundary fallback={
       <div style={{ padding: '40px', textAlign: 'center', direction: 'rtl' }}>
@@ -260,10 +285,14 @@ function AppContent({ user, setUser }) {
         <button onClick={() => window.location.reload()}>إعادة التحميل</button>
       </div>
     }>
+=======
+    <ErrorBoundary>
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
       <GamificationProvider 
         userId={user.uid} 
         userEmail={user.email} 
         authToken={authToken}
+<<<<<<< HEAD
         loading={loading}
       >
         <Suspense fallback={<LoadingSpinner />}>
@@ -277,7 +306,22 @@ function AppContent({ user, setUser }) {
       <Dashboard user={user} onLogout={handleLogout} />
     </>
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+      >
+        <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+      </GamificationProvider>
+    </ErrorBoundary>
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
   );
+}
+
+function AppContentWrapper({ children }) {
+  const [user, setUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+
+  const handleTokenUpdate = (token) => setAuthToken(token);
+
+  return children(user, setUser, authToken, handleTokenUpdate);
 }
 
 function App() {
@@ -287,16 +331,25 @@ function App() {
         <Routes>
           <Route path="/verify" element={<VerifyCertificate />} />
 <<<<<<< HEAD
+<<<<<<< HEAD
           <Route path="/*" element={<AppContent />} />
 =======
           <Route path="/*" element={<AppContentWrapper />} />
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+          <Route path="/*" element={
+            <AppContentWrapper>
+              {AppContent}
+            </AppContentWrapper>
+          } />
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
         </Routes>
       </BrowserRouter>
     </LanguageProvider>
   );
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 export default App;
 
@@ -332,3 +385,7 @@ function AppContentWrapper() {
 
 export default App;
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+export default App;
+
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935

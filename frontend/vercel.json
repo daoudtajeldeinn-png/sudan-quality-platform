@@ -1,8 +1,20 @@
 {
+<<<<<<< HEAD
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "cd frontend && npm install",
+=======
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935

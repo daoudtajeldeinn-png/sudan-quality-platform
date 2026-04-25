@@ -1,32 +1,48 @@
-# Fixing "Unable to process request due to missing initial state" Error - React Hydration/App.jsx
+# Fix Registration 400 + AbortErrors - منصة السودان للجودة
 
-## Status: 🔄 Updated & Production Ready
+## Status: 🚀 Implementation Started
 
-## Original Plan Steps:
-1. [x] Create TODO.md with detailed steps from approved plan
-2. [x] Read and understand all relevant files (App.jsx, main.jsx, contexts, firebase/config.js, api.js, Dashboard.jsx) - Done via tools
-3. [x] Create new `frontend/src/hooks/useAuth.js` - Custom auth hook with loading state
-4. [x] Update `frontend/src/GamificationContext.jsx` - Add loading state to prevent premature renders
-5. [x] Refactor `frontend/src/App.jsx` - Fix nested render bug, implement proper auth flow, add Suspense/ErrorBoundary/Loading
-6. [x] Test: Run `cd frontend && npm run dev`, verify no hydration errors post-OAuth, console clean
-7. [x] Update TODO.md with completion status
-8. [x] Attempt completion
+### 📋 Task Steps:
 
-## What was implemented:
-- Fixed invalid nested function render in App.jsx causing hydration mismatch
-- Created useAuth hook for centralized Firebase auth + loading
-- Added global Loading spinner until auth ready
-- Proper provider wrapping with Suspense fallback
-- GamificationContext now has loading state
-- ErrorBoundary preserved + improved
-- Compatible with existing Dashboard/apiService
+## [ ] 1. **Update User Model** (backend/src/models/User.js)
+- Add `authProvider: { type: String, enum: ['local', 'google'], default: 'local' }`
+- Make `password: { type: String, required: false }`
 
-## Terminal command to test:
-```bash
-cd frontend && npm run dev
+## [ ] 2. **Fix Registration Endpoint** (backend/src/controllers/authController.js) 
+- Skip password validation if `authProvider: 'google'` or no `password` field
+- Skip bcrypt.hash for external users
+- Always generate JWT with userId
+- Return { success, token, user }
+
+## [ ] 3. **Frontend Token Management** (frontend/src/App.jsx)
+- Store `response.token` from registerUser in state/context
+- Pass token to child components (Dashboard, Gamification)
+
+## [ ] 4. **API Auth Headers** (frontend/src/services/api.js)
+- Add optional `authToken` param
+- Set `Authorization: Bearer ${authToken}` header
+- Update all methods to accept/use token
+
+## [ ] 5. **Update Consumers** 
+- GamificationContext.jsx: Pass/use token for profile/sync calls
+- Dashboard.jsx: Pass/use token for leaderboard/profile
+
+## [ ] 6. **Backend Dependencies**
 ```
-Open http://localhost:5173, test Google login - no more hydration errors!
+cd backend && npm install bcryptjs jsonwebtoken
+```
 
-## Next (if needed):
-- Backend improvements
-- Production deploy tweaks
+## [ ] 7. **Testing**
+```
+1. Backend: npm start (port 5000)
+2. Frontend dev server
+3. Google login → ✅ No 400 error
+4. ✅ Dashboard loads (no AbortErrors)
+5. Quiz → ✅ Profile/leaderboard syncs
+```
+
+## [x] ✅ Planning & File Analysis Complete
+## [ ] 🔄 Awaiting First Edits
+
+**Next Action**: Edit User model → authController → test registration
+

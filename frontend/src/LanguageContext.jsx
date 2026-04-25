@@ -151,14 +151,20 @@ export const translations = {
         track_gdp: 'مسار سلاسل الإمداد وممارسات التوزيع',
         track_regulatory: 'مسار الشؤون التنظيمية واليقظة (PV)',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
         analytics: 'التحليلات',
         yourStats: 'إحصائياتك الشخصية',
         quizzesTaken: 'الاختبارات المنجزة',
         lecturesRead: 'المحاضرات المقروءة',
         perfectScoresCount: 'عدد الدرجات الكاملة',
         rankInNetwork: 'ترتيبك في الشبكة',
+<<<<<<< HEAD
 =======
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
     },
     en: {
         // ... same structure for English
@@ -290,14 +296,20 @@ export const translations = {
         track_gdp: 'Supply Chain & GDP',
         track_regulatory: 'Regulatory Affairs & Pharmacovigilance',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
         analytics: 'Analytics',
         yourStats: 'Your Personal Stats',
         quizzesTaken: 'Quizzes Completed',
         lecturesRead: 'Lectures Read',
         perfectScoresCount: 'Perfect Scores',
         rankInNetwork: 'Rank in Network',
+<<<<<<< HEAD
 =======
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
+=======
+>>>>>>> 6e99791776742434a56d4862508810f8b0037935
     }
 };
 
