@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   photoURL: {
     type: String
   },
+<<<<<<< HEAD
   authProvider: {
     type: String,
     enum: ['local', 'google'],
@@ -26,6 +27,10 @@ const userSchema = new mongoose.Schema({
   password: { // Added for local auth compatibility
     type: String,
     required: false
+=======
+  password: { // Added for local auth compatibility
+    type: String
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   },
   createdAt: {
     type: Date,

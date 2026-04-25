@@ -5,15 +5,15 @@ require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');
 const questionRoutes = require('./src/routes/questionRoutes');
-const userRoutes = require('./src/routes/userRoutes');
 const certificateRoutes = require('./src/routes/certificateRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const MONGO_URI = process.env.MONGODB_URI;
-console.log("MongoDB URI:", MONGO_URI ? "Set" : "Not set");
+// Hardcoded MongoDB URI - can be changed here
+const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://daoudtajeldeinn113_db_user:HbdStyeaJyk5DaVz@sudanqualityplatform.xmr9cgw.mongodb.net/?appName=SUDANQUALITYPLATFORM&retryWrites=true&w=majority";
 
+<<<<<<< HEAD
 // ─── CORS (EXTREME FIX) ─────────────────────────────────────────────────────
 app.use(cors({
     origin: function (origin, callback) {
@@ -41,105 +41,178 @@ app.use(cors({
 
 app.options('*', cors());
 // ────────────────────────────────────────────────────────────────────────────
+=======
+console.log("MongoDB URI:", MONGO_URI);
+>>>>>>> b7c24487932f5a12410b1464b2eb8ed1de2ed0d2
 
+// Middleware
+const corsOptions = {
+  origin: [
+    'https://decisive-octane-472816-d3.web.app',
+    'https://sudan-quality-frontend-evipdz4gl-daoudtajeldeinn-pngs-projects.vercel.app',
+    'https://decisive-octane-472816-d3.firebaseapp.com',
+    'http://localhost:5173',
+    'http://localhost:5000'
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
+// Demo mode flag - set to true if MongoDB is not available
 let isDemoMode = false;
+
+// In-memory storage for demo mode
 const demoUsers = new Map();
 const { demoQuestions, getQuestionsByUnit, checkAnswer: checkDemoAnswer } = require('./src/data/demoQuestions');
 
+// Demo mode database simulation
 const DemoDB = {
-    users: demoUsers,
-    async findUserByEmail(email) {
-        for (let user of this.users.values()) {
-            if (user.email === email) return user;
-        }
-        return null;
-    },
-    async findUserById(id) {
-        return this.users.get(id) || null;
-    },
-    async createUser(userData) {
-        const id = 'demo_' + Date.now();
-        const user = { ...userData, _id: id, createdAt: new Date() };
-        this.users.set(id, user);
-        return user;
-    },
-    async getRandomQuestions(unitId, count = 10) {
-        return getQuestionsByUnit(unitId, count);
-    },
-    async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
-        return getQuestionsByUnit(unitId, count, excludeIds);
-    },
-    async checkAnswer(questionId, answer) {
-        const result = checkDemoAnswer(questionId, answer);
-        if (!result.found) return { correct: false, message: 'Question not found' };
-        return {
-            correct: result.isCorrect,
-            correctAnswer: result.correctAnswer,
-            explanation: result.explanation
-        };
+  users: demoUsers,
+  
+  // Helper to simulate async operations
+  async findUserByEmail(email) {
+    for (let user of this.users.values()) {
+      if (user.email === email) return user;
     }
+    return null;
+  },
+
+  async findUserById(id) {
+    return this.users.get(id) || null;
+  },
+
+  async createUser(userData) {
+    const id = 'demo_' + Date.now();
+    const user = { ...userData, _id: id, createdAt: new Date() };
+    this.users.set(id, user);
+    return user;
+  },
+
+  async getRandomQuestions(unitId, count = 10) {
+    return getQuestionsByUnit(unitId, count);
+  },
+
+  async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
+    return getQuestionsByUnit(unitId, count, excludeIds);
+  },
+
+  async checkAnswer(questionId, answer) {
+    const result = checkDemoAnswer(questionId, answer);
+    if (!result.found) return { correct: false, message: 'Question not found' };
+    return {
+      correct: result.isCorrect,
+      correctAnswer: result.correctAnswer,
+      explanation: result.explanation
+    };
+  }
 };
 
-const connectDB = async () => {
-    try {
-        if (MONGO_URI) {
-            try {
-                await mongoose.connect(MONGO_URI, {
-                    useNewUrlParser: true,
-                    useUnifiedTopology: true,
-                });
-                console.log('✅ MongoDB Atlas connected successfully');
-                return;
-            } catch (connError) {
-                console.log('❌ MongoDB Atlas connection failed:', connError.message);
-            }
-        }
 
-        // FALLBACK TO DEMO MODE IMMEDIATELY (No more MemoryServer crash!)
-        isDemoMode = true;
-        console.log('===========================================');
-        console.log('🚀 RUNNING IN DEMO MODE (No Persistent DB)');
-        console.log('===========================================');
-    } catch (error) {
-        console.log('Database setup error:', error.message);
-        isDemoMode = true;
+// MongoDB Connection
+const connectDB = async () => {
+  try {
+    // Use the hardcoded MONGO_URI or environment variable
+    let mongoUri = process.env.MONGODB_URI || MONGO_URI;
+
+    console.log("Attempting to connect to MongoDB...");
+    console.log("MongoDB URI:", mongoUri ? "Found" : "Not found");
+    
+    // Try to connect to the provided MongoDB URI first
+    if (mongoUri) {
+      try {
+        await mongoose.connect(mongoUri, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        });
+        console.log('MongoDB connected successfully');
+        return; // Connection successful, exit function
+      } catch (connError) {
+        console.log('Failed to connect to provided MongoDB, starting in DEMO mode...');
+        mongoUri = null;
+      }
     }
+
+    // If no MongoDB URI or connection failed, try mongodb-memory-server
+    if (!mongoUri) {
+      console.log('Trying MongoDB Memory Server...');
+      try {
+        const { MongoMemoryServer } = require('mongodb-memory-server');
+        const mongoServer = await MongoMemoryServer.create();
+        mongoUri = mongoServer.getUri();
+
+        await mongoose.connect(mongoUri, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        });
+        console.log('MongoDB Memory Server connected successfully');
+        return;
+      } catch (memServerError) {
+        console.log('MongoDB Memory Server not available, starting in DEMO mode...');
+      }
+    }
+
+    // Fallback to demo mode
+    isDemoMode = true;
+    console.log('===========================================');
+    console.log('⚠️  RUNNING IN DEMO MODE (No Database)');
+    console.log('===========================================');
+    console.log('Features available in demo mode:');
+    console.log('✓ User registration and login');
+    console.log('✓ Quiz with sample questions');
+    console.log('✓ All API endpoints respond normally');
+    console.log('Note: Data will not persist after server restart');
+    console.log('===========================================');
+
+  } catch (error) {
+    console.log('Database not available, starting in DEMO mode...');
+    isDemoMode = true;
+  }
 };
 
 connectDB();
 
+// Make demoDB available to routes
 app.use((req, res, next) => {
-    req.demoDB = DemoDB;
-    req.isDemoMode = isDemoMode;
-    next();
+  req.demoDB = DemoDB;
+  req.isDemoMode = isDemoMode;
+  next();
 });
 
+const userRoutes = require('./src/routes/userRoutes');
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/certificates', certificateRoutes);
 
 app.get('/', (req, res) => {
-    res.json({
-        message: 'منصة السودان للجودة - API Server Ready!',
-        status: isDemoMode ? 'demo' : 'production',
-        vercel: process.env.VERCEL ? 'Deployed on Vercel ✅' : 'Local dev'
-    });
+  const status = isDemoMode ? 'demo' : 'production';
+  res.json({
+    message: 'منصة السودان للجودة - API работает بنجاح!',
+    version: '1.0.0',
+    status: status,
+    database: isDemoMode ? 'Demo Mode (In-Memory)' : 'MongoDB',
+    endpoints: {
+      auth: '/api/auth',
+      questions: '/api/questions'
+    }
+  });
 });
 
+// Health check
 app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', mode: isDemoMode ? 'demo' : 'production' });
+  res.json({
+    status: 'ok',
+    mode: isDemoMode ? 'demo' : 'production',
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!', demoMode: isDemoMode });
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-const serverListener = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
-
-module.exports = app;

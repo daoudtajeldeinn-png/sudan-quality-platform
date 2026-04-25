@@ -1,33 +1,48 @@
-# Fix Firebase White Page - Detailed Plan & Progress
+# Fix Registration 400 + AbortErrors - منصة السودان للجودة
 
-**Root Cause:** Dynamic `await import('./firebase/config')` in `frontend/src/App.jsx` fails in production (chunk load error → infinite loading/white screen). No error handling.
+## Status: 🚀 Implementation Started
 
-**Information Gathered:**
-- firebase.json: Correct (public: 'dist', rewrites ** → /index.html)
-- App.jsx: Dynamic Firebase import, apiService dependency (services/api.js exists), BrowserRouter, contexts, Dashboard import.
-- main.jsx: Standard.
+### 📋 Task Steps:
 
-**Plan:**
-1. Update App.jsx: Static Firebase imports, ErrorBoundary, safe apiService stub, fallback UI.
-2. Add global error logging to main.jsx.
-3. Optimize vite.config.js.
-4. Build & deploy.
+## [ ] 1. **Update User Model** (backend/src/models/User.js)
+- Add `authProvider: { type: String, enum: ['local', 'google'], default: 'local' }`
+- Make `password: { type: String, required: false }`
 
-**Dependent Files:**
-- frontend/src/App.jsx
-- frontend/src/main.jsx
-- frontend/vite.config.js
+## [ ] 2. **Fix Registration Endpoint** (backend/src/controllers/authController.js) 
+- Skip password validation if `authProvider: 'google'` or no `password` field
+- Skip bcrypt.hash for external users
+- Always generate JWT with userId
+- Return { success, token, user }
 
-**Followup:**
-- `cd frontend && npm i && npm run build`
-- `firebase deploy --only hosting`
-- Test console.
+## [ ] 3. **Frontend Token Management** (frontend/src/App.jsx)
+- Store `response.token` from registerUser in state/context
+- Pass token to child components (Dashboard, Gamification)
 
-**Progress:**
-- [x] 1. Edit App.jsx (static imports, ErrorBoundary, safe API)
-- [x] 2. Edit main.jsx (error logging)
-- [x] 3. Edit vite.config.js (base '/', Firebase optimize)
-- [x] 4. Build & deploy ready - Run manual steps below (Node.js required)
+## [ ] 4. **API Auth Headers** (frontend/src/services/api.js)
+- Add optional `authToken` param
+- Set `Authorization: Bearer ${authToken}` header
+- Update all methods to accept/use token
 
-Proceed with edits?
+## [ ] 5. **Update Consumers** 
+- GamificationContext.jsx: Pass/use token for profile/sync calls
+- Dashboard.jsx: Pass/use token for leaderboard/profile
+
+## [ ] 6. **Backend Dependencies**
+```
+cd backend && npm install bcryptjs jsonwebtoken
+```
+
+## [ ] 7. **Testing**
+```
+1. Backend: npm start (port 5000)
+2. Frontend dev server
+3. Google login → ✅ No 400 error
+4. ✅ Dashboard loads (no AbortErrors)
+5. Quiz → ✅ Profile/leaderboard syncs
+```
+
+## [x] ✅ Planning & File Analysis Complete
+## [ ] 🔄 Awaiting First Edits
+
+**Next Action**: Edit User model → authController → test registration
 
