@@ -308,7 +308,13 @@ function AppContent({ user, setUser, authToken, onTokenUpdate }) {
 >>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
 =======
       >
-        <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+        {user ? (
+          <Dashboard user={user} onLogout={handleLogout} authToken={authToken} />
+        ) : (
+          <div style={{ textAlign: 'center', marginTop: '50px', direction: 'rtl' }}>
+            <h2>جاري التحميل...</h2>
+          </div>
+        )}
       </GamificationProvider>
     </ErrorBoundary>
 >>>>>>> 6e99791776742434a56d4862508810f8b0037935

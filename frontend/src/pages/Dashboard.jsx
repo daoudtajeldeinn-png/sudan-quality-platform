@@ -102,7 +102,9 @@ const UNIT_ICONS = {
   'adv-gdp': { icon: '🚚⭐', color: '#fd7e14', title: { ar: 'أساسيات سلسلة التبريد', en: 'Adv. GDP' } },
 };
 
-const Dashboard = ({ user, onLogout }) => {
+const Dashboard = ({ user, onLogout, authToken }) => {
+  // Guard against null user
+  const safeUser = user || { displayName: 'مستخدم', photoURL: null, email: '' };
   const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
   const { xp, level, badges, getXpToNextLevel, stats, updateStats, addXp, awardBadge } = useGamification();
 <<<<<<< HEAD
