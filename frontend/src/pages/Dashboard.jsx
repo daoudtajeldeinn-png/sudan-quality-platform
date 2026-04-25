@@ -79,6 +79,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
 
   useEffect(() => {
     const loadInitialData = async () => {
+      if (!user) return;
       const savedProgress = localStorage.getItem(`sqp_progress_${user.email}`);
       const savedStates = localStorage.getItem(`sqp_states_${user.email}`);
       const pledgeSigned = localStorage.getItem(`sqp_pledge_${user.email}`);
