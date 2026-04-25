@@ -19,7 +19,10 @@ app.use(cors({
     origin: function (origin, callback) {
         const whitelist = [
             'https://decisive-octane-472816-d3.web.app',
+<<<<<<< HEAD
             'https://sudan-quality-frontend.vercel.app',
+=======
+>>>>>>> 211e94025736dc9f4388c27f3695eee029487a6e
             'http://localhost:5173',
             'http://localhost:3000',
             'http://127.0.0.1:5173'
