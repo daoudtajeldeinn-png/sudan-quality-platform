@@ -1,48 +1,17 @@
-# Fix Registration 400 + AbortErrors - منصة السودان للجودة
+# Merge Conflict Resolution TODO
 
-## Status: 🚀 Implementation Started
+## Files with Merge Conflicts
+- [x] `frontend/src/LanguageContext.jsx` — Identical content on all branches, remove markers only
+- [ ] `frontend/src/main.jsx` — Combine error handlers + StrictMode
+- [ ] `frontend/src/GamificationContext.jsx` — Keep HEAD (authToken + loading support), clean duplicates
+- [ ] `frontend/src/App.jsx` — Reconstruct from HEAD (most complete), ensure routing works
+- [ ] `frontend/src/pages/Dashboard.jsx` — Reconstruct from HEAD, remove massive duplicated JSX blocks
 
-### 📋 Task Steps:
-
-## [ ] 1. **Update User Model** (backend/src/models/User.js)
-- Add `authProvider: { type: String, enum: ['local', 'google'], default: 'local' }`
-- Make `password: { type: String, required: false }`
-
-## [ ] 2. **Fix Registration Endpoint** (backend/src/controllers/authController.js) 
-- Skip password validation if `authProvider: 'google'` or no `password` field
-- Skip bcrypt.hash for external users
-- Always generate JWT with userId
-- Return { success, token, user }
-
-## [ ] 3. **Frontend Token Management** (frontend/src/App.jsx)
-- Store `response.token` from registerUser in state/context
-- Pass token to child components (Dashboard, Gamification)
-
-## [ ] 4. **API Auth Headers** (frontend/src/services/api.js)
-- Add optional `authToken` param
-- Set `Authorization: Bearer ${authToken}` header
-- Update all methods to accept/use token
-
-## [ ] 5. **Update Consumers** 
-- GamificationContext.jsx: Pass/use token for profile/sync calls
-- Dashboard.jsx: Pass/use token for leaderboard/profile
-
-## [ ] 6. **Backend Dependencies**
-```
-cd backend && npm install bcryptjs jsonwebtoken
-```
-
-## [ ] 7. **Testing**
-```
-1. Backend: npm start (port 5000)
-2. Frontend dev server
-3. Google login → ✅ No 400 error
-4. ✅ Dashboard loads (no AbortErrors)
-5. Quiz → ✅ Profile/leaderboard syncs
-```
-
-## [x] ✅ Planning & File Analysis Complete
-## [ ] 🔄 Awaiting First Edits
-
-**Next Action**: Edit User model → authController → test registration
+## Plan
+1. Fix `LanguageContext.jsx` (simplest)
+2. Fix `main.jsx`
+3. Fix `GamificationContext.jsx`
+4. Fix `App.jsx`
+5. Fix `Dashboard.jsx` (most complex)
+6. Verify no remaining conflict markers
 
