@@ -13,19 +13,18 @@ const PORT = process.env.PORT || 5000;
 // Hardcoded MongoDB URI - can be changed here
 const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://daoudtajeldeinn113_db_user:HbdStyeaJyk5DaVz@sudanqualityplatform.xmr9cgw.mongodb.net/?appName=SUDANQUALITYPLATFORM&retryWrites=true&w=majority";
 
-<<<<<<< HEAD
 // ─── CORS (EXTREME FIX) ─────────────────────────────────────────────────────
 app.use(cors({
     origin: function (origin, callback) {
         const whitelist = [
             'https://decisive-octane-472816-d3.web.app',
-<<<<<<< HEAD
             'https://sudan-quality-frontend.vercel.app',
-=======
->>>>>>> 211e94025736dc9f4388c27f3695eee029487a6e
+            'https://sudan-quality-frontend-evipdz4gl-daoudtajeldeinn-pngs-projects.vercel.app',
+            'https://decisive-octane-472816-d3.firebaseapp.com',
             'http://localhost:5173',
             'http://localhost:3000',
-            'http://127.0.0.1:5173'
+            'http://127.0.0.1:5173',
+            'http://localhost:5000'
         ];
         if (!origin || whitelist.indexOf(origin) !== -1) {
             callback(null, true);
@@ -41,24 +40,10 @@ app.use(cors({
 
 app.options('*', cors());
 // ────────────────────────────────────────────────────────────────────────────
-=======
+
 console.log("MongoDB URI:", MONGO_URI);
->>>>>>> b7c24487932f5a12410b1464b2eb8ed1de2ed0d2
 
 // Middleware
-const corsOptions = {
-  origin: [
-    'https://decisive-octane-472816-d3.web.app',
-    'https://sudan-quality-frontend-evipdz4gl-daoudtajeldeinn-pngs-projects.vercel.app',
-    'https://decisive-octane-472816-d3.firebaseapp.com',
-    'http://localhost:5173',
-    'http://localhost:5000'
-  ],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204
-};
-app.use(cors(corsOptions));
 app.use(express.json());
 
 // Demo mode flag - set to true if MongoDB is not available

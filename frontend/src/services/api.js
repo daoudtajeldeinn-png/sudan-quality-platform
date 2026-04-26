@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
-  ? 'https://sudanes-chemical-industries-pos-gpd.vercel.app/api'
+  ? 'https://backend-kappa-eight-30.vercel.app/api'
   : 'http://localhost:5000/api');
 
 // Helper for timeout-aware fetch
