@@ -3,7 +3,9 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { apiService } from './services/api';
 const GamificationContext = createContext();
 
-export const GamificationProvider = ({ children, userId, userEmail, authToken }) => {
+export const GamificationProvider = ({ children, userId, userEmail, authToken, loading: parentLoading = false }) => {
+  const [loading, setLoading] = useState(true);
+  const isLoading = parentLoading || loading;
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [badges, setBadges] = useState([]);
@@ -16,6 +18,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
   // Load state from Backend (preferable) or localStorage on mount
   useEffect(() => {
     const loadInitialStats = async () => {
+      setLoading(true);
       if (userId && authToken) {
         try {
           const profile = await apiService.getUserProfile(userId, authToken);
@@ -24,6 +27,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
             setLevel(profile.level || 1);
             setBadges(profile.badges || []);
             setStats(profile.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+            setLoading(false);
             return; // Exit if backend load successful
           }
         } catch (error) {
@@ -46,8 +50,8 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
       }
     };
 
-    loadInitialStats();
-  }, [userId, userEmail]);
+    loadInitialStats().finally(() => setLoading(false));
+  }, [userId, userEmail, authToken]);
 
   // Sync state to local and backend whenever it changes
   useEffect(() => {
@@ -71,7 +75,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
     // Debounce sync slightly to avoid excessive calls
     const timeoutId = setTimeout(syncToBackend, 2000);
     return () => clearTimeout(timeoutId);
-  }, [xp, level, badges, stats, userEmail, userId]);
+  }, [xp, level, badges, stats, userEmail, userId, authToken]);
 
   // Level logic: Level = floor(sqrt(XP / 100)) + 1
   useEffect(() => {
@@ -105,9 +109,13 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
     return { progress, goal, percentage: Math.min((progress / goal) * 100, 100) };
   };
 
+  if (isLoading) {
+    return <div style={{ padding: '2rem', textAlign: 'center', direction: 'rtl' }}>جاري تحميل البيانات...</div>;
+  }
+
   return (
     <GamificationContext.Provider value={{ 
-      xp, level, badges, stats, 
+      xp, level, badges, stats, loading,
       addXp, awardBadge, updateStats, getXpToNextLevel 
     }}>
       {children}
@@ -115,4 +123,8 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken })
   );
 };
 
-export const useGamification = () => useContext(GamificationContext);
+export const useGamification = () => { 
+  const ctx = useContext(GamificationContext); 
+  if (!ctx) return { xp: 0, level: 1, badges: [], stats: { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 }, getXpToNextLevel: () => 100, updateStats: () => {}, addXp: () => {}, awardBadge: () => {} }; 
+  return ctx; 
+};

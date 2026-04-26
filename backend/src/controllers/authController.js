@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // تسجيل مستخدم جديد
+<<<<<<< HEAD
 
 const registerUser = async (req, res) => {
   try {
@@ -50,11 +51,22 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
     }
 
+=======
+const registerUser = async (req, res) => {
+try {
+  const { email, displayName = email.split('@')[0], password } = req.body;
+  if (!password || password.length < 6) {
+    return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
+  }
+
+    
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
     // التحقق من وجود البريد الإلكتروني
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "البريد الإلكتروني مسجل مسبقاً" });
     }
+<<<<<<< HEAD
 
     
     let hashedPassword = null;
@@ -69,6 +81,17 @@ const registerUser = async (req, res) => {
       userId: userId || `user_${Date.now()}`,
       email,
       authProvider: isGoogleUser ? 'google' : 'local',
+=======
+    
+    // تشفير كلمة المرور
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    // إنشاء مستخدم جديد
+    const user = new User({
+      userId: req.body.userId || `user_${Date.now()}`,
+      email,
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
       displayName,
       photoURL: req.body.photoURL || null,
       password: hashedPassword,
@@ -92,9 +115,15 @@ const registerUser = async (req, res) => {
     
     await user.save();
     
+<<<<<<< HEAD
     // إنشاء JWT token لكل المستخدمين
     const token = jwt.sign(
       { userId: user.userId, email: user.email, authProvider: user.authProvider },
+=======
+    // إنشاء JWT token
+    const token = jwt.sign(
+      { userId: user.userId, email: user.email },
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
       process.env.JWT_SECRET || "sudan_quality_secret",
       { expiresIn: "24h" }
     );
@@ -119,6 +148,7 @@ const registerUser = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const { userId } = req.params;
+<<<<<<< HEAD
     
     if (req.isDemoMode) {
       const user = await req.demoDB.findUserById(userId);
@@ -143,11 +173,26 @@ const getUser = async (req, res) => {
         photoURL: user.photoURL
       });
     }
+=======
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود" });
+    }
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    });
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
   } catch (error) {
     console.error("Get user error:", error);
     res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4b7a20e946e57a19d6e3dd5af9abbec206e3e211
 module.exports = { registerUser, getUser };

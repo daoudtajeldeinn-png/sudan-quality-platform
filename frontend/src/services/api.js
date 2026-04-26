@@ -29,7 +29,7 @@ const fetchWithTimeout = async (resource, options = {}, authToken = null) => {
     clearTimeout(id);
     throw error;
   }
-}; // fetchWithTimeout end
+};
 
 export const apiService = {
   // تسجيل مستخدم جديد
@@ -37,6 +37,7 @@ export const apiService = {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -110,6 +111,7 @@ export const apiService = {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/user/sync/${userId}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       }, authToken);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

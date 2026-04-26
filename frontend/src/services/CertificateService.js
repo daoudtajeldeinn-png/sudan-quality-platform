@@ -11,7 +11,7 @@ export class CertificateService {
     const certData = { userId, userName, unitId, unitName, score, percentage, certNumber, status: "active", createdAt: new Date().toISOString() };
     
     try {
-      // 1. Save to MongoDB (Priority) - We'll add this endpoint to apiService if it doesn't exist
+      // 1. Save to MongoDB (Priority)
       await apiService.awardCertificate(certData);
       console.log("Certificate saved to MongoDB");
     } catch (e) {
@@ -54,7 +54,6 @@ export class CertificateService {
     // 1. Always prioritize MongoDB (via Backend)
     try {
       const res = await apiService.getUserCertificates(userId);
-      // Logic to find specific unit certificate in list
       if (res && res.certificates) {
         return res.certificates.find(c => c.unitId === unitId && c.status === 'active');
       }
