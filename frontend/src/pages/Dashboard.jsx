@@ -357,9 +357,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
 
   const CertificateModal = ({ isSample = false }) => {
     const [showSurvey, setShowSurvey] = useState(!isSample && !localStorage.getItem(`sqp_survey_${user.email}`));
-    const [certLang, setCertLang] = useState('en'); // Default to English for better compatibility
+    const [certLang, setCertLang] = useState('en'); 
+    const [viewType, setViewType] = useState('cert'); // 'cert' or 'transcript'
 
-    const downloadCertificatePDF = async () => {
+    const downloadPDF = async (filename) => {
       const input = document.getElementById('certificate-printable');
       if (!input) return;
       window.scrollTo(0, 0);
@@ -389,7 +390,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-        pdf.save(`${isSample ? 'SAMPLE_' : ''}Sudan_Quality_Platform_Certificate.pdf`);
+        pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
         logAuditTrail('eventCert');
       });
     };
@@ -422,25 +423,32 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       );
     }
 
-    // Certificate Content based on certLang
     const certContent = {
       en: {
         authority: 'Sudan Quality Platform',
         subAuthority: 'Quality & Accreditation Board',
         title: 'CERTIFICATE OF COMPLETION',
+        transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
         intro: 'This is to certify that',
         desc: 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
         date: 'Date',
-        name: 'Ahmed Daoud Tajeldeinn'
+        name: 'Ahmed Daoud Tajeldeinn',
+        unitHead: 'Unit/Module Name',
+        scoreHead: 'Score',
+        statusHead: 'Status'
       },
       ar: {
         authority: 'منصة السودان للجودة',
         subAuthority: 'مجلس الجودة والاعتماد البرامجي',
         title: 'شهادة إتمام تدريب',
+        transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
         intro: 'نشهد بأن المتدرب/ـة',
         desc: 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
         date: 'التاريخ',
-        name: 'أحمد داؤود تاجر الدين'
+        name: 'أحمد داؤود تاجر الدين',
+        unitHead: 'الوحدة / المسار',
+        scoreHead: 'الدرجة',
+        statusHead: 'الحالة'
       }
     };
 
@@ -454,7 +462,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       }}>
         <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
           backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
-          padding: '60px 80px', borderRadius: '4px', position: 'relative',
+          padding: '40px 60px', borderRadius: '4px', position: 'relative',
           border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
           textAlign: 'center',
           boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
@@ -469,60 +477,96 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           }}></div>
 
           <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+            {/* Header */}
             <div style={{ 
-              position: 'absolute', top: '-30px', 
-              right: certLang === 'ar' ? '-40px' : 'auto', 
-              left: certLang === 'en' ? '-40px' : 'auto', 
+              position: 'absolute', top: '-10px', 
+              right: certLang === 'ar' ? '-20px' : 'auto', 
+              left: certLang === 'en' ? '-20px' : 'auto', 
               display: 'flex', 
               flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
               alignItems: 'center', gap: '20px', zIndex: 100 
             }}>
               <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{current.authority}</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
+                <div style={{ fontWeight: 'bold', fontSize: '1.8rem', lineHeight: '1.2' }}>{current.authority}</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
               </div>
-              <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px' }} />
+              <img src={LOGO_PATH} alt="Logo" style={{ width: '100px', height: '100px' }} />
             </div>
 
-            <div style={{ marginTop: '160px' }}>
-              <h1 style={{ fontSize: '3.5rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
-                {current.title}
-              </h1>
-              <div style={{ width: '250px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '20px auto' }}></div>
-              <div style={{ margin: '30px 0' }}>
-                <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '600' }}>{current.intro}</p>
-                <h2 style={{ fontSize: '3.8rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
-                  {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
-                </h2>
-              </div>
-              <p style={{ fontSize: '1.4rem', margin: '25px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
-                {current.desc}
-              </p>
-            </div>
-
-            <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
-              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
-                <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1.1rem', color: 'var(--pharma-navy)' }}>
-                  {current.date}: {new Date().toLocaleDateString()}
+            {viewType === 'cert' ? (
+              <div style={{ marginTop: '130px' }}>
+                <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+                  {current.title}
+                </h1>
+                <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>
+                <div style={{ margin: '20px 0' }}>
+                  <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '600' }}>{current.intro}</p>
+                  <h2 style={{ fontSize: '3.6rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
+                    {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
+                  </h2>
+                </div>
+                <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
+                  {current.desc}
                 </p>
               </div>
+            ) : (
+              <div style={{ marginTop: '110px', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '2.2rem', color: 'var(--pharma-navy)', marginBottom: '20px' }}>{current.transcriptTitle}</h2>
+                <div style={{ maxHeight: '400px', overflowY: 'hidden', padding: '0 40px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid var(--border-color)' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: 'var(--pharma-navy)', color: 'white' }}>
+                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.unitHead}</th>
+                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.scoreHead}</th>
+                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.statusHead}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {unitIds.map(id => (
+                        <tr key={id}>
+                          <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
+                          <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{userProgress[id]}</td>
+                          <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 90 ? '#28a745' : '#999' }}>{userProgress[id] >= 90 ? 'PASSED' : 'PENDING'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ marginTop: '20px', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--pharma-navy)' }}>
+                  {language === 'ar' ? 'متوسط الدرجات الكلي' : 'Overall Performance Average'}: %{totalAverage}
+                </div>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
+                <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
+                  {current.date}: {new Date().toLocaleDateString()}
+                </p>
+                <p style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date().getTime().toString().substring(8)}</p>
+              </div>
               <div style={{ textAlign: 'center' }}>
-                <img src={LOGO_PATH} alt="Seal" style={{ width: '85px', height: '85px' }} />
-                <div style={{ width: '240px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '10px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.2rem' }}>
+                <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
+                <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
                   {t('developerName')}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="no-print" style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '15px' }}>
-            <button onClick={() => setCertLang(certLang === 'en' ? 'ar' : 'en')} style={{ padding: '12px 20px', backgroundColor: '#6c757d', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-              🌐 {certLang === 'en' ? 'Arabic Version' : 'English Version'}
+          {/* Controls */}
+          <div className="no-print" style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '10px' }}>
+            <button onClick={() => setCertLang(certLang === 'en' ? 'ar' : 'en')} className="btn-lang" style={{ background: '#6c757d', minWidth: '150px' }}>
+              🌐 {certLang === 'en' ? 'Arabic' : 'English'}
             </button>
-            <button onClick={downloadCertificatePDF} style={{ padding: '12px 40px', backgroundColor: 'var(--pharma-navy)', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-              📄 Download PDF
+            <button onClick={() => setViewType(viewType === 'cert' ? 'transcript' : 'cert')} className="btn-lang" style={{ background: 'var(--regulatory-amber)', minWidth: '150px' }}>
+               {viewType === 'cert' ? '📄 View Details' : '📜 View Certificate'}
             </button>
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} style={{ padding: '12px 40px', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
+              ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
+            </button>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} className="btn-logout" style={{ background: '#333' }}>
               {t('back')}
             </button>
           </div>
