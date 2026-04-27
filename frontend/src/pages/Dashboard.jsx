@@ -357,20 +357,20 @@ const Dashboard = ({ user, onLogout, authToken }) => {
 
   const CertificateModal = ({ isSample = false }) => {
     const [showSurvey, setShowSurvey] = useState(!isSample && !localStorage.getItem(`sqp_survey_${user.email}`));
+    const [certLang, setCertLang] = useState('en'); // Default to English for better compatibility
 
     const downloadCertificatePDF = async () => {
       const input = document.getElementById('certificate-printable');
       if (!input) return;
       window.scrollTo(0, 0);
       
-      // Ensure fonts are loaded before capture
       try {
         await document.fonts.ready;
       } catch (e) {
         console.warn('Font loading wait failed', e);
       }
       
-      await new Promise(resolve => setTimeout(resolve, 800)); // Increased delay for better rendering
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       html2canvas(input, { 
         scale: 2.5, 
@@ -422,20 +422,44 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       );
     }
 
+    // Certificate Content based on certLang
+    const certContent = {
+      en: {
+        authority: 'Sudan Quality Platform',
+        subAuthority: 'Quality & Accreditation Board',
+        title: 'CERTIFICATE OF COMPLETION',
+        intro: 'This is to certify that',
+        desc: 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
+        date: 'Date',
+        name: 'Ahmed Daoud Tajeldeinn'
+      },
+      ar: {
+        authority: 'منصة السودان للجودة',
+        subAuthority: 'مجلس الجودة والاعتماد البرامجي',
+        title: 'شهادة إتمام تدريب',
+        intro: 'نشهد بأن المتدرب/ـة',
+        desc: 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
+        date: 'التاريخ',
+        name: 'أحمد داؤود تاجر الدين'
+      }
+    };
+
+    const current = certContent[certLang];
+
     return (
       <div className="certificate-modal-overlay" style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
-        <div id="certificate-printable" className="certificate-container" style={{
+        <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
           backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
           padding: '60px 80px', borderRadius: '4px', position: 'relative',
           border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
           textAlign: 'center',
-          boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: 'rtl',
+          boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-          fontFamily: language === 'ar' ? "'IBM Plex Sans Arabic', 'Amiri', serif" : "'Inter', 'IBM Plex Sans', sans-serif"
+          fontFamily: certLang === 'ar' ? "'IBM Plex Sans Arabic', 'Amiri', serif" : "'Inter', 'IBM Plex Sans', sans-serif"
         }}>
           <div style={{
             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -445,34 +469,41 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           }}></div>
 
           <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-            <div style={{ position: 'absolute', top: '-30px', right: '-40px', display: 'flex', alignItems: 'center', gap: '20px', zIndex: 100 }}>
-              <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px' }} />
-              <div style={{ textAlign: 'right', color: 'var(--pharma-navy)' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{t('issuingAuthority')}</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>Quality & Accreditation Board</div>
+            <div style={{ 
+              position: 'absolute', top: '-30px', 
+              right: certLang === 'ar' ? '-40px' : 'auto', 
+              left: certLang === 'en' ? '-40px' : 'auto', 
+              display: 'flex', 
+              flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
+              alignItems: 'center', gap: '20px', zIndex: 100 
+            }}>
+              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{current.authority}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
               </div>
+              <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px' }} />
             </div>
 
             <div style={{ marginTop: '160px' }}>
               <h1 style={{ fontSize: '3.5rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
-                {t('certTitle')}
+                {current.title}
               </h1>
               <div style={{ width: '250px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '20px auto' }}></div>
               <div style={{ margin: '30px 0' }}>
-                <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '600' }}>{t('certIntro')}</p>
+                <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '600' }}>{current.intro}</p>
                 <h2 style={{ fontSize: '3.8rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
-                  {isSample ? 'Ahmed Daoud Tajeldeinn' : (user.displayName || user.email.split('@')[0])}
+                  {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
                 </h2>
               </div>
               <p style={{ fontSize: '1.4rem', margin: '25px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
-                {t('certDesc')}
+                {current.desc}
               </p>
             </div>
 
             <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
-              <div style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
+              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                 <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1.1rem', color: 'var(--pharma-navy)' }}>
-                  {t('dateLabel')}: {new Date().toLocaleDateString()}
+                  {current.date}: {new Date().toLocaleDateString()}
                 </p>
               </div>
               <div style={{ textAlign: 'center' }}>
@@ -485,6 +516,9 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           </div>
 
           <div className="no-print" style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '15px' }}>
+            <button onClick={() => setCertLang(certLang === 'en' ? 'ar' : 'en')} style={{ padding: '12px 20px', backgroundColor: '#6c757d', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+              🌐 {certLang === 'en' ? 'Arabic Version' : 'English Version'}
+            </button>
             <button onClick={downloadCertificatePDF} style={{ padding: '12px 40px', backgroundColor: 'var(--pharma-navy)', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
               📄 Download PDF
             </button>
