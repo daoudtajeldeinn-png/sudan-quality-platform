@@ -19,16 +19,39 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
   useEffect(() => {
     const loadInitialStats = async () => {
       setLoading(true);
+      
+      let localData = null;
+      if (userEmail) {
+        const savedData = localStorage.getItem(`sqp_gamify_${userEmail}`);
+        if (savedData) {
+          try { localData = JSON.parse(savedData); } catch (e) { console.error('Error parsing local data', e); }
+        }
+      }
+
       if (userId && authToken) {
         try {
           const profile = await apiService.getUserProfile(userId, authToken);
           if (profile) {
-            setXp(profile.xp || 0);
-            setLevel(profile.level || 1);
-            setBadges(profile.badges || []);
-            setStats(profile.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+            // RECONCILIATION: Take the highest XP between local and remote
+            const remoteXp = profile.xp || 0;
+            const localXp = localData?.xp || 0;
+            
+            if (localXp > remoteXp) {
+              console.log('Local progress is ahead, syncing to cloud...');
+              setXp(localXp);
+              setLevel(localData.level || 1);
+              setBadges(localData.badges || []);
+              setStats(localData.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+              
+              // Trigger a sync back to server in the next effect
+            } else {
+              setXp(remoteXp);
+              setLevel(profile.level || 1);
+              setBadges(profile.badges || []);
+              setStats(profile.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
+            }
             setLoading(false);
-            return; // Exit if backend load successful
+            return;
           }
         } catch (error) {
           console.warn('Backend profile fetch failed, using localStorage fallback', error);
@@ -36,17 +59,11 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
       }
 
       // Fallback to localStorage if no userId or backend fails
-      if (userEmail) {
-        const savedData = localStorage.getItem(`sqp_gamify_${userEmail}`);
-        if (savedData) {
-          try {
-            const parsed = JSON.parse(savedData);
-            setXp(parsed.xp || 0);
-            setLevel(parsed.level || 1);
-            setBadges(parsed.badges || []);
-            setStats(parsed.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
-          } catch (e) { console.error('Error loading gamification data', e); }
-        }
+      if (localData) {
+        setXp(localData.xp || 0);
+        setLevel(localData.level || 1);
+        setBadges(localData.badges || []);
+        setStats(localData.stats || { totalQuizzes: 0, perfectScores: 0, lecturesCompleted: 0 });
       }
     };
 

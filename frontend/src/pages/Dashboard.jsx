@@ -104,9 +104,24 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             const remoteProgress = profile.progress.unitScores || {};
             setUserProgress(prev => {
               const reconciled = { ...prev };
+              let needsSync = false;
               Object.keys(remoteProgress).forEach(unitId => {
+                if ((prev[unitId] || 0) > (remoteProgress[unitId] || 0)) {
+                  needsSync = true;
+                }
                 reconciled[unitId] = Math.max(prev[unitId] || 0, remoteProgress[unitId]);
               });
+              
+              if (needsSync && user.uid) {
+                console.log('Pushing reconciled local progress to cloud...');
+                apiService.syncUserStats(user.uid, {
+                  progress: {
+                    unitScores: reconciled,
+                    unitStates: unitStates,
+                    totalScore: Object.values(reconciled).reduce((a, b) => (typeof b === 'number' ? a + b : a), 0)
+                  }
+                }, authToken).catch(e => console.error('Initial sync failed', e));
+              }
               return reconciled;
             });
             setUserCertLevel(profile.progress.level || 1);
