@@ -460,103 +460,105 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
-        <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
-          backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
-          padding: '40px 60px', borderRadius: '4px', position: 'relative',
-          border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
-          textAlign: 'center',
-          boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
-          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-          fontFamily: certLang === 'ar' ? "'IBM Plex Sans Arabic', 'Amiri', serif" : "'Inter', 'IBM Plex Sans', sans-serif"
-        }}>
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: '600px', height: '600px', backgroundImage: `url(${LOGO_PATH})`,
-            backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
-            opacity: 0.03, pointerEvents: 'none', zIndex: 1
-          }}></div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
+          <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
+            backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
+            padding: '40px 60px', borderRadius: '4px', position: 'relative',
+            border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
+            textAlign: 'center',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
+            display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            fontFamily: certLang === 'ar' ? "'IBM Plex Sans Arabic', 'Amiri', serif" : "'Inter', 'IBM Plex Sans', sans-serif"
+          }}>
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              width: '600px', height: '600px', backgroundImage: `url(${LOGO_PATH})`,
+              backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+              opacity: 0.03, pointerEvents: 'none', zIndex: 1
+            }}></div>
 
-          <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-            {/* Header */}
-            <div style={{ 
-              position: 'absolute', top: '-10px', 
-              right: certLang === 'ar' ? '-20px' : 'auto', 
-              left: certLang === 'en' ? '-20px' : 'auto', 
-              display: 'flex', 
-              flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
-              alignItems: 'center', gap: '20px', zIndex: 100 
-            }}>
-              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '1.8rem', lineHeight: '1.2' }}>{current.authority}</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
-              </div>
-              <img src={LOGO_PATH} alt="Logo" style={{ width: '100px', height: '100px' }} />
-            </div>
-
-            {viewType === 'cert' ? (
-              <div style={{ marginTop: '130px' }}>
-                <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
-                  {current.title}
-                </h1>
-                <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>
-                <div style={{ margin: '20px 0' }}>
-                  <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '600' }}>{current.intro}</p>
-                  <h2 style={{ fontSize: '3.6rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
-                    {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
-                  </h2>
+            <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+              {/* Header */}
+              <div style={{ 
+                position: 'absolute', top: '-10px', 
+                right: certLang === 'ar' ? '-20px' : 'auto', 
+                left: certLang === 'en' ? '-20px' : 'auto', 
+                display: 'flex', 
+                flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
+                alignItems: 'center', gap: '20px', zIndex: 100 
+              }}>
+                <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '1.8rem', lineHeight: '1.2' }}>{current.authority}</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
                 </div>
-                <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
-                  {current.desc}
-                </p>
+                <img src={LOGO_PATH} alt="Logo" style={{ width: '100px', height: '100px' }} />
               </div>
-            ) : (
-              <div style={{ marginTop: '110px', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '2.2rem', color: 'var(--pharma-navy)', marginBottom: '20px' }}>{current.transcriptTitle}</h2>
-                <div style={{ maxHeight: '400px', overflowY: 'hidden', padding: '0 40px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid var(--border-color)' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: 'var(--pharma-navy)', color: 'white' }}>
-                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.unitHead}</th>
-                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.scoreHead}</th>
-                        <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.statusHead}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {unitIds.map(id => (
-                        <tr key={id}>
-                          <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
-                          <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{userProgress[id]}</td>
-                          <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 90 ? '#28a745' : '#999' }}>{userProgress[id] >= 90 ? 'PASSED' : 'PENDING'}</td>
+
+              {viewType === 'cert' ? (
+                <div style={{ marginTop: '130px' }}>
+                  <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+                    {current.title}
+                  </h1>
+                  <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>
+                  <div style={{ margin: '20px 0' }}>
+                    <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '600' }}>{current.intro}</p>
+                    <h2 style={{ fontSize: '3.6rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
+                      {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
+                    </h2>
+                  </div>
+                  <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
+                    {current.desc}
+                  </p>
+                </div>
+              ) : (
+                <div style={{ marginTop: '110px', textAlign: 'center' }}>
+                  <h2 style={{ fontSize: '2.2rem', color: 'var(--pharma-navy)', marginBottom: '20px' }}>{current.transcriptTitle}</h2>
+                  <div style={{ maxHeight: '400px', overflowY: 'hidden', padding: '0 40px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid var(--border-color)' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: 'var(--pharma-navy)', color: 'white' }}>
+                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.unitHead}</th>
+                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.scoreHead}</th>
+                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.statusHead}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {unitIds.map(id => (
+                          <tr key={id}>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{userProgress[id]}</td>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 90 ? '#28a745' : '#999' }}>{userProgress[id] >= 90 ? 'PASSED' : 'PENDING'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ marginTop: '20px', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--pharma-navy)' }}>
+                    {language === 'ar' ? 'متوسط الدرجات الكلي' : 'Overall Performance Average'}: %{totalAverage}
+                  </div>
                 </div>
-                <div style={{ marginTop: '20px', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--pharma-navy)' }}>
-                  {language === 'ar' ? 'متوسط الدرجات الكلي' : 'Overall Performance Average'}: %{totalAverage}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Footer */}
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
-              <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
-                <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
-                  {current.date}: {new Date().toLocaleDateString()}
-                </p>
-                <p style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date().getTime().toString().substring(8)}</p>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
-                <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
-                  {t('developerName')}
+              {/* Footer */}
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+                <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
+                  <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
+                    {current.date}: {new Date().toLocaleDateString()}
+                  </p>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date().getTime().toString().substring(8)}</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
+                  <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
+                    {t('developerName')}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="no-print" style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '10px' }}>
+          {/* Controls - Moved outside #certificate-printable */}
+          <div className="no-print" style={{ display: 'flex', gap: '15px', zIndex: 3000, paddingBottom: '40px' }}>
             <button onClick={() => setCertLang(certLang === 'en' ? 'ar' : 'en')} className="btn-lang" style={{ background: '#6c757d', minWidth: '150px' }}>
               🌐 {certLang === 'en' ? 'Arabic' : 'English'}
             </button>
@@ -566,7 +568,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
               ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
             </button>
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} className="btn-logout" style={{ background: '#333' }}>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
               {t('back')}
             </button>
           </div>
