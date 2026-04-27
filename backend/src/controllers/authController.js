@@ -12,7 +12,22 @@ const registerUser = async (req, res) => {
       // Check existing in demo DB
       const existingUser = await req.demoDB.findUserByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ error: "البريد الإلكتروني مسجل مسبقاً" });
+        const token = jwt.sign(
+          { userId: existingUser._id, email: existingUser.email },
+          process.env.JWT_SECRET || "sudan_quality_secret",
+          { expiresIn: "24h" }
+        );
+        
+        return res.status(200).json({
+          success: true,
+          token,
+          user: {
+            userId: existingUser._id,
+            email: existingUser.email,
+            displayName: existingUser.displayName,
+            photoURL: existingUser.photoURL
+          }
+        });
       }
       
       const demoUser = await req.demoDB.createUser({
