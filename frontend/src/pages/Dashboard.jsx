@@ -12,6 +12,7 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
+import { QRCodeCanvas } from 'qrcode.react';
 import apiService from '../services/api';
 import '../styles/CertificateStyles.css';
 
@@ -543,9 +544,25 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
-                    {current.date}: {new Date().toLocaleDateString()}
+                    {current.date}: {userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString()}
                   </p>
-                  <p style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date().getTime().toString().substring(8)}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
+                      <QRCodeCanvas 
+                        value={`https://sudan-quality-frontend.vercel.app/verify/${user.uid}`} 
+                        size={65} 
+                        level="H" 
+                        includeMargin={false}
+                      />
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'left' }}>
+                      <div style={{ fontWeight: 'bold', color: 'var(--pharma-navy)' }}>CERTIFICATE VERIFICATION</div>
+                      <div>SCAN TO VALIDATE AUTHENTICITY</div>
+                      <div style={{ fontFamily: 'monospace', letterSpacing: '1px', marginTop: '3px' }}>
+                        ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date(userProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
