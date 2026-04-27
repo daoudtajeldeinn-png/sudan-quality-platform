@@ -13,6 +13,7 @@ import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
 import apiService from '../services/api';
+import '../styles/CertificateStyles.css';
 
 // Unit grouping
 const TRACKS = [
@@ -277,7 +278,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             lastPlayed: unitId,
             totalScore: Object.values(newProgress).reduce((a, b) => a + b, 0)
           }
-        }).catch(err => console.error('Sync failed:', err));
+        }, authToken).catch(err => console.error('Sync failed:', err));
       }
       return newProgress;
     });
@@ -371,7 +372,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           hotfixes: ["px_scaling"]
         });
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdfHeight = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
         pdf.save(`${isSample ? 'SAMPLE_' : ''}Sudan_Quality_Platform_Certificate.pdf`);
         logAuditTrail('eventCert');
@@ -407,13 +408,13 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     }
 
     return (
-      <div style={{
+      <div className="certificate-modal-overlay" style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
-        <div id="certificate-printable" style={{
-          backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '1050px', minHeight: '850px',
+        <div id="certificate-printable" className="certificate-container" style={{
+          backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
           padding: '60px 80px', borderRadius: '4px', position: 'relative',
           border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
           textAlign: 'center',

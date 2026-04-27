@@ -43,19 +43,19 @@ const syncUserStats = async (req, res) => {
       });
       res.json({ success: true, user: updatedUser });
     } else {
+      // بناء كائن التحديث ديناميكياً لتجنب مسح البيانات الموجودة
+      const updateData = {};
+      if (xp !== undefined) updateData.xp = xp;
+      if (level !== undefined) updateData.level = level;
+      if (badges !== undefined) updateData.badges = badges;
+      if (stats !== undefined) updateData.stats = stats;
+      if (progress !== undefined) updateData.progress = progress;
+      updateData.lastLogin = new Date();
+
       // البحث عن المستخدم وتحديثه
       const user = await User.findOneAndUpdate(
         { userId },
-        { 
-          $set: { 
-            xp, 
-            level, 
-            badges, 
-            stats,
-            progress,
-            lastLogin: new Date() // تحديث تاريخ التواجد
-          } 
-        },
+        { $set: updateData },
         { new: true, upsert: false }
       );
       

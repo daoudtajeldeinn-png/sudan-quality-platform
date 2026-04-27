@@ -55,17 +55,24 @@ const userSchema = new mongoose.Schema({
     lecturesCompleted: { type: Number, default: 0 }
   },
   progress: {
-    completedUnits: [{
-      type: String
-    }],
-    currentUnit: {
-      type: String
+    completedUnits: [String],
+    currentUnit: String,
+    unitScores: {
+      type: Map,
+      of: Number,
+      default: {}
     },
+    unitStates: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    lastPlayed: String,
     totalScore: {
       type: Number,
       default: 0
     },
-    level: { type: Number, default: 1 }, // Moved here for easier access, 1=basic, 2=advanced
+    level: { type: Number, default: 1 }, // 1=basic, 2=advanced
     certificates: [{
       certificateId: String,
       issueDate: Date,

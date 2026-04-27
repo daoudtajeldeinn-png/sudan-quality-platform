@@ -52,7 +52,23 @@ const registerUser = async (req, res) => {
     // التحقق من وجود البريد الإلكتروني
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "البريد الإلكتروني مسجل مسبقاً" });
+      // إذا كان مستخدم جوجل، نسمح بتسجيل الدخول مباشرة والحصول على التوكن
+      const token = jwt.sign(
+        { userId: existingUser.userId, email: existingUser.email, authProvider: existingUser.authProvider },
+        process.env.JWT_SECRET || "sudan_quality_secret",
+        { expiresIn: "24h" }
+      );
+      
+      return res.status(200).json({
+        success: true,
+        token,
+        user: {
+          userId: existingUser.userId,
+          email: existingUser.email,
+          displayName: existingUser.displayName,
+          photoURL: existingUser.photoURL
+        }
+      });
     }
     let hashedPassword = null;
     if (!isGoogleUser) {

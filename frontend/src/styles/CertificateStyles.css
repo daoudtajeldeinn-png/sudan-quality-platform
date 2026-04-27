@@ -117,8 +117,49 @@
     font-family: monospace;
 }
 
-/* RTL Support */
-.rtl-cert {
-    direction: rtl;
-    font-family: 'Amiri', 'IBM Plex Sans Arabic', serif;
+
+/* Print styles */
+@page {
+    size: A4 landscape;
+    margin: 0;
+}
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .certificate-modal-overlay {
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    .certificate-container {
+        width: 297mm !important;
+        height: 210mm !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        position: relative !important;
+        display: flex !important;
+        visibility: visible !important;
+    }
+
+    /* Hide everything else */
+    body > *:not(.certificate-modal-overlay) {
+        display: none !important;
+    }
 }
