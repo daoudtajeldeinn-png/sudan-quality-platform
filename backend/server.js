@@ -1,6 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Force Google DNS for SRV resolution (fixes connection issues in some regions)
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');

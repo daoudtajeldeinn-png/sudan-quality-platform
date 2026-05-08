@@ -1,4 +1,9 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Fix for DNS resolution in restricted networks
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const { demoQuestions } = require('./src/data/demoQuestions');
 const Question = require('./src/models/Question');
 require('dotenv').config();
@@ -15,10 +20,11 @@ async function seedDatabase() {
     console.log('Connected successfully!');
 
     const unitId = 'cleaning-validation';
-    const questions = demoQuestions[unitId];
+    // Filter from the flat array exported by demoQuestions.js
+    const questions = demoQuestions.filter(q => q.unitId === unitId);
 
     if (!questions || questions.length === 0) {
-      console.error('No questions found for cleaning-validation in demoQuestions.js');
+      console.error(`No questions found for ${unitId} in demoQuestions.js. Array length: ${demoQuestions.length}`);
       process.exit(1);
     }
 
@@ -32,6 +38,13 @@ async function seedDatabase() {
     const formatted = questions.map(q => {
         const newQ = { ...q };
         delete newQ._id; // Let MongoDB generate new IDs
+        if (!newQ.category) newQ.category = 'Intermediate';
+        
+        // Handle 'fill' type questions for schema validation
+        if (newQ.type === 'fill' && (!newQ.correctAnswer && newQ.correctAnswers)) {
+            newQ.correctAnswer = newQ.correctAnswers[0];
+        }
+        
         return newQ;
     });
 
