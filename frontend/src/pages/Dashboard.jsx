@@ -59,8 +59,8 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   const [certificates, setCertificates] = useState([]);
   const [currentUnit, setCurrentUnit] = useState(null);
 
-  const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [selectedCert, setSelectedCert] = useState(null);
   const [isSampleMode, setIsSampleMode] = useState(false);
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
@@ -359,8 +359,8 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     );
   };
 
-  const CertificateModal = ({ isSample = false }) => {
-    const [showSurvey, setShowSurvey] = useState(!isSample && !localStorage.getItem(`sqp_survey_${user.email}`));
+  const CertificateModal = ({ isSample = false, certData = null }) => {
+    const [showSurvey, setShowSurvey] = useState(!isSample && !certData && !localStorage.getItem(`sqp_survey_${user.email}`));
     const [certLang, setCertLang] = useState('en'); 
     const [viewType, setViewType] = useState('cert'); // 'cert' or 'transcript'
 
@@ -434,7 +434,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'CERTIFICATE OF COMPLETION',
         transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
         intro: 'This is to certify that',
-        desc: 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
+        desc: certData ? `Has successfully completed the ${certData.unitType || 'Specialized'} unit and demonstrated professional proficiency.` : 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
         date: 'Date',
         name: 'Ahmed Daoud Tajeldeinn',
         unitHead: 'Unit/Module Name',
@@ -447,7 +447,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'شهادة إتمام تدريب',
         transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
         intro: 'نشهد بأن المتدرب/ـة',
-        desc: 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
+        desc: certData ? `قد أكمل بنجاح وحدة ${certData.unitType || 'التخصصية'} وأظهر كفاءة احترافية متميزة.` : 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
         date: 'التاريخ',
         name: 'أحمد داؤود تاجر الدين',
         unitHead: 'الوحدة / المسار',
@@ -547,7 +547,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
-                    {current.date}: {userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString()}
+                    {current.date}: {certData ? new Date(certData.issueDate).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                     <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
@@ -588,7 +588,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
               ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
             </button>
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
               {t('back')}
             </button>
           </div>
@@ -637,7 +637,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   return (
     <div style={{ direction: language === 'ar' ? 'rtl' : 'ltr', paddingBottom: '50px' }}>
       {showPledge && <PledgeModal />}
-      {showCertificate && <CertificateModal isSample={isSampleMode} />}
+      {showCertificate && <CertificateModal isSample={isSampleMode} certData={selectedCert} />}
       {showDevProfile && <DeveloperProfileModal />}
 
       <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
@@ -705,8 +705,13 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           {userCertLevel === 1 ? 'كل 3 كورسات اكتملت بنسبة 90%+ = شهادة' : 'كل كورس اكتمل بنسبة 90%+ = شهادة'}
         </div>
         {certificates.length > 0 ? certificates.map(cert => (
-          <div key={cert.certificateId} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745' }}>
-            {cert.unitType || 'شهادة مجمعة'} - <strong>L{cert.level}</strong> - {cert.score}%
+          <div key={cert.certificateId} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              {cert.unitType || 'شهادة مجمعة'} - <strong>L{cert.level}</strong> - {cert.score}%
+            </div>
+            <button onClick={() => { setSelectedCert(cert); setShowCertificate(true); }} className="btn-primary" style={{ padding: '5px 15px', fontSize: '0.8rem' }}>
+              👁️ عرض
+            </button>
           </div>
         )) : <p style={{ color: '#6c757d' }}>ابدأ الكورسات لتحقيق شهاداتك!</p>}
       </section>

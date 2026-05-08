@@ -32,12 +32,12 @@ exports.awardCertificateSmart = async (req, res) => {
     const level = user.progress.level || user.level || 1; // Prefer progress.level
     let cert;
 
-    if (level === 1) {
-      // Basic: check if multiple of 3
-      if (user.progress.completedUnits.length % 3 === 0) {
-        const last3 = user.progress.completedUnits.slice(-3).map((id, idx) => ({
+    if (level === 1 && unitId !== 'cleaning-validation') {
+      // Basic: check if multiple of 3 (excluding specialized units like cleaning-validation)
+      if (user.progress.completedUnits.filter(id => id !== 'cleaning-validation').length % 3 === 0) {
+        const last3 = user.progress.completedUnits.filter(id => id !== 'cleaning-validation').slice(-3).map((id, idx) => ({
           unitId: id,
-          unitName: unitName, // Simplify, or fetch names
+          unitName: unitName, // Simplified
           score: score,
           percentage
         }));
@@ -45,8 +45,8 @@ exports.awardCertificateSmart = async (req, res) => {
         cert = await createCertDoc(userId, userName, 1, last3, null, `3 كورسات ابتدائية (Basic)`, avgScore, percentage);
       }
     } else {
-      // Advanced: per unit
-      cert = await createCertDoc(userId, userName, 2, null, unitId, unitName, score, percentage);
+      // Advanced OR specialized unit: per unit
+      cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
     }
 
     if (cert) {
