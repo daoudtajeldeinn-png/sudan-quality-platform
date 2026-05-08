@@ -272,18 +272,24 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
       
       if (score >= 90 && user?.uid) {
-        try {
-          apiService.awardCertificate({
-            userId: user.uid,
-            userName: user.displayName || user.email,
-            unitId,
-            unitName: allUnitsDefinition.find(u => u.id === unitId)?.title || unitId,
-            score,
-            percentage: score
-          });
-        } catch (e) {
-          console.error('Award failed', e);
-        }
+        (async () => {
+          try {
+            await apiService.awardCertificate({
+              userId: user.uid,
+              userName: user.displayName || user.email,
+              unitId,
+              unitName: allUnitsDefinition.find(u => u.id === unitId)?.title || unitId,
+              score,
+              percentage: score
+            });
+            // Refresh certificates list
+            const certsData = await apiService.getUserCertificates(user.uid, authToken);
+            setCertificates(certsData.certificates || []);
+            alert(language === 'ar' ? 'تهانينا! تم إصدار شهادتك بنجاح. يمكنك العثور عليها في قسم الشهادات بالأسفل.' : 'Congratulations! Your certificate has been issued successfully. You can find it in the certificates section below.');
+          } catch (e) {
+            console.error('Award failed', e);
+          }
+        })();
       }
 
       const allOthersPassed = allTrackUnits.filter(id => id !== unitId).every(id => (newProgress[id] || 0) >= 90);
