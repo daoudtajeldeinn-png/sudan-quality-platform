@@ -16,27 +16,20 @@ const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://daoudtajeldeinn_db_u
 // ─── CORS (EXTREME FIX) ─────────────────────────────────────────────────────
 app.use(cors({
     origin: function (origin, callback) {
-        const whitelist = [
-            'https://decisive-octane-472816-d3.web.app',
-            'https://sudan-quality-frontend.vercel.app',
-            'https://sudan-quality-frontend-evipdz4gl-daoudtajeldeinn-pngs-projects.vercel.app',
-            'https://decisive-octane-472816-d3.firebaseapp.com',
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'http://127.0.0.1:5173',
-            'http://localhost:5000'
-        ];
-        if (!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log("CORS Blocked Origin:", origin);
-            callback(new Error('Not allowed by CORS'));
-        }
+        // Allow all origins to resolve CORS blocking issues across all preview URLs
+        callback(null, true);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
+
+// Add COOP/COEP headers to allow Firebase Auth popups to communicate back to the opener
+app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    next();
+});
 
 app.options('*', cors());
 // ────────────────────────────────────────────────────────────────────────────
