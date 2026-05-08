@@ -66,12 +66,81 @@ const DemoDB = {
   },
 
   async findUserById(id) {
-    return this.users.get(id) || null;
+    let user = this.users.get(id);
+    if (!user && id) {
+      // Auto-create demo user if requested but not found
+      user = {
+        userId: id,
+        email: 'demo@sudan-quality.com',
+        displayName: 'Demo User',
+        xp: 0,
+        level: 1,
+        badges: [],
+        stats: { totalQuizzes: 0, perfectScores: 0 },
+        progress: { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+        createdAt: new Date()
+      };
+      this.users.set(id, user);
+    }
+    return user;
+  },
+
+  async updateUser(id, data) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    
+    // Merge nested objects correctly
+    if (data.progress) {
+      user.progress = { ...user.progress, ...data.progress };
+      delete data.progress;
+    }
+    if (data.stats) {
+      user.stats = { ...user.stats, ...data.stats };
+      delete data.stats;
+    }
+    
+    Object.assign(user, data);
+    this.users.set(id, user);
+    return user;
+  },
+
+  async awardCertificate(id, certData) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    
+    const cert = {
+      _id: 'cert_' + Date.now(),
+      certNumber: `SQP-DEMO-${Date.now()}`,
+      status: 'active',
+      ...certData,
+      issueDate: new Date()
+    };
+    
+    if (!user.progress.certificates) user.progress.certificates = [];
+    user.progress.certificates.push({
+        certificateId: cert._id,
+        issueDate: cert.issueDate,
+        score: cert.score,
+        unitType: cert.unitName,
+        level: cert.level || 1
+    });
+    
+    this.users.set(id, user);
+    return cert;
   },
 
   async createUser(userData) {
-    const id = 'demo_' + Date.now();
-    const user = { ...userData, _id: id, createdAt: new Date() };
+    const id = userData.userId || 'demo_' + Date.now();
+    const user = { 
+      ...userData, 
+      _id: id, 
+      xp: userData.xp || 0,
+      level: userData.level || 1,
+      badges: userData.badges || [],
+      stats: userData.stats || { totalQuizzes: 0, perfectScores: 0 },
+      progress: userData.progress || { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+      createdAt: new Date() 
+    };
     this.users.set(id, user);
     return user;
   },

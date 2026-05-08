@@ -20,13 +20,24 @@ exports.awardCertificateSmart = async (req, res) => {
     const { userId, userName, unitId, unitName, score, percentage } = req.body;
     if (!userId || !unitId || score < 90) return res.status(400).json({ error: 'Valid completion required (90%+)' });
 
+    if (req.isDemoMode) {
+      const cert = await req.demoDB.awardCertificate(userId, {
+        userName,
+        unitId,
+        unitName,
+        score,
+        percentage,
+        level: 2 // Assume advanced for specialized
+      });
+      return res.json({ success: true, certificate: cert, level: 2, completedCount: 1 });
+    }
+
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Mark unit complete if not already
     if (!user.progress.completedUnits.includes(unitId)) {
       user.progress.completedUnits.push(unitId);
-      user.progress.totalScore += score;
     }
 
     const level = user.progress.level || user.level || 1; // Prefer progress.level

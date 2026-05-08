@@ -166,7 +166,10 @@ export const apiService = {
   setUserLevel: async (userId, level) => {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/user/profile/${userId}`);
+      if (!response.ok) throw new Error('Profile fetch failed');
       const profile = await response.json();
+      if (!profile) throw new Error('Profile not found');
+      if (!profile.progress) profile.progress = { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] };
       profile.progress.level = level;
       return apiService.syncUserStats(userId, profile);
     } catch (error) {
