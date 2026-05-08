@@ -25,6 +25,7 @@ const TRACKS = [
   { id: 'validation', titleKey: 'track_validation', units: ['validation-qualification', 'adv-validation'], icon: '✅', color: '#20c997' },
   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
+  { id: 'specialized', titleKey: 'track_specialized', units: ['cleaning-validation'], icon: '🧼', color: '#17a2b8' },
 ];
 
 // Unit icons mapping
@@ -48,6 +49,7 @@ const UNIT_ICONS = {
   'adv-validation': { icon: '✅+', color: '#06b6d4', title: { ar: 'التحقق المتقدم', en: 'Adv. Validation' } },
   'adv-qrm': { icon: '⚠️+', color: '#ec4899', title: { ar: 'تطبيقات QRM', en: 'Adv. QRM' } },
   'adv-gdp': { icon: '🚚+', color: '#f97316', title: { ar: 'سلسلة التبريد', en: 'Adv. GDP' } },
+  'cleaning-validation': { icon: '🧼', color: '#17a2b8', title: { ar: 'التحقق من التنظيف', en: 'Cleaning Validation' } },
 };
 
 const Dashboard = ({ user, onLogout, authToken }) => {
@@ -70,7 +72,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
     'batch-records': 0, 'nmpb-reg': 0,
     'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
-    'adv-qrm': 0, 'adv-gdp': 0
+    'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0
   });
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
@@ -226,6 +228,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     { id: 'adv-validation', title: t('adv_validation'), subtitle: t('unit4'), color: '#0891b2' },
     { id: 'adv-qrm', title: t('adv_qrm'), subtitle: t('unit5'), color: '#db2777' },
     { id: 'adv-gdp', title: t('adv_gdp'), subtitle: t('unit6'), color: '#ea580c' },
+    { id: 'cleaning-validation', title: t('cleaningValidation'), subtitle: t('unit_spec'), color: '#17a2b8' },
   ];
 
   const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
