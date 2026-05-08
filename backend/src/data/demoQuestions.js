@@ -203,6 +203,18 @@ const DemoDB = {
     user.progress.certificates.push(cert);
     demoUsers.set(id, user);
     return cert;
+  },
+
+  async getRandomQuestions(unitId, count = 10) {
+    const questions = demoQuestions[unitId] || [];
+    return [...questions].sort(() => 0.5 - Math.random()).slice(0, count);
+  },
+
+  async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
+    const questions = demoQuestions[unitId] || [];
+    let available = questions.filter(q => !excludeIds.includes(q._id));
+    if (available.length < count) return [...questions].sort(() => 0.5 - Math.random()).slice(0, count);
+    return available.sort(() => 0.5 - Math.random()).slice(0, count);
   }
 };
 

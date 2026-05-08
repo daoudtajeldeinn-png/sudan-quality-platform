@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === '
 
 // Helper for timeout-aware fetch
 const fetchWithTimeout = async (resource, options = {}, authToken = null) => {
-  const { timeout = 12000 } = options; // Increased timeout
+  const { timeout = 30000 } = options; // Increased to 30s for cold starts
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
