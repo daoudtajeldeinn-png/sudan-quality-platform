@@ -4,21 +4,21 @@ const User = require("../models/User");
 const getUserProfile = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log(`🔍 Fetching profile for: ${userId} (DemoMode: ${req.isDemoMode})`);
+
     if (req.isDemoMode) {
+      if (!req.demoDB) return res.status(500).json({ error: "Demo database not initialized" });
       const user = await req.demoDB.findUserById(userId);
-      if (!user) {
-        return res.status(404).json({ error: "المستخدم غير موجود" });
-      }
-      res.json(user);
+      if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
+      return res.json(user);
     } else {
       let user = await User.findOne({ userId });
       
       if (!user && userId) {
-        console.log(`Creating missing profile for: ${userId}`);
-        // Create basic profile if missing but authenticated in Firebase
+        console.log(`✨ Auto-creating profile for: ${userId}`);
         user = new User({
           userId,
-          email: "pending@sudan-quality.com", // Will be updated on next sync
+          email: "quality@sudan-quality.com",
           displayName: "Quality Member",
           createdAt: new Date(),
           progress: { completedUnits: [], certificates: [] }
@@ -26,16 +26,12 @@ const getUserProfile = async (req, res) => {
         await user.save();
       }
       
-      if (!user) {
-        return res.status(404).json({ error: "المستخدم غير موجود" });
-      }
-      
+      if (!user) return res.status(404).json({ error: "User not found after creation attempt" });
       res.json(user);
     }
-
   } catch (error) {
-    console.error("Get profile error:", error);
-    res.status(500).json({ error: "حدث خطأ في جلب بيانات المستخدم" });
+    console.error("❌ Get profile error:", error.message);
+    res.status(500).json({ error: "Server Error: " + error.message });
   }
 };
 

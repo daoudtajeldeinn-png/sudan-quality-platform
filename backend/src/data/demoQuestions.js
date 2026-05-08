@@ -162,25 +162,64 @@ const demoQuestions = {
 // Flatten all categories into a single array for easier lookup by _id if needed
 const flatQuestions = Object.values(demoQuestions).flat();
 
+// In-memory storage for demo mode
+const demoUsers = new Map();
+
+const DemoDB = {
+  users: demoUsers,
+  
+  async findUserById(id) {
+    let user = demoUsers.get(id);
+    if (!user && id) {
+      user = {
+        userId: id,
+        email: 'demo@sudan-quality.com',
+        displayName: 'Quality Member (Demo)',
+        xp: 0,
+        level: 1,
+        badges: [],
+        stats: { totalQuizzes: 0, perfectScores: 0 },
+        progress: { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+        createdAt: new Date()
+      };
+      demoUsers.set(id, user);
+    }
+    return user;
+  },
+
+  async updateUser(id, data) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    Object.assign(user, data);
+    demoUsers.set(id, user);
+    return user;
+  },
+
+  async awardCertificate(id, certData) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    const cert = { _id: 'cert_' + Date.now(), ...certData, issueDate: new Date() };
+    if (!user.progress.certificates) user.progress.certificates = [];
+    user.progress.certificates.push(cert);
+    demoUsers.set(id, user);
+    return cert;
+  }
+};
+
 module.exports = {
   demoQuestions: flatQuestions,
+  DemoDB,
   getQuestionsByUnit: (unitId, count = 10, excludeIds = []) => {
     const questions = demoQuestions[unitId] || [];
     let available = questions.filter(q => !excludeIds.includes(q._id));
     
-    // If we don't have enough unseen questions, we need to pick from the whole pool
-    // but we should still try to avoid the ones that were just excluded if possible
     if (available.length < count) {
       if (questions.length <= count) {
-        // If the total pool is smaller than or equal to the count, just return everything shuffled
         return [...questions].sort(() => Math.random() - 0.5);
       }
-      // Reset: Pick 'count' questions, but maybe filter out the MOST RECENT ones if we had them
-      // For now, just shuffle the whole pool to provide a fresh start
       return [...questions].sort(() => Math.random() - 0.5).slice(0, count);
     }
     
-    // Shuffle and return requested count from available
     return available.sort(() => Math.random() - 0.5).slice(0, count);
   },
   checkAnswer: (id, answer) => {
