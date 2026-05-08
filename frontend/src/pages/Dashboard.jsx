@@ -59,6 +59,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   const [certificates, setCertificates] = useState([]);
   const [currentUnit, setCurrentUnit] = useState(null);
 
+  const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [selectedCert, setSelectedCert] = useState(null);
   const [isSampleMode, setIsSampleMode] = useState(false);
