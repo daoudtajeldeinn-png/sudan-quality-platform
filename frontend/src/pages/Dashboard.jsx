@@ -25,7 +25,7 @@ const TRACKS = [
   { id: 'validation', titleKey: 'track_validation', units: ['validation-qualification', 'adv-validation'], icon: '✅', color: '#20c997' },
   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
-  { id: 'specialized', titleKey: 'track_specialized', units: ['cleaning-validation'], icon: '🧼', color: '#17a2b8' },
+  { id: 'specialized', title: 'المسارات التخصصية المتقدمة', titleKey: 'track_specialized', units: ['cleaning-validation'], icon: '🧪', color: '#6610f2' },
 ];
 
 // Unit icons mapping
@@ -291,7 +291,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       if (score >= 90 && user?.uid) {
         (async () => {
           try {
-            await apiService.awardCertificate({
+            const response = await apiService.awardCertificate({
               userId: user.uid,
               userName: user.displayName || user.email,
               unitId,
@@ -299,10 +299,27 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               score,
               percentage: score
             });
+            
             // Refresh certificates list
             const certsData = await apiService.getUserCertificates(user.uid, authToken);
             setCertificates(certsData.certificates || []);
-            alert(language === 'ar' ? 'تهانينا! تم إصدار شهادتك بنجاح. يمكنك العثور عليها في قسم الشهادات بالأسفل.' : 'Congratulations! Your certificate has been issued successfully. You can find it in the certificates section below.');
+            
+            if (response.certificate) {
+              alert(language === 'ar' 
+                ? 'تهانينا! تم إصدار شهادتك بنجاح. يمكنك العثور عليها في قسم الشهادات بالأسفل.' 
+                : 'Congratulations! Your certificate has been issued successfully. You can find it in the certificates section below.');
+            } else if (response.level === 1 && unitId !== 'cleaning-validation') {
+              const currentCount = response.completedCount % 3;
+              const remaining = currentCount === 0 ? 0 : 3 - currentCount;
+              if (remaining > 0) {
+                alert(language === 'ar' 
+                  ? `أحسنت! لقد أكملت هذه الدورة بنجاح. يتبقى لك ${remaining} دورات إضافية للحصول على الشهادة المجمعة (نظام المستوى الابتدائي).` 
+                  : `Well done! You completed this course successfully. You need ${remaining} more course(s) to get your bundled certificate (Basic Level).`);
+              }
+            } else {
+              // Fallback for unexpected cases
+              alert(language === 'ar' ? 'تم تسجيل تقدمك بنجاح!' : 'Your progress has been recorded successfully!');
+            }
           } catch (e) {
             console.error('Award failed', e);
           }
@@ -653,7 +670,12 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     return (
       <div style={{ direction: language === 'ar' ? 'rtl' : 'ltr' }}>
         <button onClick={() => setCurrentUnit(null)} className="btn-secondary" style={{ margin: '20px' }}>{t('back')}</button>
-        <Quiz unitId={currentUnit} onQuizComplete={handleQuizComplete} user={user} />
+        <Quiz 
+          unitId={currentUnit} 
+          onQuizComplete={handleQuizComplete} 
+          user={user} 
+          count={currentUnit === 'cleaning-validation' ? 15 : 10}
+        />
       </div>
     );
   }
@@ -929,7 +951,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       </main>
 
       <footer style={{ textAlign: 'center', padding: '20px', color: '#6c757d', borderTop: '1px solid #eee', marginTop: '40px' }}>
-        <p>© 2026 منصة السودان للجودة - PharmaQMS v1.0.5</p>
+        <p>© 2026 منصة السودان للجودة - PharmaQMS v1.0.6</p>
       </footer>
 
       <style dangerouslySetInnerHTML={{ __html: `

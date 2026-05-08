@@ -9,7 +9,7 @@ import '../styles/CertificateStyles.css';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
 
-const Quiz = ({ unitId, onQuizComplete, user }) => {
+const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   const { language, t, theme } = useLanguage();
   const { addXp, awardBadge, updateStats, stats } = useGamification();
   const [questions, setQuestions] = useState([]);
@@ -49,7 +49,7 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
 
     try {
       const userIdParam = user ? (user.uid || user.email) : null;
-      const response = await apiService.getQuestions(unitId, 10, userIdParam, excludeIds);
+      const response = await apiService.getQuestions(unitId, count, userIdParam, excludeIds);
       if (response && response.length > 0) {
         // Track seen questions for next time (useful for Demo Mode where DB history isn't saved)
         const selectedIds = response.map(q => q._id);
@@ -80,7 +80,7 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
 
       // Local rotation logic
       let availableIds = pool.filter(id => !excludeIds.includes(id));
-      if (availableIds.length < 10 && pool.length >= 10) {
+      if (availableIds.length < count && pool.length >= count) {
         // Reset history if we run out but have enough overall
         availableIds = [...pool];
         excludeIds = [];
@@ -89,8 +89,8 @@ const Quiz = ({ unitId, onQuizComplete, user }) => {
         excludeIds = [];
       }
 
-      // Select up to 10 random questions
-      const randomSubset = shuffleArray(availableIds).slice(0, 10);
+      // Select up to requested count random questions
+      const randomSubset = shuffleArray(availableIds).slice(0, count);
       
       localStorage.setItem(storageKey, JSON.stringify([...excludeIds, ...randomSubset]));
 
