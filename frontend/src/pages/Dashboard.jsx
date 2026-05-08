@@ -80,6 +80,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   const [streak, setStreak] = useState(0);
   const unitIds = Object.keys(userProgress).filter(id => !id.startsWith('completionDate'));
 
+  const CACHE_NAME = 'sqp-v3';
   const LOGO_PATH = pharmaLogo;
   const CERT_BG = certBg;
 
@@ -911,8 +912,8 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         )}
       </main>
 
-      <footer style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-        <p>© {new Date().getFullYear()} Sudan Quality Platform</p>
+      <footer style={{ textAlign: 'center', padding: '20px', color: '#6c757d', borderTop: '1px solid #eee', marginTop: '40px' }}>
+        <p>© 2026 منصة السودان للجودة - PharmaQMS v1.0.5</p>
       </footer>
 
       <style dangerouslySetInnerHTML={{ __html: `
