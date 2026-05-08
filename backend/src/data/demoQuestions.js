@@ -166,12 +166,21 @@ module.exports = {
   demoQuestions: flatQuestions,
   getQuestionsByUnit: (unitId, count = 10, excludeIds = []) => {
     const questions = demoQuestions[unitId] || [];
-    const available = questions.filter(q => !excludeIds.includes(q._id));
+    let available = questions.filter(q => !excludeIds.includes(q._id));
+    
+    // If we don't have enough unseen questions, we need to pick from the whole pool
+    // but we should still try to avoid the ones that were just excluded if possible
     if (available.length < count) {
-      // If not enough questions available, reset by just returning any questions
-      return questions.sort(() => Math.random() - 0.5).slice(0, count);
+      if (questions.length <= count) {
+        // If the total pool is smaller than or equal to the count, just return everything shuffled
+        return [...questions].sort(() => Math.random() - 0.5);
+      }
+      // Reset: Pick 'count' questions, but maybe filter out the MOST RECENT ones if we had them
+      // For now, just shuffle the whole pool to provide a fresh start
+      return [...questions].sort(() => Math.random() - 0.5).slice(0, count);
     }
-    // Shuffle and return requested count
+    
+    // Shuffle and return requested count from available
     return available.sort(() => Math.random() - 0.5).slice(0, count);
   },
   checkAnswer: (id, answer) => {
