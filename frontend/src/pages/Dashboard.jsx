@@ -135,7 +135,23 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             }
             try {
                 const certsData = await apiService.getUserCertificates(user.uid, authToken);
-                setCertificates(certsData.certificates || []);
+                const currentCerts = certsData.certificates || [];
+                setCertificates(currentCerts);
+                
+                // Retroactive fix for Cleaning Validation
+                if (userProgress['cleaning-validation'] >= 90 && !currentCerts.find(c => c.unitType === 'Cleaning Validation' || c.unitType === t('cleaningValidation'))) {
+                    console.log('Retro-awarding Cleaning Validation certificate...');
+                    await apiService.awardCertificate({
+                        userId: user.uid,
+                        userName: user.displayName || user.email,
+                        unitId: 'cleaning-validation',
+                        unitName: t('cleaningValidation'),
+                        score: userProgress['cleaning-validation'],
+                        percentage: userProgress['cleaning-validation']
+                    });
+                    const updatedCerts = await apiService.getUserCertificates(user.uid, authToken);
+                    setCertificates(updatedCerts.certificates || []);
+                }
             } catch (err) { console.warn('Certs fetch error', err); }
             
             try {
