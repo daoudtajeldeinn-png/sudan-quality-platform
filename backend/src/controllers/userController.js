@@ -11,7 +11,20 @@ const getUserProfile = async (req, res) => {
       }
       res.json(user);
     } else {
-      const user = await User.findOne({ userId });
+      let user = await User.findOne({ userId });
+      
+      if (!user && userId) {
+        console.log(`Creating missing profile for: ${userId}`);
+        // Create basic profile if missing but authenticated in Firebase
+        user = new User({
+          userId,
+          email: "pending@sudan-quality.com", // Will be updated on next sync
+          displayName: "Quality Member",
+          createdAt: new Date(),
+          progress: { completedUnits: [], certificates: [] }
+        });
+        await user.save();
+      }
       
       if (!user) {
         return res.status(404).json({ error: "المستخدم غير موجود" });
@@ -52,22 +65,19 @@ const syncUserStats = async (req, res) => {
       if (progress !== undefined) updateData.progress = progress;
       updateData.lastLogin = new Date();
 
-      // البحث عن المستخدم وتحديثه
+      // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
       const user = await User.findOneAndUpdate(
         { userId },
         { $set: updateData },
-        { new: true, upsert: false }
+        { new: true, upsert: true } // Changed upsert to true to fix 404/500 loop
       );
       
-      if (!user) {
-        return res.status(404).json({ error: "المستخدم غير موجود للمزامنة" });
-      }
-      
+      console.log(`✅ User sync successful for: ${userId}`);
       res.json({ success: true, user });
     }
   } catch (error) {
-    console.error("Sync stats error:", error);
-    res.status(500).json({ error: "فشلت عملية المزامنة مع الخادم" });
+    console.error("❌ Sync stats fatal error:", error);
+    res.status(500).json({ error: "فشلت عملية المزامنة: " + error.message });
   }
 };
 
