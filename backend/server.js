@@ -168,28 +168,25 @@ const DemoDB = {
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    // Use the hardcoded MONGO_URI or environment variable
     let mongoUri = process.env.MONGODB_URI || MONGO_URI;
-
-    console.log("Attempting to connect to MongoDB...");
-    console.log("MongoDB URI:", mongoUri ? "Found" : "Not found");
     
-    // Try to connect to the provided MongoDB URI first
+    console.log("--- DB Connection Attempt ---");
+    console.log("Target URI:", mongoUri ? mongoUri.substring(0, 20) + "..." : "NONE");
+
     if (mongoUri) {
       try {
         await mongoose.connect(mongoUri, {
           useNewUrlParser: true,
           useUnifiedTopology: true,
         });
-        console.log('MongoDB connected successfully');
-        return; // Connection successful, exit function
+        console.log('✅ MongoDB connected successfully');
+        isDemoMode = false;
+        return;
       } catch (connError) {
-        console.log('Failed to connect to provided MongoDB, starting in DEMO mode...');
-        mongoUri = null;
+        console.error('❌ Failed to connect to provided MongoDB:', connError.message);
       }
     }
 
-    // If no MongoDB URI or connection failed, try mongodb-memory-server
     if (!mongoUri) {
       console.log('Trying MongoDB Memory Server...');
       try {
@@ -201,27 +198,18 @@ const connectDB = async () => {
           useNewUrlParser: true,
           useUnifiedTopology: true,
         });
-        console.log('MongoDB Memory Server connected successfully');
+        console.log('✅ MongoDB Memory Server connected');
+        isDemoMode = false;
         return;
       } catch (memServerError) {
-        console.log('MongoDB Memory Server not available, starting in DEMO mode...');
+        console.error('❌ Memory Server failed:', memServerError.message);
       }
     }
 
-    // Fallback to demo mode
     isDemoMode = true;
-    console.log('===========================================');
-    console.log('⚠️  RUNNING IN DEMO MODE (No Database)');
-    console.log('===========================================');
-    console.log('Features available in demo mode:');
-    console.log('✓ User registration and login');
-    console.log('✓ Quiz with sample questions');
-    console.log('✓ All API endpoints respond normally');
-    console.log('Note: Data will not persist after server restart');
-    console.log('===========================================');
-
+    console.log('⚠️ RUNNING IN DEMO MODE');
   } catch (error) {
-    console.log('Database not available, starting in DEMO mode...');
+    console.error('DB setup fatal error:', error);
     isDemoMode = true;
   }
 };
