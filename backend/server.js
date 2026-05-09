@@ -36,27 +36,31 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // ─── DATABASE ───────────────────────────────────────────────────────────────
+let isConnected = false;
 let isDemoMode = false;
 
 const connectDB = async () => {
+    if (isConnected) return;
     try {
         console.log("--- DB Connection Attempt ---");
         await mongoose.connect(MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000 // fail fast in serverless
         });
-        console.log('✅ MongoDB connected successfully');
+        isConnected = true;
         isDemoMode = false;
+        console.log('✅ MongoDB connected successfully');
     } catch (err) {
         console.error('❌ MongoDB Connection Error:', err.message);
         console.log('⚠️ SWITCHING TO DEMO MODE');
         isDemoMode = true;
+        isConnected = false;
     }
 };
 
-connectDB();
-
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
+    await connectDB();
     req.isDemoMode = isDemoMode;
     req.demoDB = DemoDB;
     next();
