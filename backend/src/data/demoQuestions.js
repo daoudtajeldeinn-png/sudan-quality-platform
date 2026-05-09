@@ -187,6 +187,29 @@ const DemoDB = {
     return user;
   },
 
+  async findUserByEmail(email) {
+    for (let user of demoUsers.values()) {
+      if (user.email === email) return user;
+    }
+    return null;
+  },
+
+  async createUser(userData) {
+    const id = userData.userId || 'demo_' + Date.now();
+    const user = { 
+      ...userData, 
+      _id: id,
+      xp: 0,
+      level: 1,
+      badges: [],
+      stats: { totalQuizzes: 0, perfectScores: 0 },
+      progress: { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+      createdAt: new Date()
+    };
+    demoUsers.set(id, user);
+    return user;
+  },
+
   async updateUser(id, data) {
     const user = await this.findUserById(id);
     if (!user) return null;
