@@ -18,7 +18,7 @@ const getUserProfile = async (req, res) => {
         console.log(`✨ Auto-creating profile for: ${userId}`);
         user = new User({
           userId,
-          email: "quality@sudan-quality.com",
+          email: `${userId}@sudan-quality.com`,
           displayName: "Quality Member",
           createdAt: new Date(),
           progress: { completedUnits: [], certificates: [] }
@@ -64,7 +64,13 @@ const syncUserStats = async (req, res) => {
       // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
       const user = await User.findOneAndUpdate(
         { userId },
-        { $set: updateData },
+        { 
+          $set: updateData,
+          $setOnInsert: {
+            email: `${userId}@sudan-quality.com`,
+            displayName: "Quality Member"
+          }
+        },
         { new: true, upsert: true } // Changed upsert to true to fix 404/500 loop
       );
       
