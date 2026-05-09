@@ -120,14 +120,31 @@ function AppContent() {
   );
 }
 
+import { APP_VERSION } from './services/api';
+
 function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/verify" element={<VerifyCertificate />} />
-          <Route path="/*" element={<AppContent />} />
-        </Routes>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <div style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/verify" element={<VerifyCertificate />} />
+              <Route path="/*" element={<AppContent />} />
+            </Routes>
+          </div>
+          <footer style={{
+            textAlign: 'center',
+            padding: '10px',
+            backgroundColor: 'var(--bg-card)',
+            borderTop: '1px solid var(--border-color)',
+            color: 'var(--text-secondary)',
+            fontSize: '0.85rem',
+            direction: 'ltr'
+          }}>
+            Sudan Quality Platform v{APP_VERSION}
+          </footer>
+        </div>
       </BrowserRouter>
     </LanguageProvider>
   );
