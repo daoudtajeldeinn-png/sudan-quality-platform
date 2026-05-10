@@ -12,26 +12,29 @@ export const useAuth = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
+        // ✅ Show user IMMEDIATELY — don't wait for backend
         setUser(currentUser);
-        try {
-          // Register/sync user with backend for token
-          const tokenData = await apiService.registerUser({
-            userId: currentUser.uid,
-            email: currentUser.email,
-            displayName: currentUser.displayName,
-            photoURL: currentUser.photoURL
-          });
+        setLoading(false);
+        setError(null);
+
+        // Sync with backend in background (non-blocking)
+        apiService.registerUser({
+          userId: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          photoURL: currentUser.photoURL
+        }).then(tokenData => {
           setAuthToken(tokenData.token || null);
-        } catch (err) {
-          console.error('Auth token fetch error:', err);
-          setAuthToken(null);
-        }
+        }).catch(err => {
+          console.warn('Backend sync (non-critical):', err.message);
+          setAuthToken(null); // App still works without token
+        });
       } else {
         setUser(null);
         setAuthToken(null);
+        setLoading(false);
+        setError(null);
       }
-      setLoading(false);
-      setError(null);
     });
 
     return unsubscribe;
