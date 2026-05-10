@@ -43,6 +43,13 @@ exports.awardCertificateSmart = async (req, res) => {
     const level = user.progress.level || user.level || 1; // Prefer progress.level
     let cert;
 
+    // Check for duplicate cert for this unit
+    const existingCert = await Certificate.findOne({ userId, unitId, status: 'active' }).lean();
+    if (existingCert) {
+      console.log(`[Award] Cert already exists for ${userId}/${unitId}, skipping`);
+      return res.json({ success: true, certificate: existingCert, level, completedCount: user.progress.completedUnits.length, duplicate: true });
+    }
+
     // Always award one certificate per unit
     cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
 
@@ -52,6 +59,7 @@ exports.awardCertificateSmart = async (req, res) => {
         issueDate: new Date(),
         score,
         unitType: unitName,
+        unitId,   // ← store unitId so we can look it up later
         level
       });
       await user.save();

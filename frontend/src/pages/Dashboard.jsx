@@ -138,19 +138,57 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                 const currentCerts = certsData.certificates || [];
                 setCertificates(currentCerts);
                 
-                // Retroactive fix for Cleaning Validation
-                if (userProgress['cleaning-validation'] >= 90 && !currentCerts.find(c => c.unitType === 'Cleaning Validation' || c.unitType === t('cleaningValidation'))) {
-                    console.log('Retro-awarding Cleaning Validation certificate...');
-                    await apiService.awardCertificate({
-                        userId: user.uid,
-                        userName: user.displayName || user.email,
-                        unitId: 'cleaning-validation',
-                        unitName: t('cleaningValidation'),
-                        score: userProgress['cleaning-validation'],
-                        percentage: userProgress['cleaning-validation']
+                // Retroactive fix: for ALL units the user has already passed (90%+) but has no cert yet
+                // Use the reconciled progress which has both local + remote scores
+                const reconciledProgress = (() => {
+                  try {
+                    const local = JSON.parse(localStorage.getItem(`sqp_progress_${user.email}`) || '{}');
+                    const remote = profile.progress.unitScores || {};
+                    const merged = { ...remote };
+                    Object.keys(local).forEach(k => {
+                      if (!isNaN(local[k])) merged[k] = Math.max(merged[k] || 0, local[k]);
                     });
-                    const updatedCerts = await apiService.getUserCertificates(user.uid, authToken);
-                    setCertificates(updatedCerts.certificates || []);
+                    return merged;
+                  } catch { return {}; }
+                })();
+
+                const certifiedUnitIds = currentCerts.map(c => c.unitId).filter(Boolean);
+                const passingUnits = Object.entries(reconciledProgress)
+                  .filter(([id, sc]) => !isNaN(sc) && sc >= 90 && !certifiedUnitIds.includes(id));
+
+                for (const [unitId, score] of passingUnits) {
+                  const unitDef = [
+                    { id: 'gmp-intro', title: t('introGMP') }, { id: 'glp-basics', title: t('glpBasics') },
+                    { id: 'iso-17025', title: t('iso17025') }, { id: 'ich-guidelines', title: t('ichGuidelines') },
+                    { id: 'validation-qualification', title: t('valQual') }, { id: 'data-integrity', title: t('dataIntegrity') },
+                    { id: 'qrm-basics', title: t('qrmBasics') }, { id: 'gdp-basics', title: t('gdpBasics') },
+                    { id: 'ich-q10', title: t('ichQ10') }, { id: 'sterile-annex1', title: t('annex1') },
+                    { id: 'gamp5-basics', title: t('gamp5') }, { id: 'batch-records', title: t('batchRecords') },
+                    { id: 'nmpb-reg', title: t('nmpbReg') }, { id: 'adv-gmp', title: t('adv_gmp') },
+                    { id: 'adv-glp', title: t('adv_glp') }, { id: 'adv-iso-17025', title: t('adv_iso_17025') },
+                    { id: 'adv-validation', title: t('adv_validation') }, { id: 'adv-qrm', title: t('adv_qrm') },
+                    { id: 'adv-gdp', title: t('adv_gdp') }, { id: 'cleaning-validation', title: t('cleaningValidation') },
+                  ].find(u => u.id === unitId);
+
+                  if (!unitDef) continue;
+                  console.log(`[RetroAward] Issuing cert for: ${unitId} (${score}%)`);
+                  try {
+                    await apiService.awardCertificate({
+                      userId: user.uid,
+                      userName: user.displayName || user.email,
+                      unitId,
+                      unitName: unitDef.title,
+                      score,
+                      percentage: score
+                    });
+                  } catch (certErr) {
+                    console.warn(`[RetroAward] Failed for ${unitId}:`, certErr);
+                  }
+                }
+
+                if (passingUnits.length > 0) {
+                  const updatedCerts = await apiService.getUserCertificates(user.uid, authToken);
+                  setCertificates(updatedCerts.certificates || []);
                 }
             } catch (err) { console.warn('Certs fetch error', err); }
             
