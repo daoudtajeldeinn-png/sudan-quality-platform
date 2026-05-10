@@ -308,14 +308,6 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               alert(language === 'ar' 
                 ? 'تهانينا! تم إصدار شهادتك بنجاح. يمكنك العثور عليها في قسم الشهادات بالأسفل.' 
                 : 'Congratulations! Your certificate has been issued successfully. You can find it in the certificates section below.');
-            } else if (response.level === 1 && unitId !== 'cleaning-validation') {
-              const currentCount = response.completedCount % 3;
-              const remaining = currentCount === 0 ? 0 : 3 - currentCount;
-              if (remaining > 0) {
-                alert(language === 'ar' 
-                  ? `أحسنت! لقد أكملت هذه الدورة بنجاح. يتبقى لك ${remaining} دورات إضافية للحصول على الشهادة المجمعة (نظام المستوى الابتدائي).` 
-                  : `Well done! You completed this course successfully. You need ${remaining} more course(s) to get your bundled certificate (Basic Level).`);
-              }
             } else {
               // Fallback for unexpected cases
               alert(language === 'ar' ? 'تم تسجيل تقدمك بنجاح!' : 'Your progress has been recorded successfully!');
@@ -724,31 +716,15 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       }}>
         <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📜 <strong>قواعد الشهادات</strong></div>
         <div>
-          {userCertLevel === 1 
-            ? <span>المستوى الابتدائي: <strong style={{ color: '#28a745' }}>كل 3 كورسات = شهادة مجمعة بتفاصيل الثلاثة</strong></span> 
-            : <span>المستوى المتقدم: <strong style={{ color: '#28a745' }}>شهادة لكل كورس على حدة</strong></span>
-          }
+          <span>نظام المنصة: <strong style={{ color: '#28a745' }}>شهادة معتمدة لكل كورس على حدة</strong></span>
         </div>
-        <button onClick={handleLevelToggle} style={{
-          marginTop: '10px',
-          padding: '10px 20px',
-          background: '#28a745',
-          color: 'white',
-          border: 'none',
-          borderRadius: '25px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          fontSize: '1rem'
-        }}>
-          {userCertLevel === 1 ? 'التبديل إلى متقدم' : 'التبديل إلى ابتدائي'}
-        </button>
       </div>
 
       {/* Certificates Section */}
       <section style={{ padding: '30px', borderRadius: '24px', margin: '0 20px 30px', background: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
         <h3 style={{ color: '#17a2b8' }}>🎯 الشهادات المحقّقة ({certificates.length})</h3>
         <div style={{ fontSize: '1.1rem', marginBottom: '15px', color: '#28a745', fontWeight: 'bold' }}>
-          {userCertLevel === 1 ? 'كل 3 كورسات اكتملت بنسبة 90%+ = شهادة' : 'كل كورس اكتمل بنسبة 90%+ = شهادة'}
+          كل كورس اكتمل بنسبة 90%+ = شهادة
         </div>
         {certificates.length > 0 ? certificates.map(cert => (
           <div key={cert.certificateId} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

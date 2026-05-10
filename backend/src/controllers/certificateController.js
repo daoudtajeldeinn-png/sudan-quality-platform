@@ -43,22 +43,8 @@ exports.awardCertificateSmart = async (req, res) => {
     const level = user.progress.level || user.level || 1; // Prefer progress.level
     let cert;
 
-    if (level === 1 && unitId !== 'cleaning-validation') {
-      // Basic: check if multiple of 3 (excluding specialized units like cleaning-validation)
-      if (user.progress.completedUnits.filter(id => id !== 'cleaning-validation').length % 3 === 0) {
-        const last3 = user.progress.completedUnits.filter(id => id !== 'cleaning-validation').slice(-3).map((id, idx) => ({
-          unitId: id,
-          unitName: unitName, // Simplified
-          score: score,
-          percentage
-        }));
-        const avgScore = score; // Avg of last 3 (simplified)
-        cert = await createCertDoc(userId, userName, 1, last3, null, `3 كورسات ابتدائية (Basic)`, avgScore, percentage);
-      }
-    } else {
-      // Advanced OR specialized unit: per unit
-      cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
-    }
+    // Always award one certificate per unit
+    cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
 
     if (cert) {
       user.progress.certificates.push({
