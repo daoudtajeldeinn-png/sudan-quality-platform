@@ -131,22 +131,130 @@ const demoQuestions = {
         { _id: 'gdp_tf2', unitId: 'gdp-basics', type: 'tf', questionText: { ar: 'يجب أن يكون لدى جميع الموزعين نظام للجرد يضمن عدم انتهاء صلاحية الأدوية في المخازن.', en: 'All distributors must have an inventory system ensuring drugs do not expire in storage.' }, correctAnswer: true },
         { _id: 'gdp_fill1', unitId: 'gdp-basics', type: 'fill', questionText: { ar: 'اختصار المبدأ الذي يضمن خروج الأدوية الأقرب للانتهاء أولاً هو الـ [____].', en: 'The acronym for the principle ensuring closest-to-expire drugs leave first is [____].' }, correctAnswers: ['FEFO', 'فيفو'] },
         { _id: 'gdp_fill2', unitId: 'gdp-basics', type: 'fill', questionText: { ar: 'درجة حرارة الغرفة الخاضعة للرقابة (Controlled Room Temp) هي [___] درجة مئوية.', en: 'Controlled Room Temperature is [___] degrees Celsius.' }, correctAnswers: ['15-25', '15 to 25'] }
+    ],
+    'cleaning-validation': [
+        { _id: 'cv_q1', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو المبدأ الأساسي للتحقق من التنظيف؟', en: 'What is the primary principle of Cleaning Validation?' }, options: { ar: ['توفير الماء والصابون', 'دليل موثق على إزالة الملوثات لمستويات آمنة محددة مسبقاً لمنع التلوث التبادلي', 'تلميع المعدة لمنظرها الجمالي', 'إعفاء العمال من مهام التنظيف'], en: ['Saving water and soap', 'Documented evidence of removing contaminants to safe pre-defined levels to prevent cross-contamination', 'Polishing the equipment for aesthetic appeal', 'Exempting workers from cleaning tasks'] }, correctAnswer: 1 },
+        { _id: 'cv_q2', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ماذا يعني مصطلح "Worst-Case Scenario" في التحقق من التنظيف؟', en: 'What does "Worst-Case Scenario" mean in Cleaning Validation?' }, options: { ar: ['أسوأ موظف في المصنع', 'انقطاع الكهرباء أثناء الإنتاج', 'اختيار المنتج الأصعب في التنظيف والأقوى فعالية لاختبار بروتوكول التنظيف عليه', 'انتهاء صلاحية المنظف'], en: ['The worst employee in the factory', 'Power outage during production', 'Choosing the hardest-to-clean and most potent product to test the cleaning protocol against', 'Expiration of the detergent'] }, correctAnswer: 2 },
+        { _id: 'cv_q3', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'أي من طرق أخذ العينات تعتبر الأكثر دقة للوصول للمناطق الصعبة؟', en: 'Which sampling method is most accurate for reaching difficult areas?' }, options: { ar: ['المسح (Swabbing)', 'الشطف (Rinsing)', 'الفحص البصري فقط', 'لا يوجد فرق'], en: ['Swabbing', 'Rinsing', 'Visual inspection only', 'No difference'] }, correctAnswer: 0 },
+        { _id: 'cv_q4', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو الحد المقبول لبقايا المنظفات (Detergent Residues)؟', en: 'What is the acceptable limit for Detergent Residues?' }, options: { ar: ['أن تكون الرائحة جميلة', 'أقل من 10 ppm أو حسب معايير السمية (MACO)', 'ألا يرى المفتش أي رغوة', 'لا توجد حدود'], en: ['Nice smell', 'Less than 10 ppm or based on MACO toxicity limits', 'No visible foam to the inspector', 'No limits'] }, correctAnswer: 1 },
+        { _id: 'cv_q5', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ماذا يختصر مصطلح MACO؟', en: 'What does MACO stand for?' }, options: { ar: ['أقصى حمل عضوي', 'أقصى نقل مسموح به (Maximum Allowable Carryover)', 'معدل التآكل العضوي', 'نظام تنظيف آلي'], en: ['Maximum Organic Load', 'Maximum Allowable Carryover', 'Organic Corrosion Rate', 'Automated Cleaning System'] }, correctAnswer: 1 },
+        { _id: 'cv_q6', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'لماذا نستخدم "فحص الملح" (Placebo Batch) أحياناً في التحقق؟', en: 'Why do we sometimes use a Placebo Batch in validation?' }, options: { ar: ['لزيادة المبيعات', 'للمساعدة في ميكانيكية إزالة البقايا وكشف التلوث الموزع', 'لأنه أرخص من الدواء', 'لتنظيف الماكينة بالملح'], en: ['Increasing sales', 'To help in the mechanical removal of residues and detect distributed contamination', 'Because it is cheaper', 'To clean the machine with salt'] }, correctAnswer: 1 },
+        { _id: 'cv_q7', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'أي مما يلي يعتبر "نقطة صعبة التنظيف" (Hard-to-clean point)؟', en: 'Which of the following is a "Hard-to-clean point"?' }, options: { ar: ['الجدران الجانبية الملساء', 'الحواف، الزوايا، والشفرات (Blades)', 'غطاء الماكينة الخارجي', 'مقبض الباب'], en: ['Smooth side walls', 'Edges, corners, and blades', 'Outer machine cover', 'Door handle'] }, correctAnswer: 1 },
+        { _id: 'cv_q8', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو "زمن الانتظار القذر" (Dirty Hold Time)؟', en: 'What is "Dirty Hold Time"?' }, options: { ar: ['وقت غداء العمال', 'الوقت بين نهاية الإنتاج وبداية عملية التنظيف', 'الوقت اللازم لتنظيف الماكينة', 'مدة صلاحية المنتج'], en: ['Staff lunch time', 'Time between end of production and start of cleaning', 'Time needed to clean', 'Product shelf life'] }, correctAnswer: 1 },
+        { _id: 'cv_q9', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو "زمن الانتظار النظيف" (Clean Hold Time)؟', en: 'What is "Clean Hold Time"?' }, options: { ar: ['الوقت المستغرق في غسل اليدين', 'الوقت الذي تظل فيه المعدة نظيفة قبل الاستخدام التالي قبل الحاجة لإعادة التنظيف', 'وقت تجفيف المعدة', 'الوقت بين تنظيفين متتاليين'], en: ['Hand washing time', 'Time equipment remains clean before next use before needing re-cleaning', 'Drying time', 'Time between two cleanings'] }, correctAnswer: 1 },
+        { _id: 'cv_q10', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'لماذا نفضل المسح (Swab) على الشطف (Rinse) للمنتجات غير الذائبة؟', en: 'Why prefer Swab over Rinse for insoluble products?' }, options: { ar: ['لأن المسح أسرع', 'لأن المسح يوفر احتكاكاً ميكانيكياً يساعد في كشف البقايا الملتصقة', 'لأن الشطف يستخدم ماءً كثيراً', 'لا يوجد سبب علمي'], en: ['Swab is faster', 'Swab provides mechanical friction helping detect stuck residues', 'Rinse uses too much water', 'No scientific reason'] }, correctAnswer: 1 },
+        { _id: 'cv_q11', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هي مواصفات الـ Swab المستخدم؟', en: 'What are the specs of the used Swab?' }, options: { ar: ['أي قطن متاح', 'مادة خاملة لا تسبب تلوثاً (Inert material) ولا تتفاعل مع المذيب', 'ورق مقوى', 'إسفنج عادي'], en: ['Any cotton', 'Inert material causing no contamination and not reacting with solvent', 'Cardboard', 'Standard sponge'] }, correctAnswer: 1 },
+        { _id: 'cv_q12', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو الهدف من طريقة "Visually Clean"؟', en: 'What is the goal of the "Visually Clean" criteria?' }, options: { ar: ['إلغاء التحليل المخبري', 'الحد الأدنى المقبول (Acceptance criteria) وهو ألا يرى أي أثر للبقايا بالعين المجردة تحت إضاءة جيدة', 'لتوفير الوقت فقط', 'خداع المفتشين'], en: ['Eliminating lab analysis', 'Minimum acceptance criteria where no residues are visible to the naked eye under good lighting', 'Saving time only', 'Deceiving inspectors'] }, correctAnswer: 1 },
+        { _id: 'cv_q13', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو الـ Recovery Study في التحقق من التنظيف؟', en: 'What is a Recovery Study in Cleaning Validation?' }, options: { ar: ['دراسة استرجاع الأموال', 'دراسة للتأكد من قدرة طريقة المسح والتحليل على كشف واستخلاص البقايا من السطح بنسبة مئوية معروفة', 'دراسة عن صحة الموظفين', 'لا يوجد مثل هذا المصطلح'], en: ['Refund study', 'Study ensuring the swab and analysis method can detect and extract residues from surface at a known percentage', 'Employee health study', 'No such term'] }, correctAnswer: 1 },
+        { _id: 'cv_q14', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو المعيار العالمي المشترك لـ MACO حسب الـ Dose؟', en: 'What is the common international MACO criteria based on Dose?' }, options: { ar: ['1/1000 من الحد الأدنى للجرعة اليومية (TD)', '1/10 من الجرعة', 'جرعة كاملة', 'لا توجد علاقة بالجرعة'], en: ['1/1000 of minimum therapeutic dose (TD)', '1/10 of dose', 'Full dose', 'No relation to dose'] }, correctAnswer: 0 },
+        { _id: 'cv_q15', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ماذا نفعل إذا فشلت نتائج المسح (Swab)؟', en: 'What to do if Swab results fail?' }, options: { ar: ['مسح النتيجة وكتابة نتيجة ناجحة', 'إعادة التنظيف، التحقيق في السبب، وإعادة عملية التحقق (Re-validation)', 'بيع المنتج فوراً', 'تغيير الموظف'], en: ['Deleting and writing pass', 'Re-cleaning, investigating cause, and re-validating', 'Selling product immediately', 'Changing employee'] }, correctAnswer: 1 },
+        { _id: 'cv_q16', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو الـ Dedicated Equipment؟', en: 'What is Dedicated Equipment?' }, options: { ar: ['معدات ذكية', 'معدات مخصصة لمنتج واحد فقط (مثل السيفالوسبورين) لتقليل خطر التلوث التبادلي', 'معدات مستعملة', 'معدات يدوية'], en: ['Smart equipment', 'Equipment dedicated to one product only (e.g. Cephalosporins) to reduce cross-contamination risk', 'Used equipment', 'Manual equipment'] }, correctAnswer: 1 },
+        { _id: 'cv_q17', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'أي مما يلي يعتبر من المعايير التي تجعل المنتج "صعب التنظيف"؟', en: 'Which criteria make a product "hard to clean"?' }, options: { ar: ['اللون الجميل', 'ضعف الذوبان (Low solubility) والالتصاق العالي بالسطح', 'السعر الرخيص', 'الرائحة القوية'], en: ['Nice color', 'Low solubility and high surface adhesion', 'Cheap price', 'Strong smell'] }, correctAnswer: 1 },
+        { _id: 'cv_q18', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو دور الـ Bracketing في التحقق من التنظيف؟', en: 'What is the role of Bracketing in Cleaning Validation?' }, options: { ar: ['بناء جدار حول الماكينة', 'تقليل عدد الاختبارات عبر اختيار أسوأ الحالات لتمثيل مجموعة من المنتجات المتشابهة', 'تغيير شكل الماكينة', 'لا علاقة له بالتنظيف'], en: ['Building a wall', 'Reducing tests by choosing worst-case to represent a group of similar products', 'Changing machine shape', 'No relation to cleaning'] }, correctAnswer: 1 },
+        { _id: 'cv_q19', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'ما هو دور الـ Sampling Plan؟', en: 'What is the role of a Sampling Plan?' }, options: { ar: ['تحديد عدد العمال', 'تحديد أماكن أخذ العينات، عدد المسحات، وطريقة التعامل معها لضمان تغطية المعدة بالكامل', 'تحديد وقت الغداء', 'رسم خطة تسويقية'], en: ['Determining staff count', 'Determining sampling locations, swab counts, and handling to ensure full equipment coverage', 'Lunch time', 'Marketing plan'] }, correctAnswer: 1 },
+        { _id: 'cv_q20', unitId: 'cleaning-validation', type: 'mcq', questionText: { ar: 'لماذا يجب التحقق من "بقايا المواد الميكروبية" (Microbial limits)؟', en: 'Why verify Microbial limits in cleaning validation?' }, options: { ar: ['لزيادة تكلفة التحليل', 'للتأكد من أن عملية التنظيف والتجفيف تمنع نمو البكتيريا والفطريات على الأسطح', 'لأن البكتيريا تعطي لوناً جميلاً', 'لا حاجة لذلك في المصانع الكيميائية'], en: ['Increasing analysis cost', 'To ensure cleaning and drying prevent bacterial/fungal growth on surfaces', 'Bacteria gives nice color', 'No need in chemical plants'] }, correctAnswer: 1 },
+        { _id: 'cv_tf1', unitId: 'cleaning-validation', type: 'tf', questionText: { ar: 'هل يكفي الفحص البصري وحده (Visual Clean) لاعتماد عملية التنظيف للمواد عالية السمية؟', en: 'Is Visual Clean enough to approve cleaning for highly toxic materials?' }, correctAnswer: false },
+        { _id: 'cv_tf2', unitId: 'cleaning-validation', type: 'tf', questionText: { ar: 'يجب إعادة التحقق من التنظيف (Re-validation) عند تغيير المنظف المستخدم.', en: 'Cleaning Re-validation is required when changing the detergent used.' }, correctAnswer: true },
+        { _id: 'cv_fill1', unitId: 'cleaning-validation', type: 'fill', questionText: { ar: 'اختصار أقصى نقل مسموح به للملوثات هو [____].', en: 'The acronym for Maximum Allowable Carryover is [____].' }, correctAnswers: ['MACO', 'ماكو'] }
     ]
 };
 
 // Flatten all categories into a single array for easier lookup by _id if needed
 const flatQuestions = Object.values(demoQuestions).flat();
 
+// In-memory storage for demo mode
+const demoUsers = new Map();
+
+const DemoDB = {
+  users: demoUsers,
+  
+  async findUserById(id) {
+    let user = demoUsers.get(id);
+    if (!user && id) {
+      user = {
+        userId: id,
+        email: 'demo@sudan-quality.com',
+        displayName: 'Quality Member (Demo)',
+        xp: 0,
+        level: 1,
+        badges: [],
+        stats: { totalQuizzes: 0, perfectScores: 0 },
+        progress: { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+        createdAt: new Date()
+      };
+      demoUsers.set(id, user);
+    }
+    return user;
+  },
+
+  async findUserByEmail(email) {
+    for (let user of demoUsers.values()) {
+      if (user.email === email) return user;
+    }
+    return null;
+  },
+
+  async createUser(userData) {
+    const id = userData.userId || 'demo_' + Date.now();
+    const user = { 
+      ...userData, 
+      _id: id,
+      xp: 0,
+      level: 1,
+      badges: [],
+      stats: { totalQuizzes: 0, perfectScores: 0 },
+      progress: { unitScores: {}, unitStates: {}, certificates: [], completedUnits: [] },
+      createdAt: new Date()
+    };
+    demoUsers.set(id, user);
+    return user;
+  },
+
+  async updateUser(id, data) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    Object.assign(user, data);
+    demoUsers.set(id, user);
+    return user;
+  },
+
+  async awardCertificate(id, certData) {
+    const user = await this.findUserById(id);
+    if (!user) return null;
+    const cert = { _id: 'cert_' + Date.now(), ...certData, issueDate: new Date() };
+    if (!user.progress.certificates) user.progress.certificates = [];
+    user.progress.certificates.push(cert);
+    demoUsers.set(id, user);
+    return cert;
+  },
+
+  async getRandomQuestions(unitId, count = 10) {
+    const questions = demoQuestions[unitId] || [];
+    return [...questions].sort(() => 0.5 - Math.random()).slice(0, count);
+  },
+
+  async getRotatedQuestions(unitId, count = 10, excludeIds = []) {
+    const questions = demoQuestions[unitId] || [];
+    let available = questions.filter(q => !excludeIds.includes(q._id));
+    if (available.length < count) return [...questions].sort(() => 0.5 - Math.random()).slice(0, count);
+    return available.sort(() => 0.5 - Math.random()).slice(0, count);
+  }
+};
+
 module.exports = {
   demoQuestions: flatQuestions,
+  DemoDB,
   getQuestionsByUnit: (unitId, count = 10, excludeIds = []) => {
     const questions = demoQuestions[unitId] || [];
-    const available = questions.filter(q => !excludeIds.includes(q._id));
+    let available = questions.filter(q => !excludeIds.includes(q._id));
+    
     if (available.length < count) {
-      // If not enough questions available, reset by just returning any questions
-      return questions.sort(() => Math.random() - 0.5).slice(0, count);
+      if (questions.length <= count) {
+        return [...questions].sort(() => Math.random() - 0.5);
+      }
+      return [...questions].sort(() => Math.random() - 0.5).slice(0, count);
     }
-    // Shuffle and return requested count
+    
     return available.sort(() => Math.random() - 0.5).slice(0, count);
   },
   checkAnswer: (id, answer) => {

@@ -20,34 +20,38 @@ exports.awardCertificateSmart = async (req, res) => {
     const { userId, userName, unitId, unitName, score, percentage } = req.body;
     if (!userId || !unitId || score < 90) return res.status(400).json({ error: 'Valid completion required (90%+)' });
 
+    if (req.isDemoMode) {
+      const cert = await req.demoDB.awardCertificate(userId, {
+        userName,
+        unitId,
+        unitName,
+        score,
+        percentage,
+        level: 2 // Assume advanced for specialized
+      });
+      return res.json({ success: true, certificate: cert, level: 2, completedCount: 1 });
+    }
+
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Mark unit complete if not already
     if (!user.progress.completedUnits.includes(unitId)) {
       user.progress.completedUnits.push(unitId);
-      user.progress.totalScore += score;
     }
 
     const level = user.progress.level || user.level || 1; // Prefer progress.level
     let cert;
 
-    if (level === 1) {
-      // Basic: check if multiple of 3
-      if (user.progress.completedUnits.length % 3 === 0) {
-        const last3 = user.progress.completedUnits.slice(-3).map((id, idx) => ({
-          unitId: id,
-          unitName: unitName, // Simplify, or fetch names
-          score: score,
-          percentage
-        }));
-        const avgScore = score; // Avg of last 3 (simplified)
-        cert = await createCertDoc(userId, userName, 1, last3, null, `3 كورسات ابتدائية (Basic)`, avgScore, percentage);
-      }
-    } else {
-      // Advanced: per unit
-      cert = await createCertDoc(userId, userName, 2, null, unitId, unitName, score, percentage);
+    // Check for duplicate cert for this unit
+    const existingCert = await Certificate.findOne({ userId, unitId, status: 'active' }).lean();
+    if (existingCert) {
+      console.log(`[Award] Cert already exists for ${userId}/${unitId}, skipping`);
+      return res.json({ success: true, certificate: existingCert, level, completedCount: user.progress.completedUnits.length, duplicate: true });
     }
+
+    // Always award one certificate per unit
+    cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
 
     if (cert) {
       user.progress.certificates.push({
@@ -55,6 +59,7 @@ exports.awardCertificateSmart = async (req, res) => {
         issueDate: new Date(),
         score,
         unitType: unitName,
+        unitId,   // ← store unitId so we can look it up later
         level
       });
       await user.save();
