@@ -5,7 +5,7 @@ service cloud.firestore {
     // Allow public read-only access to certificate verification documents
     match /certificates/{certId} {
       allow read: if resource.data.status == 'active' || resource.data.status == 'revoked';
-      // Allow writes only to authenticated users via backend (disallow client-side writes)
+      // Allow writes only via backend - disallow client-side writes
       allow create, update, delete: if false;
     }
 

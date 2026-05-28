@@ -1,0 +1,10 @@
+﻿.App {
+  text-align: center;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+}
