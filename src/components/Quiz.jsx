@@ -3,8 +3,6 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import { apiService } from '../services/api';
 import { educationalContent } from '../data/content_new.js';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import '../styles/CertificateStyles.css';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
@@ -263,6 +261,9 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
       // Ensure fonts are ideally loaded by this point; with scale and useCORS, html2canvas should see them.
       // Small delay can help ensure the engine has calculated the layout for the off-screen element
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
 
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution
