@@ -32,8 +32,22 @@ exports.awardCertificateSmart = async (req, res) => {
       return res.json({ success: true, certificate: cert, level: 2, completedCount: 1 });
     }
 
-    const user = await User.findOne({ userId });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    let user = await User.findOne({ userId });
+    // Auto-create user if not exists (for Firebase auth users)
+    if (!user) {
+      user = new User({
+        userId,
+        email: userName, // fallback
+        displayName: userName,
+        progress: {
+          completedUnits: [],
+          certificates: [],
+          level: 1
+        }
+      });
+      await user.save();
+      console.log(`[Auto-create] Created user ${userId}`);
+    }
 
     // Mark unit complete if not already
     if (!user.progress.completedUnits.includes(unitId)) {
