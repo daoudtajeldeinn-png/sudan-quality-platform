@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import Quiz from '../components/Quiz';
 import LectureView from '../components/LectureView';
 import FMEATool from '../components/FMEATool';
@@ -448,26 +446,34 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      html2canvas(input, { 
-        scale: 2.5, 
-        useCORS: true, 
-        logging: false,
-        letterRendering: true,
-        allowTaint: true
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'l',
-          unit: 'mm',
-          format: 'a4',
-          hotfixes: ["px_scaling"]
+      try {
+        const html2canvas = (await import('html2canvas')).default;
+        const { jsPDF } = await import('jspdf');
+
+        html2canvas(input, { 
+          scale: 2.5, 
+          useCORS: true, 
+          logging: false,
+          letterRendering: true,
+          allowTaint: true
+        }).then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: 'l',
+            unit: 'mm',
+            format: 'a4',
+            hotfixes: ["px_scaling"]
+          });
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+          pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
+          logAuditTrail('eventCert');
         });
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-        pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
-        logAuditTrail('eventCert');
-      });
+      } catch (error) {
+        console.error('Failed to load PDF libraries dynamically:', error);
+        alert(language === 'ar' ? 'فشل تحميل مكتبات الشهادة. يرجى المحاولة مرة أخرى.' : 'Failed to load certificate libraries. Please try again.');
+      }
     };
 
     if (showSurvey) {
@@ -570,34 +576,20 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               </div>
 
               {viewType === 'cert' ? (
-                <div style={{ marginTop: '110px' }}>
-                  <h1 style={{ fontSize: '3.0rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+                <div style={{ marginTop: '130px' }}>
+                  <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
                     {current.title}
                   </h1>
-                  <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '10px auto' }}></div>
-                  <div style={{ margin: '15px 0' }}>
-                    <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', marginBottom: '5px', fontWeight: '600' }}>{current.intro}</p>
-                    <h2 style={{ fontSize: '3.2rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
+                  <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>
+                  <div style={{ margin: '20px 0' }}>
+                    <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '600' }}>{current.intro}</p>
+                    <h2 style={{ fontSize: '3.6rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
                       {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
                     </h2>
                   </div>
-                  {certData ? (
-                    <div style={{ margin: '15px 0' }}>
-                      <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', margin: '5px 0', fontWeight: '600' }}>
-                        {certLang === 'ar' ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في:' : 'has successfully completed the professional training in:'}
-                      </p>
-                      <h3 style={{ fontSize: '2.4rem', color: 'var(--regulatory-amber)', fontWeight: 'bold', margin: '10px 0' }}>
-                        {certData.unitId && UNIT_ICONS[certData.unitId] ? (certLang === 'ar' ? UNIT_ICONS[certData.unitId].title.ar : UNIT_ICONS[certData.unitId].title.en) : certData.unitType}
-                      </h3>
-                      <p style={{ fontSize: '1.1rem', color: 'var(--text-primary)', margin: '5px 0', fontWeight: 'bold' }}>
-                        {certLang === 'ar' ? `النتيجة: %${certData.score}` : `Final Score: ${certData.score}%`}
-                      </p>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
-                      {current.desc}
-                    </p>
-                  )}
+                  <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
+                    {current.desc}
+                  </p>
                 </div>
               ) : (
                 <div style={{ marginTop: '110px', textAlign: 'center' }}>
@@ -779,9 +771,12 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           كل كورس اكتمل بنسبة 90%+ = شهادة
         </div>
         {certificates.length > 0 ? certificates.map(cert => (
-          <div key={cert.certificateId} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div key={cert._id || cert.certificateId || cert.certNumber} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              {cert.unitType || 'شهادة مجمعة'} - <strong>L{cert.level}</strong> - {cert.score}%
+              <strong>{cert.unitName || cert.unitType || 'شهادة'}</strong>
+              {cert.level && <span style={{ marginRight: '8px', marginLeft: '8px', background: '#28a745', color: 'white', borderRadius: '6px', padding: '2px 8px', fontSize: '0.8rem' }}>L{cert.level}</span>}
+              {cert.score && <span style={{ color: '#155724' }}>{cert.score}%</span>}
+              {cert.certNumber && <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: '2px' }}>{cert.certNumber}</div>}
             </div>
             <button onClick={() => { setSelectedCert(cert); setShowCertificate(true); }} className="btn-primary" style={{ padding: '5px 15px', fontSize: '0.8rem' }}>
               👁️ عرض
