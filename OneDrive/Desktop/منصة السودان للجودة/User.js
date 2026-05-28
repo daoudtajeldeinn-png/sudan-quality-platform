@@ -72,6 +72,7 @@ const userSchema = new mongoose.Schema({
       issueDate: Date,
       score: Number,
       unitType: String,
+      unitId: String,   // ← was missing — caused silent data loss
       level: Number
     }]
   }

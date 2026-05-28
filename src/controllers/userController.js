@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Certificate = require("../models/Certificate");
 
 // الحصول على الملف الشخصي الكامل (XP, Level, Badges, Progress)
 const getUserProfile = async (req, res) => {
@@ -53,13 +54,25 @@ const syncUserStats = async (req, res) => {
       res.json({ success: true, user: updatedUser });
     } else {
       // بناء كائن التحديث ديناميكياً لتجنب مسح البيانات الموجودة
+      // IMPORTANT: use dot-notation for progress sub-fields so we NEVER overwrite
+      // progress.certificates (which is managed by certificateController separately)
       const updateData = {};
       if (xp !== undefined) updateData.xp = xp;
       if (level !== undefined) updateData.level = level;
       if (badges !== undefined) updateData.badges = badges;
       if (stats !== undefined) updateData.stats = stats;
-      if (progress !== undefined) updateData.progress = progress;
       updateData.lastLogin = new Date();
+
+      if (progress !== undefined) {
+        // Spread each known sub-field with dot-notation instead of replacing the whole object
+        if (progress.unitScores !== undefined)  updateData['progress.unitScores']  = progress.unitScores;
+        if (progress.unitStates !== undefined)  updateData['progress.unitStates']  = progress.unitStates;
+        if (progress.lastPlayed !== undefined)  updateData['progress.lastPlayed']  = progress.lastPlayed;
+        if (progress.totalScore !== undefined)  updateData['progress.totalScore']  = progress.totalScore;
+        if (progress.level      !== undefined)  updateData['progress.level']       = progress.level;
+        if (progress.currentUnit !== undefined) updateData['progress.currentUnit'] = progress.currentUnit;
+        // completedUnits: use $addToSet to avoid duplicates (handled separately below)
+      }
 
       // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
       const user = await User.findOneAndUpdate(
@@ -71,7 +84,7 @@ const syncUserStats = async (req, res) => {
             displayName: "Quality Member"
           }
         },
-        { new: true, upsert: true } // Changed upsert to true to fix 404/500 loop
+        { new: true, upsert: true }
       );
       
       console.log(`✅ User sync successful for: ${userId}`);
@@ -84,7 +97,7 @@ const syncUserStats = async (req, res) => {
 };
 
 
-// الحصول على القائمة المتصدرة (Leaderboard)
+// الحصول على شهادات المستخدم
 const getCertificates = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -96,12 +109,17 @@ const getCertificates = async (req, res) => {
         completedCount: user.progress?.completedUnits?.length || 0 
       });
     } else {
-      const user = await User.findOne({ userId });
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      res.json({ certificates: user.progress.certificates || [], completedCount: user.progress.completedUnits.length });
+      // Query the Certificate collection directly — this is the authoritative source.
+      // Do NOT read from user.progress.certificates (it gets wiped by syncUserStats).
+      const certs = await Certificate.find({ userId, status: 'active' }).lean();
+      const user = await User.findOne({ userId }).lean();
+      res.json({ 
+        certificates: certs || [], 
+        completedCount: user?.progress?.completedUnits?.length || 0 
+      });
     }
-
   } catch (err) {
+    console.error('getCertificates error:', err);
     res.status(500).json({ error: 'internal' });
   }
 };
