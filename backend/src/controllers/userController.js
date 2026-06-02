@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Certificate = require("../models/Certificate");
 
 // الحصول على الملف الشخصي الكامل (XP, Level, Badges, Progress)
 const getUserProfile = async (req, res) => {
@@ -58,7 +59,13 @@ const syncUserStats = async (req, res) => {
       if (level !== undefined) updateData.level = level;
       if (badges !== undefined) updateData.badges = badges;
       if (stats !== undefined) updateData.stats = stats;
-      if (progress !== undefined) updateData.progress = progress;
+      if (progress !== undefined) {
+        if (progress.unitScores) updateData['progress.unitScores'] = progress.unitScores;
+        if (progress.unitStates) updateData['progress.unitStates'] = progress.unitStates;
+        if (progress.lastPlayed !== undefined) updateData['progress.lastPlayed'] = progress.lastPlayed;
+        if (progress.totalScore !== undefined) updateData['progress.totalScore'] = progress.totalScore;
+        if (progress.level !== undefined) updateData['progress.level'] = progress.level;
+      }
       updateData.lastLogin = new Date();
 
       // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
@@ -98,7 +105,8 @@ const getCertificates = async (req, res) => {
     } else {
       const user = await User.findOne({ userId });
       if (!user) return res.status(404).json({ error: 'User not found' });
-      res.json({ certificates: user.progress.certificates || [], completedCount: user.progress.completedUnits.length });
+      const certificates = await Certificate.find({ userId, status: 'active' });
+      res.json({ certificates: certificates || [], completedCount: certificates.length });
     }
 
   } catch (err) {

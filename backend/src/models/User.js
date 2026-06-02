@@ -78,6 +78,7 @@ const userSchema = new mongoose.Schema({
       issueDate: Date,
       score: Number,
       unitType: String,
+      unitId: String,
       level: Number
     }]
   }
