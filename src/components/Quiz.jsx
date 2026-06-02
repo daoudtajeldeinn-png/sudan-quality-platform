@@ -22,6 +22,8 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   const [currentExplanation, setCurrentExplanation] = useState({ ar: '', en: '' });
   const [certName, setCertName] = useState(user?.displayName || '');
   const [isGenerating, setIsGenerating] = useState(false);
+  // Track which answers were verified as correct during the quiz
+  const [answerResults, setAnswerResults] = useState([]);
 
   useEffect(() => {
     loadQuestions();
@@ -37,6 +39,10 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   };
 
   const loadQuestions = async () => {
+    // Reset answer results and user answers for new quiz
+    setAnswerResults([]);
+    setUserAnswers([]);
+    
     // Session-based rotation via localStorage
     const storageKey = `sqp_quiz_history_${unitId}${user ? '_' + (user.uid || user.email) : ''}`;
     let excludeIds = [];
@@ -178,9 +184,11 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
     setIsLastAnswerCorrect(isCorrect);
     setCurrentExplanation(explanationObj);
     setShowExplanation(!isCorrect);
-
-    // Track score locally for immediate feedback if needed, 
-    // though calculateResult handles the final tally
+    
+    // Track answer results for final scoring
+    const newResults = [...answerResults];
+    newResults[currentQuestionIndex] = isCorrect;
+    setAnswerResults(newResults);
   };
 
   const handleNext = () => {
@@ -193,27 +201,15 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   };
 
   const calculateResult = () => {
-    // We will re-verify all answers for the final score locally 
-    // as we've kept track of correctness status in a more robust flow
-    // In a real production app, we might want a final scoresheet from the server
-    let correctCount = 0;
-    questions.forEach((q, index) => {
-      const userAnswer = userAnswers[index];
-      if (q.type === 'mcq') {
-        const originalIndex = q.shuffledIndices[userAnswer];
-        // Note: For now we trust the local state for speed, 
-        // as individual checks were already done via handleAnswerSelect
-        if (originalIndex === q.correctAnswer) correctCount++;
-      } else if (q.type === 'tf') {
-        if (userAnswer === q.correctAnswer) correctCount++;
-      } else if (q.type === 'fill') {
-        const normalizedUser = String(userAnswer || '').trim().toLowerCase();
-        const isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
-        if (isCorrect) correctCount++;
-      }
-    });
+    // Use the tracked answer results instead of re-evaluating
+    // This ensures we use the server-verified or locally-verified correct answers
+    const correctCount = answerResults.filter(r => r === true).length;
+    
+    console.log('[Quiz] calculateResult - Total questions:', questions.length, 'User answers:', userAnswers);
+    console.log('[Quiz] calculateResult - Answer results:', answerResults, 'Correct count:', correctCount);
 
     const finalScore = Math.round((correctCount / questions.length) * 100);
+    console.log('[Quiz] calculateResult - Final score:', finalScore);
     setScore(finalScore);
     setQuizState('completed');
 
