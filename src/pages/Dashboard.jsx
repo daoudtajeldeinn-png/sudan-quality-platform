@@ -320,21 +320,33 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     const { score, unitId } = result;
     logAuditTrail('eventQuiz', unitId);
 
+    console.log('[QuizComplete] Score:', score, 'UnitId:', unitId, 'User:', user?.uid, 'Email:', user?.email);
+
     setUserProgress(prev => {
+      console.log('[QuizComplete] Previous progress:', prev);
+      console.log('[QuizComplete] Previous score for unit', unitId, ':', prev[unitId]);
       const isNewSuccess = score >= 90 && (!prev[unitId] || prev[unitId] < 90);
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
+      
+      console.log('[QuizComplete] Updated unitId:', unitId, 'New score for unit:', newProgress[unitId]);
+      console.log('[QuizComplete] Full new progress:', JSON.stringify(newProgress));
       
       if (score >= 90 && user?.uid) {
         (async () => {
           try {
+            // Use UNIT_ICONS for unitName to get proper English title
+            const unitName = UNIT_ICONS[unitId]?.title?.en || unitId;
+            console.log('[QuizComplete] Awarding certificate for unit:', unitId, 'unitName:', unitName);
             const response = await apiService.awardCertificate({
               userId: user.uid,
               userName: user.displayName || user.email,
               unitId,
-              unitName: allUnitsDefinition.find(u => u.id === unitId)?.title || unitId,
+              unitName,
               score,
               percentage: score
             });
+            
+            console.log('[QuizComplete] Certificate response:', response);
             
             // Refresh certificates list
             const certsData = await apiService.getUserCertificates(user.uid, authToken);
@@ -349,7 +361,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               alert(language === 'ar' ? 'تم تسجيل تقدمك بنجاح!' : 'Your progress has been recorded successfully!');
             }
           } catch (e) {
-            console.error('Award failed', e);
+            console.error('[QuizComplete] Award failed', e);
           }
         })();
       }
@@ -357,8 +369,13 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       const allOthersPassed = allTrackUnits.filter(id => id !== unitId).every(id => (newProgress[id] || 0) >= 90);
 
       if (isNewSuccess && allOthersPassed) newProgress[`completionDate_academy`] = new Date().toISOString();
-      localStorage.setItem(`sqp_progress_${user.email}`, JSON.stringify(newProgress));
+      
+      const storageKey = `sqp_progress_${user.email}`;
+      console.log('[QuizComplete] Saving to localStorage:', storageKey, 'Progress:', newProgress);
+      localStorage.setItem(storageKey, JSON.stringify(newProgress));
+      
       if (user.uid) {
+        console.log('[QuizComplete] Syncing to backend...');
         apiService.syncUserStats(user.uid, {
           progress: {
             unitScores: newProgress,
@@ -366,7 +383,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             lastPlayed: unitId,
             totalScore: Object.values(newProgress).reduce((a, b) => a + b, 0)
           }
-        }, authToken).catch(err => console.error('Sync failed:', err));
+        }, authToken).catch(err => console.error('[QuizComplete] Sync failed:', err));
       }
       return newProgress;
     });
@@ -504,6 +521,18 @@ const Dashboard = ({ user, onLogout, authToken }) => {
       );
     }
 
+    // Get unit name from certData or map from unitId using UNIT_ICONS
+    const getUnitName = (cert) => {
+      if (cert?.unitName) return cert.unitName;
+      if (cert?.unitType) return cert.unitType;
+      if (cert?.unitId && UNIT_ICONS[cert.unitId]) {
+        return certLang === 'ar' ? UNIT_ICONS[cert.unitId].title.ar : UNIT_ICONS[cert.unitId].title.en;
+      }
+      return certLang === 'ar' ? 'التخصصية' : 'Specialized';
+    };
+
+    const unitName = certData ? getUnitName(certData) : null;
+
     const certContent = {
       en: {
         authority: 'Sudan Quality Platform',
@@ -511,7 +540,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'CERTIFICATE OF COMPLETION',
         transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
         intro: 'This is to certify that',
-        desc: certData ? `Has successfully completed the ${certData.unitType || 'Specialized'} unit and demonstrated professional proficiency.` : 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
+        desc: certData ? `Has successfully completed the ${unitName} unit and demonstrated professional proficiency.` : 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
         date: 'Date',
         name: 'Ahmed Daoud Tajeldeinn',
         unitHead: 'Unit/Module Name',
@@ -524,7 +553,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'شهادة إتمام تدريب',
         transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
         intro: 'نشهد بأن المتدرب/ـة',
-        desc: certData ? `قد أكمل بنجاح وحدة ${certData.unitType || 'التخصصية'} وأظهر كفاءة احترافية متميزة.` : 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
+        desc: certData ? `قد أكمل بنجاح وحدة ${unitName} وأظهر كفاءة احترافية متميزة.` : 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
         date: 'التاريخ',
         name: 'أحمد داؤود تاجر الدين',
         unitHead: 'الوحدة / المسار',

@@ -1,6 +1,7 @@
 export const educationalContent = {
   units: {
     'cleaning-validation': {
+      title: { ar: 'التحقق من التنظيف', en: 'Cleaning Validation' },
       slides: [
         { id: 'cv_s1', type: 'learning', regulatoryRef: { code: 'Annex 15, Sec 10', body: 'PIC/S' }, ar: { title: 'فلسفة التحقق من التنظيف', text: 'ليس مجرد غسيل للمعدات؛ هو إثبات علمي بأن عملية التنظيف (Manual or CIP) قادرة على إزالة بقيا الأدوية، المنظفات، والتلوث الميكروبي لضمان عدم حدوث تلوث تبادلي (Cross-contamination) يهدد حياة المريض.' }, en: { title: 'Cleaning Validation Philosophy', text: 'More than just washing; it is scientific proof that cleaning (Manual or CIP) removes drug residues, detergents, and microbes to prevent cross-contamination that threatens patient safety.' } },
         { id: 'cv_s2', type: 'learning', ar: { title: 'تحديد النقاط الساخنة (Hot Spots)', text: 'يجب التركيز على الأماكن صعبة التنظيف ميكانيكياً مثل: \n1. Dead Legs (الأنابيب المسدودة).\n2. Gaskets & Seals (الحواف الجلدية).\n3. Discharge Valves (صمامات التصريف).\n4. Agitator Shafts (أعمدة الخلط).' }, en: { title: 'Identifying Hot Spots', text: 'Focus on mechanically challenging areas: \n1. Dead Legs.\n2. Gaskets & Seals.\n3. Discharge Valves.\n4. Agitator Shafts.' } },
@@ -13,6 +14,7 @@ export const educationalContent = {
       examQuestionPool: ['cleaning_val_q1', 'cleaning_val_q2', 'cleaning_val_q3', 'cleaning_val_q4', 'cleaning_val_q5', 'cleaning_val_q6', 'cleaning_val_q7', 'cleaning_val_q8', 'cleaning_val_q9', 'cleaning_val_q10', 'cleaning_val_q11', 'cleaning_val_q12', 'cleaning_val_q13', 'cleaning_val_q14', 'cleaning_val_q15']
     },
     'nmpb-reg': {
+      title: { ar: 'الرقابة الدوائية', en: 'NMPB Regulatory' },
       slides: [
         { id: 'nmpb_s1', type: 'learning', regulatoryRef: { code: 'NMPB Act 2009', body: 'NMPB' }, ar: { title: 'مقدمة عن المجلس القومي للأدوية والسموم', text: 'المجلس القومي للأدوية والسموم (NMPB) هو السلطة الرقابية الوطنية العليا المستقلة في السودان. تأسس بموجب قانون الأدوية والسموم لعام 2009 لتنظيم العمل الدوائي والرقابة على الأدوية والمستلزمات الطبية ومستحضرات التجميل.' }, en: { title: 'Introduction to NMPB', text: 'The National Medicines and Poisons Board (NMPB) is the supreme independent national regulatory authority in Sudan. Established under the 2009 Act to regulate pharmaceutical work and control medicines, medical devices, and cosmetics.' } },
         { id: 'nmpb_s2', type: 'learning', regulatoryRef: { code: 'NMPB Policy Guidelines 2011', body: 'NMPB' }, ar: { title: 'الهدف الاستراتيجي للمجلس', text: 'تتمثل الرؤية الأساسية للـ NMPB في "حماية الصحة العامة" من خلال ضمان أن جميع المنتجات الخاضعة لرقابته آمنة وفعالة وذات جودة عالية ومتاحة للمواطنين بأسعار معقولة.' }, en: { title: 'Strategic Objective', text: 'The core vision of NMPB is "Protecting Public Health" by ensuring that all products under its mandate are safe, effective, of high quality, and available to citizens at reasonable prices.' } },
@@ -29,6 +31,7 @@ export const educationalContent = {
       examQuestionPool: ['nmpb_q1', 'nmpb_q2', 'nmpb_q3', 'nmpb_q4', 'nmpb_q5', 'nmpb_tf1', 'nmpb_tf2', 'nmpb_tf3', 'nmpb_fill1', 'nmpb_fill2']
     },
     'gmp-intro': {
+      title: { ar: 'مقدمة في GMP', en: 'Intro to GMP' },
       slides: [
         { id: 'gmp_s1', type: 'learning', regulatoryRef: { code: 'WHO TRS 986, Annex 2', body: 'WHO' }, ar: { title: 'مقدمة في WHO GMP', text: 'ممارسات التصنيع الجيد (GMP) هي نظام لضمان إنتاج المنتجات ومراقبتها باستمرار وفقاً لمعايير الجودة المناسبة. تهدف بشكل أساسي إلى تقليل المخاطر التي لا يمكن القضاء عليها من خلال اختبار المنتج النهائي فقط.' }, en: { title: 'Introduction to WHO GMP', text: 'Good Manufacturing Practices (GMP) is a system for ensuring that products are consistently produced and controlled to the quality standards appropriate to their intended use. It minimizes risks that cannot be eliminated through final product testing alone.' } },
         { id: 'gmp_s2', type: 'learning', regulatoryRef: { code: 'WHO TRS 986, 1.1', body: 'WHO' }, ar: { title: 'إدارة الجودة (Quality Management)', text: 'تتضمن ضمان الجودة (QA) ومراقبة الجودة (QC). ضمان الجودة هو المفهوم الشامل الذي يغطي جميع الأمور التي تؤثر بشكل فردي أو جماعي على جودة المنتج.' }, en: { title: 'Quality Management', text: 'Encompasses Quality Assurance (QA) and Quality Control (QC). QA is a wide-ranging concept covering all matters that individually or collectively influence the quality of a product.' } },
@@ -53,6 +56,7 @@ export const educationalContent = {
       examQuestionPool: ['gmp_cs_q1', 'gmp_q1', 'gmp_q2', 'gmp_q3', 'gmp_q4', 'gmp_q5', 'gmp_q6', 'gmp_q7', 'gmp_q8', 'gmp_q9', 'gmp_q10', 'gmp_q11', 'gmp_q12', 'gmp_q13', 'gmp_q14', 'gmp_q15', 'gmp_q16', 'gmp_tf1', 'gmp_tf2', 'gmp_fill1', 'gmp_fill2']
     },
     'glp-basics': {
+      title: { ar: 'مبادئ GLP', en: 'GLP Basics' },
       slides: [
         { id: 'glp_s0', type: 'learning', ar: { title: 'نشأة الـ GLP وتاريخه', text: 'نشأت مبادئ الـ GLP في السبعينيات كاستجابة من الـ FDA لحالات واسعة من الممارسات المخبرية السيئة والاحتيال في الولايات المتحدة، لضمان نزاهة وصدق البيانات.' }, en: { title: 'Origin and History of GLP', text: 'GLP principles emerged in the 1970s as an FDA response to widespread instances of poor laboratory practices and fraud in the US, ensuring data integrity and reliability.' } },
         { id: 'glp_s1', type: 'learning', ar: { title: 'مبادئ OECD للـ GLP', text: 'الممارسات المخبرية الجيدة (GLP) هي نظام جودة يتعلق بالعملية التنظيمية والظروف التي يتم فيها تخطيط الدراسات الصحية والبيئية غير السريرية وإجراؤها ومراقبتها وأرشفتها.' }, en: { title: 'OECD Principles of GLP', text: 'Good Laboratory Practice (GLP) is a quality system concerned with the organizational process and the conditions under which non-clinical health and environmental safety studies are planned, performed, monitored, recorded, archived and reported.' } },
@@ -68,6 +72,7 @@ export const educationalContent = {
       examQuestionPool: ['glp_q1', 'glp_q2', 'glp_q3', 'glp_q4', 'glp_q5', 'glp_q6', 'glp_q7', 'glp_q8', 'glp_q9', 'glp_q10', 'glp_tf1', 'glp_tf2', 'glp_fill1']
     },
     'iso-17025': {
+      title: { ar: 'ISO 17025', en: 'ISO 17025' },
       slides: [
         { id: 'iso_s1', type: 'learning', ar: { title: 'ISO/IEC 17025:2017', text: 'هو المعيار الدولي للمتطلبات العامة لكفاءة وحيادية وتشغيل المختبرات المتسق. يركز الإصدار الأخير على "التفكير المبني على المخاطر".' }, en: { title: 'ISO/IEC 17025:2017', text: 'This is the international standard for the general requirements for the competence, impartiality and consistent operation of laboratories. The 2017 version focuses on "Risk-based thinking".' } },
         { id: 'iso_s2', type: 'learning', ar: { title: 'الحيادية والسرية (Clause 4)', text: 'يجب أن يتم تنفيذ أنشطة المختبر بحيادية تامة بعيداً عن أي ضغوط تجارية أو مالية. كما يجب حماية سرية بيانات العميل.' }, en: { title: 'Impartiality & Confidentiality', text: 'Lab activities must be performed impartially, managed to safeguard against commercial or financial pressures. Customer data confidentiality is mandatory.' } },
@@ -87,6 +92,7 @@ export const educationalContent = {
       examQuestionPool: ['iso_audit_q1', 'iso_q1', 'iso_q2', 'iso_q3', 'iso_q4', 'iso_q5', 'iso_q6', 'iso_q7', 'iso_q8', 'iso_q9', 'iso_q10', 'iso_q11', 'iso_q12', 'iso_tf1', 'iso_tf2', 'iso_tf3', 'iso_tf4', 'iso_fill1', 'iso_fill2']
     },
     'ich-guidelines': {
+      title: { ar: 'إرشادات ICH', en: 'ICH Guidelines' },
       slides: [
         { id: 'ich_s1', type: 'learning', ar: { title: 'ما هو الـ ICH؟', text: 'المجلس الدولي للتنسيق (ICH) يهدف إلى تحقيق توافق عالمي في المتطلبات التقنية لضمان جودة وسلامة وفعالية الأدوية بأكثر الطرق كفاءة.' }, en: { title: 'What is ICH?', text: 'The International Council for Harmonisation (ICH) aims to achieve global harmonization of technical requirements to ensure quality, safety, and efficacy of medicines efficiently.' } },
         { id: 'ich_s2', type: 'learning', ar: { title: 'إرشادات الجودة (Quality - Q)', text: 'تتعلق بالتركيب الكيميائي واختبارات الثبات والشوائب. تشمل ICH Q1 (الثبات)، Q7 (API GMP)، و Q10 (نظام الجودة).' }, en: { title: 'Quality Guidelines (Q)', text: 'Covers chemical/pharmaceutical quality, stability testing, and impurities. Includes ICH Q1 (Stability), Q7 (API GMP), and Q10 (Quality Systems).' } },
@@ -102,6 +108,7 @@ export const educationalContent = {
       examQuestionPool: ['ich_ctd_q1', 'ich_q1', 'ich_q2', 'ich_q3', 'ich_q4', 'ich_q5', 'ich_q6', 'ich_q7', 'ich_q8', 'ich_q9', 'ich_q10', 'ich_q11', 'ich_q12', 'ich_tf1', 'ich_fill1']
     },
     'ich-q10': {
+      title: { ar: 'نظام Q10', en: 'ICH Q10' },
       slides: [
         { id: 'q10_s1', type: 'learning', ar: { title: 'نظام الجودة الصيدلاني (ICH Q10)', text: 'طرح ICH Q10 نموذجاً حديثاً لنظام جودة فعال يعتمد على مفاهيم الأيزو (ISO) ويشمل دورة حياة المنتج بالكامل.' }, en: { title: 'Pharmaceutical Quality System (ICH Q10)', text: 'ICH Q10 describes a modern model for an effective quality system based on ISO concepts, covering the entire product lifecycle.' } },
         { id: 'q10_s2', type: 'learning', ar: { title: 'مسؤولية الإدارة (Management)', text: 'تؤكد Q10 أن القيادة هي المسؤولة عن توفير الموارد وتحديد السياسات لضمان فعالية نظام الجودة.' }, en: { title: 'Management Responsibility', text: 'Q10 emphasizes that leadership is responsible for providing resources and defining policies to ensure the effectiveness of the quality system.' } },
@@ -111,6 +118,7 @@ export const educationalContent = {
       examQuestionPool: ['q10_q1', 'q10_q2', 'q10_tf1']
     },
     'validation-qualification': {
+      title: { ar: 'التحقق والتأهيل', en: 'Validation & Qualification' },
       slides: [
         { id: 'vq_s1', type: 'learning', ar: { title: 'مبادئ التحقق والصلاحية', text: 'التحقق (Validation) هو تقديم دليل موثق على أن أي عملية أو معدة أو نشاط سيؤدي باستمرار إلى النتائج المتوقعة. "الجودة لا تأتي بالصدفة، بل يتم تصميمها والتحقق منها".' }, en: { title: 'Principles of Validation', text: 'Validation is documentary evidence that any process, equipment, or activity will consistently lead to the expected results. "Quality is not by accident; it is designed and validated."' } },
         { id: 'vq_s2', type: 'learning', ar: { title: 'مراحل تأهيل المعدات (Qualification)', text: 'تشمل أربع مراحل أساسية: تأهيل التصميم (DQ)، تأهيل التركيب (IQ)، تأهيل التشغيل (OQ)، وتأهيل الأداء (PQ).' }, en: { title: 'Equipment Qualification Stages', text: 'Includes four essential stages: Design Qualification (DQ), Installation Qualification (IQ), Operational Qualification (OQ), and Performance Qualification (PQ).' } },
@@ -125,6 +133,7 @@ export const educationalContent = {
       examQuestionPool: ['vq_q1', 'vq_q2', 'vq_q3', 'vq_q4', 'vq_q5', 'vq_q6', 'vq_q7', 'vq_q8', 'vq_q9', 'vq_q10', 'vq_cs_1', 'vq_tf1', 'vq_tf2', 'vq_fill1', 'vq_fill2']
     },
     'sterile-annex1': {
+      title: { ar: 'التصنيع المعقم', en: 'Sterile Mfg' },
       slides: [
         { id: 'ax1_s1', type: 'learning', ar: { title: 'ملحق 1 (Annex 1): التصنيع المعقم', text: 'يعتبر الملحق 1 من أهم الأدلة لتصنيع المنتجات المعقمة، ويركز على تقليل مخاطر التلوث الميكروبي والجسيمي.' }, en: { title: 'Annex 1: Sterile Manufacturing', text: 'Annex 1 is one of the most critical guides for manufacturing sterile products, focusing on minimizing microbial and particulate contamination risks.' } },
         { id: 'ax1_s2', type: 'learning', ar: { title: 'درجات النظافة (Grades A-D)', text: 'الدرجة A: للعمليات عالية المخاطر. الدرجة B: الخلفية للدرجة A. الدرجات C و D: للمراحل الأقل خطورة.' }, en: { title: 'Cleanliness Grades (A-D)', text: 'Grade A: For high-risk operations. Grade B: Background for Grade A. Grades C and D: For less critical stages.' } },
@@ -134,6 +143,7 @@ export const educationalContent = {
       examQuestionPool: ['ax1_q1', 'ax1_tf1']
     },
     'gamp5-basics': {
+      title: { ar: 'GAMP 5', en: 'GAMP 5' },
       slides: [
         { id: 'gamp_s1', type: 'learning', ar: { title: 'مقدمة في GAMP 5', text: 'GAMP 5 (الدليل الجيد لممارسات التحقق الآلي) هو الإطار العالمي لضبط والتحقق من الأنظمة المحوسبة في الصناعة الدوائية. يركز على نهج قائم على المخاطر لضمان الامتثال لمتطلبات GxP.' }, en: { title: 'Introduction to GAMP 5', text: 'GAMP 5 (Good Automated Manufacturing Practice) is the global framework for compliant GxP computerized systems in pharma. It focuses on a risk-based approach to ensure compliance with GxP requirements.' } },
         { id: 'gamp_s2', type: 'learning', ar: { title: 'تصنيفات الأنظمة (Categories)', text: 'الفئة 1: أنظمة التشغيل والبنية التحتية (OS, Networks). الفئة 3: الأنظمة الجاهزة غير المهيئة (مثل: برامج Office). الفئة 4: الأنظمة المهيئة (Configured) مثل LIMS و ERP. الفئة 5: البرمجيات المخصصة (Custom Software) ذات المتطلبات الفريدة.' }, en: { title: 'System Categories', text: 'Cat 1: Infrastructure (OS, Networks). Cat 3: Non-configured software (e.g., Office tools). Cat 4: Configured software (LIMS, ERP). Cat 5: Custom-developed software with unique requirements.' } },
@@ -152,6 +162,7 @@ export const educationalContent = {
       examQuestionPool: ['gamp_q1', 'gamp_q2', 'gamp_q3', 'gamp_q4', 'gamp_q5', 'gamp_tf1', 'gamp_tf2', 'gamp_fill1']
     },
     'batch-records': {
+      title: { ar: 'سجلات التشغيل', en: 'Batch Records' },
       slides: [
         { id: 'br_s1', type: 'learning', ar: { title: 'سجلات التشغيل (Batch Records)', text: 'تُعد سجلات التشغيل الدليل القانوني على جودة كل تشغيلة دوائية. هناك نوعان:\n- سجل التشغيلة الرئيسي (MBR): الوثيقة المعتمدة التي تصف العملية الكاملة.\n- سجل الإنتاج الفعلي (BPR): نسخة مكتملة من الـ MBR تُملأ أثناء الإنتاج.' }, en: { title: 'Batch Production Records', text: 'Batch records are the legal evidence of quality for every lot. Two core types:\n- Master Batch Record (MBR): The approved document describing the complete process.\n- Batch Production Record (BPR): A completed copy of the MBR filled in during actual production.' } },
         { id: 'br_s2', type: 'learning', ar: { title: 'التوثيق الحي (Real-time)', text: 'يجب أن يتم التوثيق لحظة وقوع الحدث (Contemporaneous). إذا لم يوثق، فلم يحدث. لا يُسمح بالتوثيق المسبق (Pre-dating) أو التوثيق المتأخر (Back-dating).' }, en: { title: 'Real-time Documentation', text: 'Documentation must be contemporaneous. If it is not documented, it did not happen. Pre-dating and back-dating are never permitted.' } },
@@ -170,6 +181,7 @@ export const educationalContent = {
       examQuestionPool: ['br_q1', 'br_q2', 'br_q3', 'br_q4', 'br_q5', 'br_tf1', 'br_tf2', 'br_fill1']
     },
     'data-integrity': {
+      title: { ar: 'سلامة البيانات', en: 'Data Integrity' },
       slides: [
         { id: 'di_s1', type: 'learning', ar: { title: 'نزاهة وسلامة البيانات', text: 'تعد سلامة البيانات (Data Integrity) ركيزة أساسية في الـ GMP. تعني أن البيانات كاملة، متسقة، ودقيقة طوال دورة حياتها.' }, en: { title: 'Data Integrity Basics', text: 'Data Integrity is a core pillar of GMP. It means data is complete, consistent, and accurate throughout its entire lifecycle.' } },
         { id: 'di_s2', type: 'learning', ar: { title: 'مبادئ ALCOA', text: 'A: Attributable (منسوب لشخص)، L: Legible (مقروء)، C: Contemporaneous (معاصر/فوري)، O: Original (أصلي)، A: Accurate (دقيق).' }, en: { title: 'ALCOA Principles', text: 'A: Attributable, L: Legible, C: Contemporaneous, O: Original, A: Accurate.' } },
@@ -184,6 +196,7 @@ export const educationalContent = {
       examQuestionPool: ['di_q1', 'di_q2', 'di_q3', 'di_q4', 'di_q5', 'di_q6', 'di_q7', 'di_q8', 'di_q9', 'di_q10', 'di_cs_1', 'di_tf1', 'di_tf2', 'di_fill1', 'di_fill2']
     },
     'qrm-basics': {
+      title: { ar: 'إدارة المخاطر', en: 'QRM Basics' },
       slides: [
         { id: 'qr_s1', type: 'learning', ar: { title: 'إدارة مخاطر الجودة (QRM)', text: 'عملية نظامية لتقييم ومراقبة وتواصل ومراجعة المخاطر التي تهدد جودة المنتج الدوائي طوال دورة حياته (ICH Q9).' }, en: { title: 'Quality Risk Management (QRM)', text: 'A systematic process for the assessment, control, communication and review of risks to the quality of the drug product across its lifecycle (ICH Q9).' } },
         { id: 'qr_s2', type: 'learning', ar: { title: 'مبادئ QRM الأساسية', text: '1. يجب أن يستند تقييم المخاطر إلى المعرفة العلمية ويرتبط في النهاية بحماية المريض. 2. يجب أن يتناسب الجهد والتوثيق مع مستوى الخطر.' }, en: { title: 'Core QRM Principles', text: '1. Risk evaluation should be based on scientific knowledge and ultimately link to patient protection. 2. Effort and documentation should be commensurate with the level of risk.' } },
@@ -196,6 +209,7 @@ export const educationalContent = {
       examQuestionPool: ['qr_q1', 'qr_q2', 'qr_q3', 'qr_q4', 'qr_q5', 'qr_q6', 'qr_q7', 'qr_q8', 'qr_q9', 'qr_q10', 'qr_cs_1', 'qr_tf1', 'qr_tf2', 'qr_fill1', 'qr_fill2']
     },
     'gdp-basics': {
+      title: { ar: 'ممارسات التوزيع', en: 'GDP Basics' },
       slides: [
         { id: 'gdp_s1', type: 'learning', ar: { title: 'مقدمة في ممارسات التوزيع الجيد (GDP)', text: 'ممارسات التوزيع الجيد (GDP) هي نظام دولي يضمن جودة المنتجات الدوائية طوال سلسلة التوريد بأكملها، بدءاً من المصنّع وصولاً إلى المريض. تُعد هذه الممارسات ضرورية لحماية صحة المرضى من خلال ضمان أن الأدوية يتم تخزينها ونقلها وتوزيعها وفقاً لأعلى المعايير العالمية. تهدف الـ GDP بشكل أساسي إلى منع تدهور جودة الأدوية وضمان وصول منتج آمن وفعّال للمستخدم النهائي في جميع الأوقات.' }, en: { title: 'Introduction to GDP', text: 'Good Distribution Practice (GDP) is an international system that ensures pharmaceutical product quality throughout the entire supply chain, from manufacturer to patient. These practices are essential for protecting patient health by ensuring that medicines are stored, transported, and distributed according to the highest global standards. GDP fundamentally aims to prevent product quality degradation and ensure that a safe and effective product reaches the end user at all times.' } },
         { id: 'gdp_s2', type: 'learning', ar: { title: 'متطلبات التخزين الدوائي', text: 'يُعد التخزين الصحيح للأدوية ركيزة أساسية في نظام الـ GDP، حيث يجب أن تستوفي المستودعات اشتراطات صارمة من حيث درجة الحرارة والرطوبة والإضاءة والتهوية. تُخزن الأدوية في درجة حرارة الغرفة بين 15-25 درجة مئوية، بينما تحتاج الأدوية المبردة إلى نطاق 2-8 درجات مئوية، والأدوية المجمدة إلى -20 درجة مئوية أو أقل. يجب أن تكون الرطوبة النسبية بين 45-65% لمنع تلف الأدوية بسبب الرطوبة الزائدة.' }, en: { title: 'Storage Requirements', text: 'Proper drug storage is a fundamental pillar in the GDP system, as warehouses must meet stringent requirements for temperature, humidity, lighting, and ventilation. Drugs are stored at room temperature between 15-25°C, while refrigerated drugs require 2-8°C, and frozen drugs require -20°C or below. Relative humidity must be maintained between 45-65% to prevent drug damage from excessive moisture.' } },
@@ -224,6 +238,7 @@ export const educationalContent = {
       examQuestionPool: ['nmpb_q1', 'nmpb_q2', 'nmpb_q3', 'nmpb_q4', 'nmpb_q5', 'nmpb_q6', 'nmpb_q7', 'nmpb_q8', 'nmpb_q9', 'nmpb_q10', 'nmpb_tf1', 'nmpb_tf2', 'nmpb_tf3', 'nmpb_fill1', 'nmpb_fill2']
     },
     'adv-gmp': {
+      title: { ar: 'ممارسات التصنيع المتقدمة', en: 'Adv. GMP' },
       slides: [
         { id: 'adv_gmp_s1', type: 'learning', ar: { title: 'مقدمة للـ GMP المتقدم', text: 'يركز الـ GMP المتقدم على التحديات الحرجة في التصنيع الدوائي، وتحديداً المعالجة المعقمة (Aseptic Processing) ومتطلبات EU Annex 1 المحدثة لعام 2022.' }, en: { title: 'Intro to Advanced GMP', text: 'Advanced GMP focuses on critical challenges in pharmaceutical manufacturing, specifically Aseptic Processing and the updated EU Annex 1 (2022) requirements.' } },
         { id: 'adv_gmp_s2', type: 'learning', ar: { title: 'EU Annex 1 المحدث 2022', text: 'تحديث شامل للملحق 1 الخاص بالمنتجات المعقمة. يركز بشكل أساسي على "استراتيجية التحكم في التلوث" (CCS) كمسار إلزامي لكل منشأة لمعالجة المخاطر الجرثومية والجسيمات والسموم.' }, en: { title: 'Updated EU Annex 1 (2022)', text: 'A comprehensive update for Annex 1 (Sterile Products). The primary focus is the mandatory "Contamination Control Strategy (CCS)" for every facility to address microbial, particulate, and pyrogen risks.' } },
@@ -239,6 +254,7 @@ export const educationalContent = {
       examQuestionPool: ['adv_gmp_q1', 'adv_gmp_q2', 'adv_gmp_q3', 'adv_gmp_q4', 'adv_gmp_q5', 'adv_gmp_q6', 'adv_gmp_tf1', 'adv_gmp_tf2']
     },
     'adv-glp': {
+      title: { ar: 'تحليل بيانات GLP', en: 'Adv. GLP' },
       slides: [
         { id: 'adv_glp_s1', type: 'learning', ar: { title: 'OOS / OOT', text: 'علم المختبرات المتقدم يتعامل بصرامة مع أي نتيجة خارج المواصفات القياسية (OOS) والنتائج الشاذة لكنها داخل المواصفات (OOT).' }, en: { title: 'OOS / OOT', text: 'Advanced lab science handles strictly any result Out of Specification (OOS) and atypical results within specifications (OOT).' } },
         { id: 'adv_glp_s2', type: 'learning', ar: { title: 'محظورات FDA', text: 'ممارسة إعادة التحليل حتى النجاح بغير مبرر "Testing into compliance" محظورة عالمياً وتعتبر تزويراً.' }, en: { title: 'FDA Prohibitions', text: 'The practice of retesting until passing without justification "Testing into compliance" is globally prohibited and is falsification.' } },
@@ -254,6 +270,7 @@ export const educationalContent = {
       examQuestionPool: ['adv_glp_q1', 'adv_glp_q2', 'adv_glp_q3', 'adv_glp_q4', 'adv_glp_tf1', 'adv_glp_tf2']
     },
     'adv-iso-17025': {
+      title: { ar: 'التطبيق العملي لـ ISO', en: 'Adv. ISO' },
       slides: [
         { id: 'adv_iso_s1', type: 'learning', ar: { title: 'نظرة متقدمة 17025', text: 'الإصدار المحدث يركز على كفاءة المختبرات، وتأكيد موثوقية اختباراتها وفق معايير عالمية كالتفكير المبني على المخاطر.' }, en: { title: 'Advanced look at 17025', text: 'The updated version focuses on laboratory competence, confirming reliability via global standards like risk-based thinking.' } },
         { id: 'adv_iso_s2', type: 'learning', ar: { title: 'الحيادية (Impartiality)', text: 'يجب ألا يشعر العاملون بضغوط إدارية لصنع نتائج وهمية من أجل التسويق. هذا متطلب شديد من مراجعي الاعتماد.' }, en: { title: 'Impartiality', text: 'Workers must not feel management pressure to fake results for marketing. This is a strict demand from accreditation auditors.' } },
@@ -269,6 +286,7 @@ export const educationalContent = {
       examQuestionPool: ['adv_iso_q1', 'adv_iso_q2', 'adv_iso_q3', 'adv_iso_q4', 'adv_iso_tf1', 'adv_iso_tf2']
     },
     'adv-validation': {
+      title: { ar: 'التحقق المتقدم', en: 'Adv. Validation' },
       slides: [
         { id: 'adv_val_s1', type: 'learning', ar: { title: 'التحقق: دورة حياة 2011', text: 'التحقق صار الآن مكوناً من ثلاث مراحل (التصميم، التأهيل، والتحقق المستمر). 3 دفعات ناجحة بمفردها لم تعد كافية.' }, en: { title: 'Validation: 2011 Lifecycle', text: 'Validation now comprises three stages: Design, Qualification, and Continuous. Three standalone successful batches are no longer sufficient.' } },
         { id: 'adv_val_s2', type: 'learning', ar: { title: 'المرحلة 1: عملية التصميم', text: 'يتم بناء الجودة بالتصميم أثناء الـ R&D. نحدد السمات الحرجة ليكون المنتج مأموناً من البداية.' }, en: { title: 'Stage 1: Process Design', text: 'Quality by Design is built during R&D. We identify critical specs to ensure safe product from its inception.' } },
@@ -284,6 +302,7 @@ export const educationalContent = {
       examQuestionPool: ['adv_val_q1', 'adv_val_q2', 'adv_val_q3', 'adv_val_q4', 'adv_val_tf1', 'adv_val_tf2']
     },
     'adv-qrm': {
+      title: { ar: 'تطبيقات QRM', en: 'Adv. QRM' },
       slides: [
         { id: 'adv_qrm_s1', type: 'learning', ar: { title: 'مبادئ الجودة وقياس المخاطرة R1', text: 'دليل ICH Q9(R1) شدد حديثاً بأنه لا مجال للرأي الذاتي البحت. البيانات والمعرفة العلمية للمنتج هي المرجعية الأساسية.' }, en: { title: 'Risk Measurement & Quality R1 Principles', text: 'ICH Q9(R1) strictly outlines that pure subjectivity has no room. Data and scientific product mastery are the baseline references.' } },
         { id: 'adv_qrm_s2', type: 'learning', ar: { title: 'تخصيص الجهد', text: 'طاقة وموارد تحليل المخاطر يجب أن تتركز على المخاطر الأعلى خطراً للمريض ولا تهدر لمشاكل بسيطة (Commensurate Effort).' }, en: { title: 'Effort Allocation', text: 'Risk analysis energy must concentrate massively on highly fatal patient risks, averting wastes on trivial errors.' } },
@@ -299,6 +318,7 @@ export const educationalContent = {
       examQuestionPool: ['adv_qrm_q1', 'adv_qrm_q2', 'adv_qrm_q3', 'adv_qrm_q4', 'adv_qrm_tf1', 'adv_qrm_tf2']
     },
     'adv-gdp': {
+      title: { ar: 'سلسلة التبريد', en: 'Adv. GDP' },
       slides: [
         { id: 'adv_gdp_s1', type: 'learning', ar: { title: 'بروتوكولات Annex 9 لـ WHO', text: 'شحن أدوية التبريد لا مجال فيه للصدفة. إذا نزل الدواء المبرمج لـ (2-8) للحظة إلى تجمد، تفقد البروتينات طيّها للأبد وتتلف تماماً.' }, en: { title: 'WHO Annex 9 Protocols', text: 'Shipping cold-chain bio-meds leaves zero room for chance. A split-second sub-zero freeze irreversibly denatures and destroys structural proteins.' } },
         { id: 'adv_gdp_s2', type: 'learning', ar: { title: 'أنظمة النشط والسلبي', text: 'النشط Active يمتلك ضاغط وتبريد ذاتي، السلبي Passive يعتمد على مواد هلامية Gel packs أو ثلج يحيط بالعازل لينتظر الوصول.' }, en: { title: 'Active & Passive Configurations', text: 'Active retains autonomous compressor chilling. Passive utilizes Gel bags/Ice enveloping insulated buffers clinging to arrival deadlines.' } },

@@ -500,7 +500,13 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
 
   if (quizState === 'completed') {
     const passed = score >= 90;
-    const unitTitle = educationalContent.units[unitId]?.title || { ar: unitId, en: unitId };
+    // Get unit title from unit data title property or fallback to unitId
+    const unitData = educationalContent.units[unitId];
+    const unitTitle = unitData?.title || 
+                     (unitData?.slides?.[0]?.[language]?.title || 
+                      (unitData?.slides?.[0]?.ar?.title && unitData?.slides?.[0]?.en?.title 
+                       ? { ar: unitData.slides[0].ar.title, en: unitData.slides[0].en.title }
+                       : { ar: unitId.replace(/-/g, ' ').toUpperCase(), en: unitId.replace(/-/g, ' ').toUpperCase() }));
     
     return (
       <div className="result-container" style={{ position: 'relative' }}>
