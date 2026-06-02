@@ -54,25 +54,19 @@ const syncUserStats = async (req, res) => {
       res.json({ success: true, user: updatedUser });
     } else {
       // بناء كائن التحديث ديناميكياً لتجنب مسح البيانات الموجودة
-      // IMPORTANT: use dot-notation for progress sub-fields so we NEVER overwrite
-      // progress.certificates (which is managed by certificateController separately)
       const updateData = {};
       if (xp !== undefined) updateData.xp = xp;
       if (level !== undefined) updateData.level = level;
       if (badges !== undefined) updateData.badges = badges;
       if (stats !== undefined) updateData.stats = stats;
-      updateData.lastLogin = new Date();
-
       if (progress !== undefined) {
-        // Spread each known sub-field with dot-notation instead of replacing the whole object
-        if (progress.unitScores !== undefined)  updateData['progress.unitScores']  = progress.unitScores;
-        if (progress.unitStates !== undefined)  updateData['progress.unitStates']  = progress.unitStates;
-        if (progress.lastPlayed !== undefined)  updateData['progress.lastPlayed']  = progress.lastPlayed;
-        if (progress.totalScore !== undefined)  updateData['progress.totalScore']  = progress.totalScore;
-        if (progress.level      !== undefined)  updateData['progress.level']       = progress.level;
-        if (progress.currentUnit !== undefined) updateData['progress.currentUnit'] = progress.currentUnit;
-        // completedUnits: use $addToSet to avoid duplicates (handled separately below)
+        if (progress.unitScores) updateData['progress.unitScores'] = progress.unitScores;
+        if (progress.unitStates) updateData['progress.unitStates'] = progress.unitStates;
+        if (progress.lastPlayed !== undefined) updateData['progress.lastPlayed'] = progress.lastPlayed;
+        if (progress.totalScore !== undefined) updateData['progress.totalScore'] = progress.totalScore;
+        if (progress.level !== undefined) updateData['progress.level'] = progress.level;
       }
+      updateData.lastLogin = new Date();
 
       // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
       const user = await User.findOneAndUpdate(
@@ -84,7 +78,7 @@ const syncUserStats = async (req, res) => {
             displayName: "Quality Member"
           }
         },
-        { new: true, upsert: true }
+        { new: true, upsert: true } // Changed upsert to true to fix 404/500 loop
       );
       
       console.log(`✅ User sync successful for: ${userId}`);
@@ -97,7 +91,7 @@ const syncUserStats = async (req, res) => {
 };
 
 
-// الحصول على شهادات المستخدم
+// الحصول على القائمة المتصدرة (Leaderboard)
 const getCertificates = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -109,17 +103,13 @@ const getCertificates = async (req, res) => {
         completedCount: user.progress?.completedUnits?.length || 0 
       });
     } else {
-      // Query the Certificate collection directly — this is the authoritative source.
-      // Do NOT read from user.progress.certificates (it gets wiped by syncUserStats).
-      const certs = await Certificate.find({ userId, status: 'active' }).lean();
-      const user = await User.findOne({ userId }).lean();
-      res.json({ 
-        certificates: certs || [], 
-        completedCount: user?.progress?.completedUnits?.length || 0 
-      });
+      const user = await User.findOne({ userId });
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      const certificates = await Certificate.find({ userId, status: 'active' });
+      res.json({ certificates: certificates || [], completedCount: certificates.length });
     }
+
   } catch (err) {
-    console.error('getCertificates error:', err);
     res.status(500).json({ error: 'internal' });
   }
 };

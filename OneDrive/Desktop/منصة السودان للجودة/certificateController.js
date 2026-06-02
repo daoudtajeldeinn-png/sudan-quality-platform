@@ -67,15 +67,19 @@ exports.awardCertificateSmart = async (req, res) => {
     // Always award one certificate per unit
     cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
 
-    // Save completed unit to user (don't fail if save fails, certificate is already in DB)
-    try {
+    if (cert) {
+      user.progress.certificates.push({
+        certificateId: cert._id.toString(),
+        issueDate: new Date(),
+        score,
+        unitType: unitName,
+        unitId,   // ← store unitId so we can look it up later
+        level
+      });
       await user.save();
-    } catch (saveErr) {
-      console.warn(`[Award] User save failed but certificate was created: ${cert.certNumber}`, saveErr);
     }
 
-    console.log(`[Award] Successfully issued certificate: ${cert.certNumber} for userId: ${userId}, unitId: ${unitId}`);
-    return res.json({ success: true, certificate: cert, level, completedCount: user.progress.completedUnits.length });
+    return res.json({ success: true, certificate: cert || null, level, completedCount: user.progress.completedUnits.length });
   } catch (err) {
     console.error('awardCertificateSmart error', err);
     return res.status(500).json({ error: 'internal' });
