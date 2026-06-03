@@ -1,0 +1,1093 @@
+1: ﻿import React, { useState, useEffect } from 'react';
+2: import { jsPDF } from 'jspdf';
+3: import html2canvas from 'html2canvas';
+4: import Quiz from '../components/Quiz';
+5: import LectureView from '../components/LectureView';
+6: import FMEATool from '../components/FMEATool';
+7: import BatchSignSim from '../components/BatchSignSim';
+8: import StabilityCalculator from '../components/StabilityCalculator';
+9: import SamplingCalculator from '../components/SamplingCalculator';
+10: import InspectionChecklist from '../components/InspectionChecklist';
+11: import { useLanguage } from '../LanguageContext';
+12: import { useGamification } from '../GamificationContext';
+13: import apiService from '../services/api';
+14: import pharmaLogo from '../assets/pharma_logo.png';
+15: import certBg from '../assets/certificate_bg.png';
+16: 
+17: // Unit grouping
+18: const TRACKS = [
+19:   { id: 'qms', titleKey: 'track_qms', units: ['gmp-intro', 'ich-q10', 'adv-gmp'], icon: 'ًںڈ†', color: '#17a2b8' },
+20:   { id: 'sterile', titleKey: 'track_sterile', units: ['sterile-annex1'], icon: 'ًں›،ï¸ڈ', color: '#6c757d' },
+21:   { id: 'data_integrity', titleKey: 'track_data_integrity', units: ['data-integrity', 'gamp5-basics', 'batch-records'], icon: 'ًں’»', color: '#6610f2' },
+22:   { id: 'qrm', titleKey: 'track_qrm', units: ['qrm-basics', 'adv-qrm'], icon: 'âڑ ï¸ڈ', color: '#e83e8c' },
+23:   { id: 'validation', titleKey: 'track_validation', units: ['validation-qualification', 'adv-validation'], icon: 'âœ…', color: '#20c997' },
+24:   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: 'ًںڑڑ', color: '#fd7e14' },
+25:   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: 'âڑ–ï¸ڈ', color: '#009688' },
+26: ];
+27: 
+28: // Unit icons mapping - visual icons for each unit
+29: const UNIT_ICONS = {
+30:   'gmp-intro': { icon: 'ًںڈ­', color: '#28a745', title: { ar: 'ظ…ظ‚ط¯ظ…ط© ظپظٹ GMP', en: 'Intro to GMP' } },
+31:   'glp-basics': { icon: 'ًں”¬', color: '#007bff', title: { ar: 'ظ…ط¨ط§ط¯ط¦ GLP', en: 'GLP Basics' } },
+32:   'iso-17025': { icon: 'ًں“ٹ', color: '#ffc107', title: { ar: 'ISO 17025', en: 'ISO 17025' } },
+33:   'ich-guidelines': { icon: 'ًںŒگ', color: '#dc3545', title: { ar: 'ط¥ط±ط´ط§ط¯ط§طھ ICH', en: 'ICH Guidelines' } },
+34:   'validation-qualification': { icon: 'âœ…', color: '#20c997', title: { ar: 'ط§ظ„طھط­ظ‚ظ‚ ظˆط§ظ„طھط£ظ‡ظٹظ„', en: 'Validation & Qualification' } },
+35:   'data-integrity': { icon: 'ًں”’', color: '#6610f2', title: { ar: 'ط³ظ„ط§ظ…ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ', en: 'Data Integrity' } },
+36:   'qrm-basics': { icon: 'âڑ ï¸ڈ', color: '#e83e8c', title: { ar: 'ط¥ط¯ط§ط±ط© ط§ظ„ظ…ط®ط§ط·ط±', en: 'QRM Basics' } },
+37:   'gdp-basics': { icon: 'ًںڑڑ', color: '#fd7e14', title: { ar: 'ظ…ظ…ط§ط±ط³ط§طھ ط§ظ„طھظˆط²ظٹط¹', en: 'GDP Basics' } },
+38:   'ich-q10': { icon: 'ًںڈ†', color: '#17a2b8', title: { ar: 'ظ†ط¸ط§ظ… Q10', en: 'ICH Q10' } },
+39:   'sterile-annex1': { icon: 'ًں›،ï¸ڈ', color: '#6c757d', title: { ar: 'ط§ظ„طھطµظ†ظٹط¹ ط§ظ„ظ…ط¹ظ‚ظ…', en: 'Sterile Mfg' } },
+40:   'gamp5-basics': { icon: 'ًں’»', color: '#343a40', title: { ar: 'GAMP 5', en: 'GAMP 5' } },
+41:   'batch-records': { icon: 'ًں“‌', color: '#6610f2', title: { ar: 'ط³ط¬ظ„ط§طھ ط§ظ„طھط´ط؛ظٹظ„', en: 'Batch Records' } },
+42:   'nmpb-reg': { icon: 'ًں‡¸ًں‡©', color: '#009688', title: { ar: 'ط§ظ„ط±ظ‚ط§ط¨ط© ط§ظ„ط¯ظˆط§ط¦ظٹط©', en: 'NMPB Regulatory' } },
+43:   'adv-gmp': { icon: 'ًںڈ­+', color: '#28a745', title: { ar: 'ظ…ظ…ط§ط±ط³ط§طھ ط§ظ„طھطµظ†ظٹط¹ ط§ظ„ظ…طھظ‚ط¯ظ…ط©', en: 'Adv. GMP' } },
+44:   'adv-glp': { icon: 'ًں”¬+', color: '#007bff', title: { ar: 'طھط­ظ„ظٹظ„ ط¨ظٹط§ظ†ط§طھ GLP', en: 'Adv. GLP' } },
+45:   'adv-iso-17025': { icon: 'ًں“ٹ+', color: '#ffc107', title: { ar: 'ط§ظ„طھط·ط¨ظٹظ‚ ط§ظ„ط¹ظ…ظ„ظٹ ظ„ظ€ ISO', en: 'Adv. ISO' } },
+46:   'adv-validation': { icon: 'âœ…+', color: '#20c997', title: { ar: 'ط§ظ„طھط­ظ‚ظ‚ ط§ظ„ظ…طھظ‚ط¯ظ…', en: 'Adv. Validation' } },
+47:   'adv-qrm': { icon: 'âڑ ï¸ڈ+', color: '#e83e8c', title: { ar: 'طھط·ط¨ظٹظ‚ط§طھ QRM', en: 'Adv. QRM' } },
+48:   'adv-gdp': { icon: 'ًںڑڑ+', color: '#fd7e14', title: { ar: 'ط³ظ„ط³ظ„ط© ط§ظ„طھط¨ط±ظٹط¯', en: 'Adv. GDP' } },
+49: };
+50: 
+51: const Dashboard = ({ user, onLogout, authToken }) => {
+52:   const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
+53:   const { xp, level, badges, getXpToNextLevel, stats, updateStats, addXp, awardBadge } = useGamification();
+54:     const [userCertLevel, setUserCertLevel] = useState(1);
+55:   const [certificates, setCertificates] = useState([]);
+56:   const [currentUnit, setCurrentUnit] = useState(null);
+57:   const [isLectureMode, setIsLectureMode] = useState(false);
+58:   const [showCertificate, setShowCertificate] = useState(false);
+59:   const [isSampleMode, setIsSampleMode] = useState(false);
+60:   const [showPledge, setShowPledge] = useState(false);
+61:   const [showDevProfile, setShowDevProfile] = useState(false);
+62:   const [viewMode, setViewMode] = useState('academy'); // 'academy' or 'toolkit'
+63:   const [currentTrack, setCurrentTrack] = useState(null); // null means showing the 7 track cards
+64:   const [userProgress, setUserProgress] = useState({
+65:     'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
+66:     'validation-qualification': 0, 'data-integrity': 0, 'qrm-basics': 0,
+67:     'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
+68:     'batch-records': 0, 'nmpb-reg': 0,
+69:     'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
+70:     'adv-qrm': 0, 'adv-gdp': 0
+71:   });
+72:   const [leaderboard, setLeaderboard] = useState([]);
+73: 
+74:   const unitIds = Object.keys(UNIT_ICONS);
+75:   const [unitStates, setUnitStates] = useState({}); // { unitId: { lectureFinished: bool } }
+76:   const [streak, setStreak] = useState(0);
+77: 
+78:   const LOGO_PATH = pharmaLogo;
+79:   const CERT_BG = certBg;
+80: 
+81:   // Load progress and state from Backend + localStorage on mount
+82:   useEffect(() => {
+83:     const loadInitialData = async () => {
+84:       // 1. Initial Local Load (Fastest UI)
+85:       const savedProgress = localStorage.getItem(`sqp_progress_${user.email}`);
+86:       const savedStates = localStorage.getItem(`sqp_states_${user.email}`);
+87:       const pledgeSigned = localStorage.getItem(`sqp_pledge_${user.email}`);
+88: 
+89:       if (savedProgress) {
+90:         try {
+91:           const parsed = JSON.parse(savedProgress);
+92:           setUserProgress(prev => ({ ...prev, ...parsed }));
+93:         } catch (e) { console.error('Error parsing progress', e); }
+94:       }
+95:       if (savedStates) {
+96:         try { setUnitStates(JSON.parse(savedStates)); } catch (e) {}
+97:       }
+98:       if (!pledgeSigned) setShowPledge(true);
+99: 
+100:       // 2. Remote Backend Load (Reliability)
+101:       if (user.uid) {
+102:         try {
+103:           const profile = await apiService.getUserProfile(user.uid, authToken);
+104:           if (profile && profile.progress) {
+105:             // Reconcile: High-score wins
+106:             const remoteProgress = profile.progress.unitScores || {};
+107:             setUserProgress(prev => {
+108:               const reconciled = { ...prev };
+109:               Object.keys(remoteProgress).forEach(unitId => {
+110:                 reconciled[unitId] = Math.max(prev[unitId] || 0, remoteProgress[unitId]);
+111:               });
+112:               return reconciled;
+113:             });
+114:             
+115:     logAuditTrail('eventPledge');
+116:   };
+117: 
+118:   const allUnitsDefinition = [
+119:     { id: 'nmpb-reg', title: t('nmpbReg'), subtitle: t('unit1'), color: '#009688' },
+120:     { id: 'gmp-intro', title: t('introGMP'), subtitle: t('unit1'), color: '#28a745' },
+121:     { id: 'glp-basics', title: t('glpBasics'), subtitle: t('unit2'), color: '#007bff' },
+122:     { id: 'iso-17025', title: t('iso17025'), subtitle: t('unit3'), color: '#ffc107' },
+123:     { id: 'ich-guidelines', title: t('ichGuidelines'), subtitle: t('unit4'), color: '#dc3545' },
+124:     { id: 'validation-qualification', title: t('valQual'), subtitle: t('unit5'), color: '#20c997' },
+125:     { id: 'data-integrity', title: t('dataIntegrity'), subtitle: t('unit6'), color: '#6610f2' },
+126:     { id: 'qrm-basics', title: t('qrmBasics'), subtitle: t('unit7'), color: '#e83e8c' },
+127:     { id: 'gdp-basics', title: t('gdpBasics'), subtitle: t('unit8'), color: '#fd7e14' },
+128:     { id: 'ich-q10', title: t('ichQ10'), subtitle: t('unit9'), color: '#17a2b8' },
+129:     { id: 'sterile-annex1', title: t('annex1'), subtitle: t('unit10'), color: '#6c757d' },
+130:     { id: 'gamp5-basics', title: t('gamp5'), subtitle: t('unit11'), color: '#343a40' },
+131:     { id: 'batch-records', title: t('batchRecords'), subtitle: t('unit12'), color: '#6610f2' },
+132:     { id: 'adv-gmp', title: t('adv_gmp'), subtitle: t('unit1'), color: '#28a745' },
+133:     { id: 'adv-glp', title: t('adv_glp'), subtitle: t('unit2'), color: '#007bff' },
+134:     { id: 'adv-iso-17025', title: t('adv_iso_17025'), subtitle: t('unit3'), color: '#ffc107' },
+135:     { id: 'adv-validation', title: t('adv_validation'), subtitle: t('unit4'), color: '#20c997' },
+136:     { id: 'adv-qrm', title: t('adv_qrm'), subtitle: t('unit5'), color: '#e83e8c' },
+137:     { id: 'adv-gdp', title: t('adv_gdp'), subtitle: t('unit6'), color: '#fd7e14' },
+138:   ];
+139: 
+140:   const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
+141:   const currentSectionUnits = currentTrackObj ? currentTrackObj.units : [];
+142:   const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
+143:   const allTrackUnits = TRACKS.flatMap(t => t.units);
+144:     const handleLevelToggle = async () => {
+145:     const newLevel = userCertLevel === 1 ? 2 : 1;
+146:     setUserCertLevel(newLevel);
+147:     if (user?.uid) {
+148:       try {
+149:         await apiService.setUserLevel(user.uid, newLevel);
+150:       } catch (e) {
+151:         console.error('Level toggle failed', e);
+152:       }
+153:     }
+154:   };
+155: 
+156:   const handleStartUnit = (unitId) => {
+157:     setCurrentUnit(unitId);
+158:     setIsLectureMode(true);
+159:   };
+160: 
+161:   const handleLectureFinished = (unitId) => {
+162:     console.log('Lecture finished for unit:', unitId, 'currentUnit:', currentUnit);
+163:     // Mark lecture as finished
+164:     setUnitStates(prev => {
+165:       const newStates = { ...prev, [unitId]: { ...prev[unitId], lectureFinished: true } };
+166:       localStorage.setItem(`sqp_states_${user.email}`, JSON.stringify(newStates));
+167:       return newStates;
+168:     });
+169:     // Switch from lecture mode to quiz mode
+170:     setIsLectureMode(false);
+171:   };
+172: 
+173:   const handleQuizComplete = (result) => {
+174:     const { score, unitId } = result;
+175:     logAuditTrail('eventQuiz', unitId);
+176: 
+177:     // Only update if it's the highest score or if it passes
+178:     setUserProgress(prev => {
+179:       const isNewSuccess = score >= 90 && (!prev[unitId] || prev[unitId] < 90);
+180:       const newProgress = {
+181:         ...prev,
+182:         [unitId]: Math.max(prev[unitId] || 0, score)
+183:       };
+184: 
+185:       // If this was the last unit needed to complete the program
+186:       const allOthersPassed = allTrackUnits
+187:         .filter(id => id !== unitId)
+188:         .every(id => (newProgress[id] || 0) >= 90);
+189: 
+190:       if (isNewSuccess && allOthersPassed) {
+191:         newProgress[`completionDate_academy`] = new Date().toISOString();
+192:       }
+193: 
+194:       // Save to localStorage and Backend
+195:       localStorage.setItem(`sqp_progress_${user.email}`, JSON.stringify(newProgress));
+196:       
+197:       if (user.uid) {
+198:         apiService.syncUserStats(user.uid, {
+199:           progress: {
+200:             unitScores: newProgress,
+201:             unitStates: unitStates,
+202:             lastPlayed: unitId,
+203:             totalScore: Object.values(newProgress).reduce((a, b) => a + b, 0)
+204:           }
+205:         }).catch(err => console.error('Sync failed:', err));
+206:       }
+207:       return newProgress;
+208:     });
+209: 
+210:     setCurrentUnit(null);
+211:   };
+212: 
+213:   const allPassed = allTrackUnits.every(id => (userProgress[id] || 0) >= 90);
+214:   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
+215: 
+216:   const DeveloperProfileModal = () => (
+217:     <div style={{
+218:       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+219:       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 5000,
+220:       display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px',
+221:       overflowY: 'auto'
+222:     }}>
+223:       <div style={{
+224:         backgroundColor: 'white', maxWidth: '600px', width: '100%', padding: '40px', borderRadius: '30px',
+225:         textAlign: 'center', border: '8px solid #28a745', position: 'relative', direction: language === 'ar' ? 'rtl' : 'ltr',
+226:         margin: 'auto'
+227:       }}>
+228:         <button onClick={() => setShowDevProfile(false)} style={{ position: 'absolute', top: '20px', right: language === 'ar' ? 'auto' : '20px', left: language === 'ar' ? '20px' : 'auto', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>âœ•</button>
+229: <div style={{ width: '150px', height: '150px', borderRadius: '50%', margin: '0 auto 20px', border: '5px solid #28a745', overflow: 'hidden' }}>
+230:           {/* Dr. Daoud Tajeldeinn profile from scholar/credential.net - replace src with actual URL */}
+231:           <img 
+232:             src="https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=DzRrLjcAAAAJ&citpid=1" 
+233:             alt="Dr. Daoud Tajeldeinn Ahmed Abdelkarim - GMP Specialist" 
+234:             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+235:           />
+236:         </div>
+237:         <h2 style={{ color: '#1a5928', fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '10px' }}>{t('developerName')}</h2>
+238:         <p style={{ color: '#28a745', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '20px' }}>{t('developerTitle')}</p>
+239:         <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '20px', textAlign: language === 'ar' ? 'right' : 'left', marginBottom: '30px', fontSize: '1rem' }}>
+240:           <p style={{ lineHeight: '1.8', margin: '5px 0' }}>â€¢ {t('developerTitle')}</p>
+241:           <p style={{ lineHeight: '1.8', margin: '5px 0' }}>â€¢ {language === 'ar' ? 'ظ…طھط®طµطµ ط§ظ„طھط¯ط±ظٹط¨ ظˆط§ظ„طھط£ظ‡ظٹظ„ ط§ظ„ط¯ظˆط§ط¦ظٹ' : 'Pharmaceutical Training & Qualification Specialist'}</p>
+242:           <p style={{ lineHeight: '1.8', margin: '5px 0' }}>â€¢ {language === 'ar' ? `ظ…ط¤ط³ط³ ${t('issuingAuthority')}` : `Founder of ${t('issuingAuthority')}`}</p>
+243:         </div>
+244:         <a href="https://www.credential.net/profile/daoudtajeldeinn887198/wallet" target="_blank" rel="noreferrer" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none' }}>
+245:           View Digital Wallet ًںŒگ
+246:         </a>
+247:       </div>
+248:     </div>
+249:   );
+250: 
+251:   const MicroBadge = ({ unitId, score }) => {
+252:     const isUnlocked = score >= 90;
+253:     return (
+254:       <div style={{
+255:         width: '80px', height: '80px', borderRadius: '50%',
+256:         backgroundColor: isUnlocked ? '#fff' : '#f0f0f0',
+257:         border: `3px solid ${isUnlocked ? '#28a745' : '#ddd'}`,
+258:         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+259:         padding: '5px', textAlign: 'center', cursor: isUnlocked ? 'pointer' : 'default',
+260:         opacity: isUnlocked ? 1 : 0.5, transition: 'all 0.3s',
+261:         boxShadow: isUnlocked ? '0 4px 10px rgba(40,167,69,0.2)' : 'none'
+262:       }} onClick={() => isUnlocked && alert(`${t('microBadge')}: ${unitId.toUpperCase()}\n${t('badgeId')}: SQP-B-${unitId.substring(0, 3).toUpperCase()}-${score}`)}>
+263:         <span style={{ fontSize: '1.5rem' }}>{isUnlocked ? 'ًں¥‡' : 'ًں”’'}</span>
+264:         <span style={{ fontSize: '0.6rem', fontWeight: 'bold', color: isUnlocked ? '#28a745' : '#999' }}>{unitId.split('-')[0].toUpperCase()}</span>
+265:       </div>
+266:     );
+267:   };
+268: 
+269:   const CertificateModal = ({ isSample = false }) => {
+270:     const [showSurvey, setShowSurvey] = useState(!isSample && !localStorage.getItem(`sqp_survey_${user.email}`));
+271: 
+272:     const downloadCertificatePDF = () => {
+273:       const input = document.getElementById('certificate-printable');
+274:       if (!input) return;
+275:       
+276:       html2canvas(input, { scale: 2, useCORS: true, logging: false }).then((canvas) => {
+277:         const imgData = canvas.toDataURL('image/png');
+278:         const pdf = new jsPDF('l', 'mm', 'a4');
+279:         const pdfWidth = pdf.internal.pageSize.getWidth();
+280:         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+281:         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+282:         pdf.save(`${isSample ? 'SAMPLE_' : ''}Sudan_Quality_Platform_Certificate.pdf`);
+283:         logAuditTrail('eventCert');
+284:       });
+285:     };
+286: 
+287:     if (showSurvey) {
+288:       return (
+289:         <div style={{
+290:           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+291:           backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 4000,
+292:           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+293:         }}>
+294:           <div style={{
+295:             backgroundColor: 'white', maxWidth: '600px', padding: '40px', borderRadius: '24px',
+296:             textAlign: 'center', border: '5px solid #28a745', direction: 'rtl'
+297:           }}>
+298:             <h2 style={{ color: '#1a5928', marginBottom: '20px' }}>{t('surveyTitle')}</h2>
+299:             <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+300:               <p>1. {t('surveyQ1')}</p>
+301:               <input type="range" min="1" max="5" style={{ width: '100%' }} />
+302:               <p>2. {t('surveyQ2')}</p>
+303:               <input type="range" min="1" max="5" style={{ width: '100%' }} />
+304:               <p>3. {t('surveyQ3')}</p>
+305:               <input type="range" min="1" max="5" style={{ width: '100%' }} />
+306:             </div>
+307:             <button onClick={() => { localStorage.setItem(`sqp_survey_${user.email}`, 'true'); setShowSurvey(false); }} className="btn-primary" style={{ width: '100%', padding: '15px' }}>
+308:               {t('submitSurvey')}
+309:             </button>
+310:           </div>
+311:         </div>
+312:       );
+313:     }
+314: 
+315:     return (
+316:       <div style={{
+317:         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+318:         backgroundColor: 'rgba(10, 22, 40, 0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+319:         zIndex: 2000, padding: '40px', overflowY: 'auto'
+320:       }}>
+321:         <div id="certificate-printable" style={{
+322:           backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '1050px', minHeight: '850px',
+323:           padding: '60px 80px', borderRadius: '4px', position: 'relative',
+324:           border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
+325:           textAlign: 'center',
+326:           boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: 'rtl',
+327:           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+328:           overflow: 'hidden',
+329:           fontFamily: "'IBM Plex Sans Arabic', 'IBM Plex Sans', serif"
+330:         }}>
+331:           {/* Subtle Watermark */}
+332:           <div style={{
+333:             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+334:             width: '600px', height: '600px', backgroundImage: `url(${LOGO_PATH})`,
+335:             backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+336:             opacity: 0.03, pointerEvents: 'none', zIndex: 1
+337:           }}></div>
+338: 
+339:           {isSample && (
+340:             <div style={{
+341:               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-30deg)',
+342:               fontSize: '12rem', color: 'rgba(230,126,34,0.07)', fontWeight: 'bold', pointerEvents: 'none', zIndex: 10
+343:             }}>SAMPLE</div>
+344:           )}
+345: 
+346:           <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+347:             {/* Header */}
+348:             <div style={{ position: 'absolute', top: '-30px', right: '-40px', display: 'flex', alignItems: 'center', gap: '20px', zIndex: 100 }}>
+349:               <img src={LOGO_PATH} alt="Logo" style={{ width: '130px', height: '130px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))' }} />
+350:               <div style={{ textAlign: 'right', color: 'var(--pharma-navy)' }}>
+351:                 <div style={{ fontWeight: 'bold', fontSize: '2.2rem', lineHeight: '1.2' }}>{t('issuingAuthority')}</div>
+352:                 <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>Quality & Accreditation Board</div>
+353:               </div>
+354:             </div>
+355: 
+356:             <div style={{ marginTop: '160px' }}>
+357:               <h1 style={{ fontSize: '3.5rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+358:                 {t('certTitle')}
+359:                 <div style={{ fontSize: '1.6rem', color: 'var(--regulatory-amber)', marginTop: '10px', fontWeight: 'bold' }}>
+360:                   {currentSection === 'nmpb' ? t('sectionNmpb') : currentSection === 'intermediate' ? t('sectionIntermediate') : t('sectionBasic')}
+361:                 </div>
+362:               </h1>
+363:               <div style={{ width: '250px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '20px auto' }}></div>
+364:               <div style={{ margin: '30px 0' }}>
+365:                 <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '600' }}>{t('certIntro')}</p>
+366:                 <h2 style={{ fontSize: '3.8rem', color: 'var(--pharma-blue)', fontFamily: "'IBM Plex Sans', serif", fontWeight: '700', display: 'inline-block' }}>
+367:                   {isSample ? 'Ahmed Daoud Tajeldeinn' : (user.displayName || user.email.split('@')[0])}
+368:                 </h2>
+369:                 <div style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '5px', fontWeight: '500' }}>
+370:                   {isSample ? 'daoud.specialist@quality.sd' : user.email}
+371:                 </div>
+372:               </div>
+373:               <p style={{ fontSize: '1.4rem', margin: '25px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
+374:                 {t('certDesc')}
+375:               </p>
+376:             </div>
+377: 
+378:             {/* Results Grid */}
+379:             <div style={{
+380:               display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px',
+381:               padding: '25px', backgroundColor: 'var(--bg-color)', borderRadius: '15px',
+382:               textAlign: 'right', border: '1px solid var(--border-color)', margin: '20px auto', width: '100%', maxWidth: '850px'
+383:             }}>
+384:               {units.map(u => (
+385:                 <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--border-color)', padding: '8px 0', alignItems: 'center' }}>
+386:                   <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>{t(u.id.replaceAll('-', '_'))}</span>
+387:                   <span style={{ fontWeight: '800', color: 'var(--pharma-green)', fontSize: '1.1rem' }}>%{isSample ? 100 : userProgress[u.id]}</span>
+388:                 </div>
+389:               ))}
+390:               <div style={{ display: 'flex', justifyContent: 'space-between', gridColumn: '1 / -1', marginTop: '15px', paddingTop: '15px', borderTop: '2px solid var(--pharma-gold)', fontSize: '1.8rem', fontWeight: '900', color: 'var(--pharma-navy)' }}>
+391:                 <span>{t('totalScore')}</span>
+392:                 <span style={{ color: 'var(--pharma-green)' }}>%{isSample ? 100 : totalAverage}</span>
+393:               </div>
+394:             </div>
+395: 
+396:             {/* Footer Signatures & QR */}
+397:             <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+398:               <div style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
+399:                 <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1.1rem', color: 'var(--pharma-navy)' }}>
+400:                   {t('dateLabel')}: {userProgress[`completionDate_${currentSection}`] ? new Date(userProgress[`completionDate_${currentSection}`]).toLocaleDateString() : new Date().toLocaleDateString()}
+401:                 </p>
+402:                 <p style={{ fontSize: '0.9rem', fontWeight: '600', letterSpacing: '1px', fontFamily: 'monospace' }}>
+403:                   ID: {isSample ? 'VALID-SAMPLE-888' : `${user.uid?.substring(0, 8).toUpperCase()}-${new Date(userProgress[`completionDate_${currentSection}`] || new Date()).getTime().toString().substring(8)}`}
+404:                 </p>
+405:                 
+406:                 {/* Simulated QR Code for verification */}
+407:                 <div style={{ marginTop: '20px', padding: '10px', backgroundColor: 'white', border: '2px solid var(--pharma-navy)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+408:                   <div style={{ textAlign: 'center', fontSize: '0.6rem', color: 'var(--pharma-navy)', fontWeight: 'bold' }}>
+409:                     <div style={{ marginBottom: '2px' }}>SCAN TO</div>
+410:                     <div>VERIFY</div>
+411:                     <div>[QR]</div>
+412:                   </div>
+413:                 </div>
+414:               </div>
+415: 
+416:               <div style={{ textAlign: 'center' }}>
+417:                 <div style={{
+418:                   width: '120px', height: '120px', border: '4px double var(--pharma-gold)',
+419:                   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+420:                   margin: '0 auto 15px', backgroundColor: 'white', position: 'relative'
+421:                 }}>
+422:                   <img src={LOGO_PATH} alt="Seal" style={{ width: '85px', height: '85px', opacity: 1.0 }} />
+423:                   <div style={{ position: 'absolute', bottom: '-10px', fontSize: '0.75rem', fontWeight: 'bold', color: 'white', backgroundColor: 'var(--pharma-navy)', padding: '4px 12px', border: '1px solid var(--pharma-gold)', borderRadius: '10px' }}>
+424:                     OFFICIAL
+425:                   </div>
+426:                 </div>
+427:                 <div style={{ width: '240px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '10px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.2rem' }}>
+428:                   {t('developerName')}
+429:                   <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '4px' }}>GMP/ISO Technical Authority</div>
+430:                 </div>
+431:               </div>
+432:             </div>
+433:           </div>
+434: 
+435:           <div className="no-print" style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '15px' }}>
+436:             <button onClick={downloadCertificatePDF} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-navy)', color: 'white', border: 'gold 1px solid', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+437:               ًں“„ {language === 'ar' ? 'طھط­ظ…ظٹظ„ PDF (ط±ط³ظ…ظٹ)' : 'Download PDF (Official)'}
+438:             </button>
+439:             <button onClick={() => { window.print(); logAuditTrail('eventCert'); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--pharma-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+440:               {t('printCert')}
+441:             </button>
+442:             <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); }} style={{ padding: '12px 40px', fontSize: '1.1rem', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+443:               {t('back')}
+444:             </button>
+445:           </div>
+446:         </div>
+447:       </div>
+448:     );
+449:   };
+450: 
+451:   const PledgeModal = () => (
+452:     <div style={{
+453:       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+454:       backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 3000,
+455:       display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+456:     }}>
+457:       <div style={{
+458:         backgroundColor: 'white', maxWidth: '600px', padding: '40px', borderRadius: '24px',
+459:         textAlign: 'center', border: '5px solid #28a745', direction: 'rtl'
+460:       }}>
+461:         <h2 style={{ color: '#1a5928', marginBottom: '20px' }}>{t('pledgeTitle')}</h2>
+462:         <p style={{ fontSize: '1.2rem', lineHeight: '1.8', color: '#333', marginBottom: '30px' }}>{t('pledgeText')}</p>
+463:         <button onClick={handleSignPledge} className="btn-primary" style={{ width: '100%', padding: '15px' }}>
+464:           {t('pledgeAgree')}
+465:         </button>
+466:       </div>
+467:     </div>
+468:   );
+469: 
+470:   if (currentUnit) {
+471:     if (isLectureMode) {
+472:       return (
+473:         <LectureView
+474:           unitId={currentUnit}
+475:           userName={user.displayName || user.email.split('@')[0]}
+476:           onProceedToQuiz={() => handleLectureFinished(currentUnit)}
+477:           onBack={() => setCurrentUnit(null)}
+478:         />
+479:       );
+480:     }
+481: 
+482:     return (
+483:       <div style={{ direction: language === 'ar' ? 'rtl' : 'ltr' }}>
+484:         <button
+485:           onClick={() => setCurrentUnit(null)}
+486:           className="btn-secondary"
+487:           style={{ margin: '20px' }}
+488:         >
+489:           {t('back')}
+490:         </button>
+491:         <Quiz unitId={currentUnit} onQuizComplete={handleQuizComplete} user={user} />
+492:       </div>
+493:     );
+494:   }
+495: 
+496:   return (
+497:     <div style={{
+498:       direction: language === 'ar' ? 'rtl' : 'ltr',
+499:       paddingBottom: '50px'
+500:     }}>
+501:       {showPledge && <PledgeModal />}
+502:       {showCertificate && <CertificateModal isSample={isSampleMode} />}
+503:       {showDevProfile && <DeveloperProfileModal />}
+504: 
+505:       {/* Header */}
+506:       <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
+507:         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+508:           <img src={LOGO_PATH} alt="Pharma Logo" style={{ width: '55px', height: '55px' }} />
+509:           <div>
+510:             <h1 style={{ fontSize: '1.8rem', margin: 0 }}>{t('issuingAuthority')}</h1>
+511:             <p style={{ margin: 0, opacity: 0.9 }}>Quality Specialist Management System</p>
+512:           </div>
+513:         </div>
+514:         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+515:           <button onClick={toggleTheme} className="btn-lang" title={theme === 'dark' ? t('lightMode') : t('darkMode')}>
+516:              {theme === 'dark' ? 'âک€ï¸ڈ' : 'ًںŒ™'}
+517:           </button>
+518:           <button onClick={() => setShowDevProfile(true)} className="btn-lang" style={{ backgroundColor: 'var(--primary-hover)', color: 'white' }}>
+519:             {t('developerProfile')}
+520:           </button>
+521:           <button onClick={() => { setIsSampleMode(true); setShowCertificate(true); }} className="btn-lang" style={{ backgroundColor: '#ffc107', color: 'black' }}>
+522:             {t('sampleCert')}
+523:           </button>
+524:           <button onClick={toggleLanguage} className="btn-lang">
+525:             {language === 'ar' ? 'English' : 'ط§ظ„ط¹ط±ط¨ظٹط©'}
+526:           </button>
+527: 
+528:           <div className="user-profile">
+529:             {user.photoURL && <img src={user.photoURL} alt="P" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />}
+530:             <span style={{ fontWeight: '500' }}>{user.displayName || user.email}</span>
+531:             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '10px', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '4px 10px', borderRadius: '20px', color: '#ff9800', border: '1px solid rgba(255, 152, 0, 0.2)' }}>
+532:               <span>ًں”¥</span>
+533:               <span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{streak}d</span>
+534:             </div>
+535:             <span title="Cloud Sync Active" style={{ fontSize: '0.8rem', marginLeft: '8px', opacity: 0.8 }}>âکپï¸ڈ</span>
+536:           </div>
+537: 
+538:           <button onClick={onLogout} className="btn-logout">
+539:             {t('logout')}
+540:           </button>
+541:         </div>
+542:       </header>
+543: 
+544:             {/* PROMINENT BANNER ALWAYS VISIBLE */}
+545:       <div style={{
+546:         background: 'linear-gradient(90deg, #d4edda, #c3e6cb)',
+547:         color: '#155724',
+548:         padding: '20px',
+549:         textAlign: 'center',
+550:         fontSize: '1.2rem',
+551:         fontWeight: 'bold',
+552:         marginBottom: '20px',
+553:         borderBottom: '4px solid #28a745',
+554:         boxShadow: '0 2px 10px rgba(40,167,69,0.2)'
+555:       }}>
+556:         <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📜 <strong>قواعد الشهادات</strong></div>
+557:         <div>
+558:           {userCertLevel === 1 
+559:             ? <span>المستوى الابتدائي: <strong style={{ color: '#28a745' }}>كل 3 كورسات = شهادة مجمعة بتفاصيل الثلاثة</strong></span> 
+560:             : <span>المستوى المتقدم: <strong style={{ color: '#28a745' }}>شهادة لكل كورس على حدة</strong></span>
+561:           }
+562:         </div>
+563:         <button onClick={handleLevelToggle} style={{
+564:           marginTop: '10px',
+565:           padding: '10px 20px',
+566:           background: '#28a745',
+567:           color: 'white',
+568:           border: 'none',
+569:           borderRadius: '25px',
+570:           fontWeight: 'bold',
+571:           cursor: 'pointer',
+572:           fontSize: '1rem'
+573:         }}>
+574:           {userCertLevel === 1 ? 'التبديل إلى متقدم' : 'التبديل إلى ابتدائي'}
+575:         </button>
+576:       </div>
+577: 
+578:       {/* Certificates Section */}
+579:       <section style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px', background: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+580:         <h3 style={{ color: '#17a2b8' }}>🎯 الشهادات المحقّقة ({certificates.length})</h3>
+581:         <div style={{ fontSize: '1.1rem', marginBottom: '15px', color: '#28a745', fontWeight: 'bold' }}>
+582:           {userCertLevel === 1 ? 'كل 3 كورسات اكتملت بنسبة 90%+ = شهادة' : 'كل كورس اكتمل بنسبة 90%+ = شهادة'}
+583:         </div>
+584:         {certificates.length > 0 ? certificates.map(cert => (
+585:           <div key={cert.certificateId} style={{ padding: '15px', marginBottom: '10px', background: '#d4edda', borderRadius: '10px', borderLeft: '5px solid #28a745' }}>
+586:             {cert.unitType || 'شهادة مجمعة'} - <strong>L{cert.level}</strong> - {cert.score}%
+587:           </div>
+588:         )) : <p style={{ color: '#6c757d' }}>ابدأ الكورسات لتحقيق شهاداتك!</p>}
+589:       </section>
+590: 
+591:       {/* Gamification Level Bar */}
+592:       <div className="glass-panel" style={{ 
+593:         margin: '15px 20px 0', 
+594:         padding: '12px 25px', 
+595:         borderRadius: '15px', 
+596:         display: 'flex', 
+597:         alignItems: 'center', 
+598:         gap: '20px',
+599:         background: 'var(--bg-card)',
+600:         border: '1px solid var(--border-color)'
+601:       }}>
+602:         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+603:           <div style={{ 
+604:             width: '45px', 
+605:             height: '45px', 
+606:             borderRadius: '50%', 
+607:             backgroundColor: 'var(--primary-color)', 
+608:             display: 'flex', 
+609:             alignItems: 'center', 
+610:             justifyContent: 'center',
+611:             color: 'white',
+612:             fontWeight: 'bold',
+613:             fontSize: '1.2rem',
+614:             boxShadow: '0 4px 10px var(--focus-ring)'
+615:           }}>
+616:             L{level}
+617:           </div>
+618:           <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{t('level')} {level}</div>
+619:         </div>
+620:         
+621:         <div style={{ flex: 1 }}>
+622:           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+623:             <span>{t('xp')}: {xp}</span>
+624:             <span>{t('xpRange')}: {getXpToNextLevel().progress} / {getXpToNextLevel().goal}</span>
+625:           </div>
+626:           <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
+627:             <div style={{ 
+628:               width: `${getXpToNextLevel().percentage}%`, 
+629:               height: '100%', 
+630:               backgroundColor: 'var(--primary-color)', 
+631:               borderRadius: '10px',
+632:               transition: 'width 0.5s ease-out'
+633:             }} />
+634:           </div>
+635:         </div>
+636: 
+637:         <div style={{ display: 'flex', gap: '8px' }}>
+638:           {badges.slice(-3).map(badge => (
+639:             <span key={badge.id} title={badge.name} style={{ fontSize: '1.5rem', cursor: 'help' }}>{badge.icon}</span>
+640:           ))}
+641:         </div>
+642:       </div>
+643: 
+644:       {/* Sub Navigation */}
+645:       <nav style={{ 
+646:         display: 'flex', 
+647:         justifyContent: 'center', 
+648:         gap: '15px', 
+649:         marginTop: '25px', 
+650:         marginBottom: '10px',
+651:         padding: '0 20px'
+652:       }}>
+653:         <button 
+654:           onClick={() => { setViewMode('academy'); setCurrentTrack(null); }} 
+655:           style={{ 
+656:             padding: '12px 35px', 
+657:             borderRadius: '15px', 
+658:             border: 'none', 
+659:             backgroundColor: viewMode === 'academy' ? 'var(--primary-color)' : 'var(--bg-card)',
+660:             color: viewMode === 'academy' ? 'white' : 'var(--text-primary)',
+661:             fontWeight: 'bold', 
+662:             cursor: 'pointer', 
+663:             boxShadow: 'var(--shadow-sm)',
+664:             transition: 'all 0.3s',
+665:             display: 'flex',
+666:             alignItems: 'center',
+667:             gap: '8px'
+668:           }}
+669:         >
+670:           ًںژ“ {t('academy')}
+671:         </button>
+672:         <button 
+673:           onClick={() => { setViewMode('toolkit'); setCurrentTrack(null); }} 
+674:           style={{ 
+675:             padding: '12px 35px', 
+676:             borderRadius: '15px', 
+677:             border: 'none', 
+678:             backgroundColor: viewMode === 'toolkit' ? 'var(--primary-color)' : 'var(--bg-card)',
+679:             color: viewMode === 'toolkit' ? 'white' : 'var(--text-primary)',
+680:             fontWeight: 'bold', 
+681:             cursor: 'pointer', 
+682:             boxShadow: 'var(--shadow-sm)',
+683:             transition: 'all 0.3s',
+684:             display: 'flex',
+685:             alignItems: 'center',
+686:             gap: '8px'
+687:           }}
+688:         >
+689:           ًں› ï¸ڈ {t('toolkit')}
+690:         </button>
+691:         <button 
+692:           onClick={() => setViewMode('analytics')} 
+693:           style={{ 
+694:             padding: '12px 35px', 
+695:             borderRadius: '15px', 
+696:             border: 'none', 
+697:             backgroundColor: viewMode === 'analytics' ? 'var(--primary-color)' : 'var(--bg-card)',
+698:             color: viewMode === 'analytics' ? 'white' : 'var(--text-primary)',
+699:             fontWeight: 'bold', 
+700:             cursor: 'pointer', 
+701:             boxShadow: 'var(--shadow-sm)',
+702:             transition: 'all 0.3s',
+703:             display: 'flex',
+704:             alignItems: 'center',
+705:             gap: '8px'
+706:           }}
+707:         >
+708:           ًں“ٹ {t('analytics') || 'Analytics'}
+709:         </button>
+710:       </nav>
+711: 
+712:       {/* Main Content */}
+713:       <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+714:         {viewMode === 'academy' ? (
+715:           <div className="animate-fade-in">
+716:             {/* Micro-Credentials Wallet Section */}
+717:             <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
+718:               <h3 style={{ marginBottom: '20px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+719:                 <span style={{ fontSize: '1.5rem' }}>ًںژ«</span> {t('microBadge')} Wallet
+720:               </h3>
+721:               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+722:                 {unitIds.map(id => (
+723:                   <MicroBadge key={id} unitId={id} score={userProgress[id]} />
+724:                 ))}
+725:               </div>
+726:             </section>
+727: 
+728:             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px', alignItems: 'start' }}>
+729:               {/* Visual Icon Grid for Units / Tracks */}
+730:               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
+731:                 {!currentTrack ? (
+732:                   <>
+733:                     <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+734:                       <span style={{ fontSize: '1.5rem' }}>ًںژ“</span> {t('academy')} - {language === 'ar' ? 'ط§ظ„ظ…ط³ط§ط±ط§طھ ط§ظ„ط§ط­طھط±ط§ظپظٹط©' : 'Professional Tracks'}
+735:                     </h3>
+736:                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+737:                       {TRACKS.map((track) => {
+738:                         const trackProgress = Math.round(track.units.reduce((acc, unitId) => acc + (userProgress[unitId] || 0), 0) / (track.units.length || 1));
+739:                         const isTrackPassed = trackProgress >= 90;
+740:                         
+741:                         return (
+742:                           <div 
+743:                             key={track.id}
+744:                             onClick={() => setCurrentTrack(track.id)}
+745:                             style={{
+746:                               backgroundColor: 'var(--bg-card)',
+747:                               borderRadius: '20px',
+748:                               padding: '25px',
+749:                               cursor: 'pointer',
+750:                               border: `2px solid ${isTrackPassed ? track.color : 'var(--border-color)'}`,
+751:                               boxShadow: isTrackPassed ? `0 8px 25px ${track.color}40` : 'var(--shadow-sm)',
+752:                               transition: 'all 0.3s ease',
+753:                               textAlign: 'center',
+754:                               position: 'relative',
+755:                               display: 'flex',
+756:                               flexDirection: 'column',
+757:                               alignItems: 'center',
+758:                               justifyContent: 'space-between',
+759:                               minHeight: '240px'
+760:                             }}
+761:                             className="interactive-card"
+762:                           >
+763:                             <div style={{
+764:                               position: 'absolute', top: '15px', right: language === 'ar' ? 'auto' : '15px', left: language === 'ar' ? '15px' : 'auto',
+765:                               backgroundColor: isTrackPassed ? track.color : '#6c757d', color: 'white', padding: '6px 15px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold'
+766:                             }}>
+767:                               {trackProgress}%
+768:                             </div>
+769:                             <div style={{
+770:                               width: '85px', height: '85px', borderRadius: '50%', backgroundColor: `${track.color}20`,
+771:                               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', marginBottom: '15px', marginTop: '10px'
+772:                             }}>
+773:                               {track.icon}
+774:                             </div>
+775:                             <h4 style={{ margin: '0 0 15px', fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: '1.4' }}>{t(track.titleKey)}</h4>
+776:                             <div style={{ backgroundColor: track.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+777:                               ًں“ڑ {track.units.length} {language === 'ar' ? 'ظˆط­ط¯ط§طھ' : 'Units'}
+778:                             </div>
+779:                           </div>
+780:                         );
+781:                       })}
+782:                     </div>
+783:                   </>
+784:                 ) : (
+785:                   <>
+786:                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
+787:                       <h3 style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '15px', margin: 0 }}>
+788:                         <span style={{ fontSize: '2rem' }}>{currentTrackObj.icon}</span> 
+789:                         {t(currentTrackObj.titleKey)}
+790:                       </h3>
+791:                       <button 
+792:                         onClick={() => setCurrentTrack(null)} 
+793:                         style={{ 
+794:                           background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '20px', padding: '8px 20px', 
+795:                           fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '8px'
+796:                         }}
+797:                         className="btn-back-track"
+798:                       >
+799:                         {language === 'ar' ? 'â†گ ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظ…ط³ط§ط±ط§طھ' : 'â†گ Back to Tracks'}
+800:                       </button>
+801:                     </div>
+802:                     
+803:                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+804:                       {units.map((unit) => {
+805:                         const unitIcon = UNIT_ICONS[unit.id] || { icon: 'ًں“–', color: '#28a745' };
+806:                         const finishedLecture = unitStates[unit.id]?.lectureFinished;
+807:                         const progress = userProgress[unit.id] || 0;
+808:                         const isPassed = progress >= 90;
+809:                         
+810:                         return (
+811:                           <div 
+812:                             key={unit.id}
+813:                             onClick={() => handleStartUnit(unit.id)}
+814:                             style={{
+815:                               backgroundColor: 'var(--bg-card)',
+816:                               borderRadius: '20px',
+817:                               padding: '25px',
+818:                               cursor: 'pointer',
+819:                               border: `2px solid ${isPassed ? 'var(--primary-color)' : 'var(--border-color)'}`,
+820:                               boxShadow: isPassed ? '0 8px 25px var(--focus-ring)' : 'var(--shadow-sm)',
+821:                               transition: 'all 0.3s ease',
+822:                               textAlign: 'center',
+823:                               position: 'relative',
+824:                               overflow: 'hidden'
+825:                             }}
+826:                             className="interactive-card"
+827:                           >
+828:                             {/* Progress indicator */}
+829:                             <div style={{
+830:                               position: 'absolute',
+831:                               top: '10px',
+832:                               right: language === 'ar' ? 'auto' : '10px',
+833:                               left: language === 'ar' ? '10px' : 'auto',
+834:                               backgroundColor: isPassed ? '#28a745' : '#6c757d',
+835:                               color: 'white',
+836:                               padding: '4px 12px',
+837:                               borderRadius: '20px',
+838:                               fontSize: '0.75rem',
+839:                               fontWeight: 'bold'
+840:                             }}>
+841:                               {progress}%
+842:                             </div>
+843:                             
+844:                             {/* Icon */}
+845:                             <div style={{
+846:                               width: '70px',
+847:                               height: '70px',
+848:                               borderRadius: '50%',
+849:                               backgroundColor: `${unitIcon.color}20`,
+850:                               display: 'flex',
+851:                               alignItems: 'center',
+852:                               justifyContent: 'center',
+853:                               margin: '0 auto 15px',
+854:                               fontSize: '2.5rem'
+855:                             }}>
+856:                               {unitIcon.icon}
+857:                             </div>
+858:                             
+859:                             <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{unit.title}</h4>
+860:                             <p style={{ margin: '0 0 15px 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{unit.subtitle}</p>
+861:                             
+862:                             {finishedLecture && (
+863:                               <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '6px 15px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block' }}>
+864:                                 âœ“ {language === 'ar' ? 'ظ…ظƒطھظ…ظ„' : 'Completed'}
+865:                               </div>
+866:                             )}
+867:                             
+868:                             {!finishedLecture && (
+869:                               <div style={{ backgroundColor: unitIcon.color, color: 'white', padding: '8px 20px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', display: 'inline-block' }}>
+870:                                 {t('startStudy')} â†’
+871:                               </div>
+872:                             )}
+873:                           </div>
+874:                         );
+875:                       })}
+876:                     </div>
+877:                   </>
+878:                 )}
+879:               </section>
+880: 
+881:               {/* Certificate Summary Sidebar */}
+882:               <div className="certificate-sidebar">
+883:                 <div className="cert-trophy">ًںڈ†</div>
+884:                 <h2 style={{ color: 'var(--primary-color)' }}>{t('earnedCertificates')}</h2>
+885:                 <p style={{ color: 'var(--text-secondary)', margin: '15px 0' }}>
+886:                   {allPassed ? t('earned') : t('lockedMsg')}
+887:                 </p>
+888: 
+889:                 <div className="progress-container">
+890:                   <div className="progress-bar-bg">
+891:                     <div
+892:                       className="progress-bar-fill"
+893:                       style={{
+894:                         width: `${(unitIds.filter(id => (userProgress[id] || 0) >= 90).length / unitIds.length) * 100}%`,
+895:                       }}
+896:                     ></div>
+897:                   </div>
+898:                   <p style={{ marginTop: '10px', fontWeight: '500' }}>
+899:                     {unitIds.filter(id => (userProgress[id] || 0) >= 90).length} / {unitIds.length} {t('completed')}
+900:                   </p>
+901:                 </div>
+902: 
+903:                 <button
+904:                   disabled={!allPassed}
+905:                   onClick={() => { setIsSampleMode(false); setShowCertificate(true); }}
+906:                   className={`btn-cert ${allPassed ? 'active' : ''}`}
+907:                 >
+908:                   {allPassed ? t('viewCert') : t('lockedMsg').split(':')[0]}
+909:                 </button>
+910:               </div>
+911:             </div>
+912:           </div>
+913:         ) : viewMode === 'toolkit' ? (
+914:           <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' }}>
+915:             <FMEATool />
+916:             <BatchSignSim />
+917:             <StabilityCalculator />
+918:             <SamplingCalculator />
+919:             <InspectionChecklist />
+920:           </div>
+921:         ) : (
+922:           /* Analytics View */
+923:           <div className="animate-fade-in">
+924:             <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+925:               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px' }}>
+926:                 <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+927:                   <span style={{ fontSize: '1.5rem' }}>ًں“ٹ</span> {language === 'ar' ? 'طھط­ظ„ظٹظ„ طھظ‚ط¯ظ…ظƒ' : 'Your Progress Analytics'}
+928:                 </h3>
+929:                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+930:                   <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid var(--primary-color)' }}>
+931:                     <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{unitIds.filter(id => (userProgress[id] || 0) >= 90).length}</div>
+932:                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'ظˆط­ط¯ط© ظ…ظƒطھظ…ظ„ط©' : 'Units Completed'}</div>
+933:                   </div>
+934:                   <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '2px solid #ffc107' }}>
+935:                     <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ffc107' }}>{totalAverage}%</div>
+936:                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'ظ…طھظˆط³ط· ط§ظ„ط¯ط±ط¬ط§طھ' : 'Average Score'}</div>
+937:                   </div>
+938:                   <div style={{ backgroundColor: 'var(--bg-card)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: `2px solid ${allPassed ? '#28a745' : '#6c757d'}` }}>
+939:                     <div style={{ fontSize: '2.5rem' }}>{allPassed ? 'ًںڈ†' : 'ًں”’'}</div>
+940:                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'ط­ط§ظ„ط© ط§ظ„ط´ظ‡ط§ط¯ط©' : 'Certificate Status'}</div>
+941:                     <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: allPassed ? '#28a745' : '#6c757d', marginTop: '4px' }}>{allPassed ? (language === 'ar' ? 'ظ…ظƒطھظ…ظ„ط© âœ“' : 'Earned âœ“') : (language === 'ar' ? 'ظ‚ظٹط¯ ط§ظ„طھظ‚ط¯ظ…' : 'In Progress')}</div>
+942:                   </div>
+943:                 </div>
+944:                 <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>{language === 'ar' ? 'ًں“‹ طھظپط§طµظٹظ„ ط§ظ„ط¯ط±ط¬ط§طھ ظ„ظƒظ„ ظˆط­ط¯ط©' : 'ًں“‹ Score Details by Unit'}</h4>
+945:                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+946:                   {units.map(unit => {
+947:                     const score = userProgress[unit.id] || 0;
+948:                     const isPassed = score >= 90;
+949:                     const unitIcon = UNIT_ICONS[unit.id] || { icon: 'ًں“–', color: '#28a745' };
+950:                     return (
+951:                       <div key={unit.id}>
+952:                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
+953:                           <span style={{ fontWeight: '500', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><span>{unitIcon.icon}</span> {unit.title}</span>
+954:                           <span style={{ fontWeight: 'bold', color: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'var(--text-secondary)', minWidth: '75px', textAlign: 'right' }}>{score > 0 ? `${score}%` : (language === 'ar' ? 'ظ„ظ… ظٹط¨ط¯ط£' : 'Not Started')}</span>
+955:                         </div>
+956:                         <div style={{ height: '10px', backgroundColor: 'var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
+957:                           <div style={{ width: `${score}%`, height: '100%', backgroundColor: isPassed ? '#28a745' : score > 0 ? '#ffc107' : 'transparent', borderRadius: '10px', transition: 'width 1.5s cubic-bezier(0.25, 1, 0.5, 1)' }} />
+958:                         </div>
+959:                       </div>
+960:                     );
+961:                   })}
+962:                 </div>
+963:               </section>
+964: 
+965:               {/* Leaderboard Sidebar */}
+966:               <section className="glass-panel" style={{ padding: '25px', borderRadius: '24px' }}>
+967:                 <h3 style={{ marginBottom: '20px', color: '#ffc107', display: 'flex', alignItems: 'center', gap: '10px' }}>
+968:                   <span>ًں¥‡</span> {t('leaderboard')}
+969:                 </h3>
+970:                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+971:                   {leaderboard.length > 0 ? (
+972:                     leaderboard.sort((a, b) => b.xp - a.xp).map((entry, idx) => (
+973:                       <div key={idx} style={{ 
+974:                         display: 'flex', 
+975:                         alignItems: 'center', 
+976:                         gap: '12px', 
+977:                         padding: '10px', 
+978:                         borderRadius: '12px',
+979:                         backgroundColor: entry.userId === user.uid ? 'rgba(40,167,69,0.1)' : 'transparent',
+980:                         border: entry.userId === user.uid ? '1px solid #28a745' : '1px solid transparent'
+981:                       }}>
+982:                         <div style={{ fontWeight: 'bold', width: '25px', color: idx === 0 ? '#ffc107' : 'var(--text-secondary)' }}>#{idx + 1}</div>
+983:                         <div style={{ fontSize: '1.2rem' }}>{entry.photoURL ? <img src={entry.photoURL} style={{ width: '24px', height: '24px', borderRadius: '50%' }} /> : (entry.isUser || entry.userId === user.uid ? 'â­گ' : 'ًں‘¤')}</div>
+984:                         <div style={{ flex: 1 }}>
+985:                           <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{entry.displayName || (entry.userId === user.uid ? t('you') : 'Trainee')}</div>
+986:                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Lvl {entry.level || 1} â€¢ {entry.xp || 0} XP</div>
+987:                         </div>
+988:                       </div>
+989:                     ))
+990:                   ) : (
+991:                     <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+992:                       {language === 'ar' ? 'ط¬ط§ط±ظٹ طھط­ظ…ظٹظ„ ط§ظ„ظ…طھطµط¯ط±ظٹظ†...' : 'Loading Leaderboard...'}
+993:                     </div>
+994:                   )}
+995:                 </div>
+996:                 <div style={{ marginTop: '20px', padding: '15px', backgroundColor: 'var(--bg-body)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+997:                   ًں’، {language === 'ar' ? 'ظ†طھط§ط¦ط¬ ط¨ظ‚ظٹط© ط§ظ„ظ…طھط¯ط±ط¨ظٹظ† طھط¸ظ‡ط± ظ‡ظ†ط§ ط¨ظ†ط§ط،ظ‹ ط¹ظ„ظ‰ ط£ط¯ط§ط¦ظ‡ظ… ط§ظ„ظپط¹ظ„ظٹ.' : 'Live trainee rankings based on actual platform performance.'}
+998:                 </div>
+999:               </section>
+1000:             </div>
+1001:           </div>
+1002:         )}
+1003:       </main>
+1004: 
+1005:       {/* Footer Branding */}
+1006:       <footer style={{ textAlign: 'center', padding: '40px', color: '#888', borderTop: '1px solid #eee' }}>
+1007:         <p style={{ fontWeight: 'bold' }}>{t('issuingAuthority')} - Certified Educational Platform</p>
+1008:         <p style={{ fontSize: '0.9rem' }}>Developed & Maintained by <span style={{ color: '#28a745', fontWeight: 'bold' }}>{t('developerName')}</span></p>
+1009:         <p style={{ fontSize: '0.8rem' }}>آ© {new Date().getFullYear()} Sudan Quality Platform. All International Patents Reserved.</p>
+1010:       </footer>
+1011: 
+1012:       <style dangerouslySetInnerHTML={{
+1013:         __html: `
+1014:         .main-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; color: white; }
+1015:         .user-profile { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 40px; backdrop-filter: blur(5px); }
+1016:         .user-profile img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); }
+1017:         .btn-lang { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; backdrop-filter: blur(5px); }
+1018:         .btn-lang:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+1019:         .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+1020:         .btn-logout:hover { background: #c82333; transform: scale(1.05); }
+1021:         .btn-primary { background: var(--primary-color); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; padding: 12px 30px; transition: all 0.3s; }
+1022:         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px var(--focus-ring); }
+1023:         .btn-secondary { background: #6c757d; color: white; border: none; border-radius: 12px; cursor: pointer; padding: 10px 20px; transition: 0.2s; }
+1024:         .btn-secondary:hover { background: #5a6268; }
+1025:         .certificate-sidebar { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 30px; border-radius: 24px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: center; text-align: center; height: fit-content; transition: 0.3s; }
+1026:         .certificate-sidebar h2 { color: var(--primary-color); }
+1027:         .certificate-sidebar p { color: var(--text-secondary); margin: 15px 0; }
+1028:         .cert-trophy { font-size: 4.5rem; margin-bottom: 10px; text-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: float 3s ease-in-out infinite; }
+1029:         .progress-container { margin: 20px 0; }
+1030:         .progress-bar-bg { width: 100%; height: 12px; background-color: var(--border-color); border-radius: 6px; overflow: hidden; }
+1031:         .progress-bar-fill { height: 100%; background-color: var(--primary-color); transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+1032:         .btn-cert { width: 100%; padding: 18px; border-radius: 16px; border: none; background-color: var(--border-color); color: var(--text-secondary); font-size: 1.2rem; font-weight: bold; cursor: not-allowed; box-shadow: none; transition: 0.3s; }
+1033:         .btn-cert.active { background-color: var(--primary-color); color: white; cursor: pointer; box-shadow: 0 10px 20px var(--focus-ring); }
+1034:         .btn-cert.active:hover { background-color: var(--primary-hover); transform: translateY(-3px) scale(1.02); }
+1035:         .interactive-card { 
+1036:           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+1037:           position: relative;
+1038:           overflow: hidden;
+1039:         }
+1040:         .interactive-card::after {
+1041:           content: '';
+1042:           position: absolute;
+1043:           top: -50%;
+1044:           left: -50%;
+1045:           width: 200%;
+1046:           height: 200%;
+1047:           background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+1048:           transform: rotate(30deg);
+1049:           transition: all 0.6s;
+1050:           opacity: 0;
+1051:         }
+1052:         .interactive-card:hover { 
+1053:           transform: translateY(-8px) scale(1.02); 
+1054:           box-shadow: var(--shadow-xl);
+1055:           border-color: var(--primary-color);
+1056:         }
+1057:         .interactive-card:hover::after {
+1058:           animation: shine 1.5s;
+1059:         }
+1060:         @keyframes float {
+1061:           0% { transform: translateY(0px) rotate(0deg); }
+1062:           50% { transform: translateY(-10px) rotate(5deg); }
+1063:           100% { transform: translateY(0px) rotate(0deg); }
+1064:         }
+1065:         @keyframes shine {
+1066:           0% { opacity: 1; left: -100%; top: -100%; }
+1067:           100% { opacity: 0; left: 100%; top: 100%; }
+1068:         }
+1069:         @keyframes pulse {
+1070:           0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+1071:           70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+1072:           100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+1073:         }
+1074:         @media print {
+1075:           body * { visibility: hidden; }
+1076:           #certificate-printable, #certificate-printable * { visibility: visible; }
+1077:           #certificate-printable {
+1078:             position: absolute;
+1079:             left: 0;
+1080:             top: 0;
+1081:             width: 100%;
+1082:             border: none;
+1083:             box-shadow: none;
+1084:           }
+1085:           .no-print { display: none !important; }
+1086:         }
+1087:       `}} />
+1088:     </div>
+1089:   );
+1090: };
+1091: 
+1092: export default Dashboard;
+1093: 
