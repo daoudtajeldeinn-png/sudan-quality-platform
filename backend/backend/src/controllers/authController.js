@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require('../models/User');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -8,7 +8,7 @@ const registerUser = async (req, res) => {
     // Demo mode bypass using in-memory DB
     if (req.isDemoMode) {
       const { email, displayName = email.split('@')[0], password, userId, photoURL } = req.body;
-      
+
       // Check existing in demo DB
       const existingUser = await req.demoDB.findUserByEmail(email);
       if (existingUser) {
@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
           process.env.JWT_SECRET || "sudan_quality_secret",
           { expiresIn: "24h" }
         );
-        
+
         return res.status(200).json({
           success: true,
           token,
@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
           }
         });
       }
-      
+
       const demoUser = await req.demoDB.createUser({
         userId: userId || `demo_${Date.now()}`,
         email,
@@ -37,13 +37,13 @@ const registerUser = async (req, res) => {
         photoURL: photoURL || null,
         authProvider: userId ? 'google' : 'local'
       });
-      
+
       const token = jwt.sign(
         { userId: demoUser._id, email: demoUser.email },
         process.env.JWT_SECRET || "sudan_quality_secret",
         { expiresIn: "24h" }
       );
-      
+
       return res.status(201).json({
         success: true,
         token,
@@ -55,54 +55,56 @@ const registerUser = async (req, res) => {
         }
       });
     }
-    
-    // Normal Mongoose flow for production
+
+    // Normal MongoDB flow for production
     const { email, displayName = email.split('@')[0], password, userId } = req.body;
-    const isGoogleUser = userId && !password; 
-    
+    const isGoogleUser = userId && !password;
+
     if (!isGoogleUser && (!password || password.length < 6)) {
       return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
     }
 
     // التحقق من وجود البريد الإلكتروني
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       // إذا كان مستخدم جوجل، نسمح بتسجيل الدخول مباشرة والحصول على التوكن
       const token = jwt.sign(
-        { userId: existingUser.userId, email: existingUser.email, authProvider: existingUser.authProvider },
+        { userId: existingUser.email, email: existingUser.email, authProvider: 'google' },
         process.env.JWT_SECRET || "sudan_quality_secret",
         { expiresIn: "24h" }
       );
-      
+
       return res.status(200).json({
         success: true,
         token,
         user: {
-          userId: existingUser.userId,
+          userId: existingUser.email,
           email: existingUser.email,
-          displayName: existingUser.displayName,
-          photoURL: existingUser.photoURL
+          displayName: existingUser.email.split('@')[0],
+          photoURL: null
         }
       });
     }
+
     let hashedPassword = null;
     if (!isGoogleUser) {
       // Local users only: hash password
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(password, salt);
     }
-    
-    // إنشاء مستخدم جديد
-    const user = new User({
-      userId: userId || `user_${Date.now()}`,
-      email,
-      authProvider: isGoogleUser ? 'google' : 'local',
 
-      displayName,
-      photoURL: req.body.photoURL || null,
+    // إنشاء مستخدم جديد
+    const user = await User.create({
+      email,
       password: hashedPassword,
-      createdAt: new Date(),
-      lastLogin: new Date(),
+      displayName,
+      progress: {
+        completedUnits: [],
+        currentUnit: null,
+        totalScore: 0,
+        certificates: []
+      },
       xp: 0,
       level: 1,
       badges: [],
@@ -110,41 +112,32 @@ const registerUser = async (req, res) => {
         totalQuizzes: 0,
         perfectScores: 0,
         lecturesCompleted: 0
-      },
-      progress: {
-        completedUnits: [],
-        currentUnit: null,
-        totalScore: 0,
-        certificates: []
       }
     });
-    
-    await user.save();
-    
+
     // إنشاء JWT token لكل المستخدمين
     const token = jwt.sign(
-      { userId: user.userId, email: user.email, authProvider: user.authProvider },
-
+      { userId: user.email, email: user.email, authProvider: isGoogleUser ? 'google' : 'local' },
       process.env.JWT_SECRET || "sudan_quality_secret",
       { expiresIn: "24h" }
     );
-    
+
     res.status(201).json({
       success: true,
       token,
       user: {
-        userId: user.userId,
+        userId: user.email,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
+        displayName: displayName,
+        photoURL: null
       }
     });
   } catch (error) {
     console.error("CRITICAL Registration error:", error);
-    res.status(500).json({ 
-      error: "حدث خطأ في الخادم", 
+    res.status(500).json({
+      error: "حدث خطأ في الخادم",
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -165,15 +158,16 @@ const getUser = async (req, res) => {
         photoURL: user.photoURL
       });
     } else {
-      const user = await User.findOne({ userId });
+      const user = await User.findOne({ email: userId });
+
       if (!user) {
         return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       res.json({
-        userId: user.userId,
+        userId: user.email,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
+        displayName: user.email.split('@')[0],
+        photoURL: null
       });
     }
 

@@ -22,21 +22,21 @@ exports.getRotatedQuestions = async (req, res) => {
     }
 
     const allQuestions = await Question.find({ unitId });
-    if (allQuestions.length === 0) {
+
+    if (!allQuestions || allQuestions.length === 0) {
       return res.status(404).json({ error: 'No questions found for this unit' });
     }
 
     // جلب سجل المستخدم للوحدة
     let history = await QuizHistory.findOne({ userId, unitId });
-    if (!history) {
-      history = new QuizHistory({ userId, unitId, seenQuestions: [] });
-    }
 
-    let unseenQuestions = allQuestions.filter(q => !history.seenQuestions.includes(q._id.toString()));
+    let seenQuestions = history?.seenQuestions || [];
+
+    let unseenQuestions = allQuestions.filter(q => !seenQuestions.includes(q._id.toString()));
 
     if (unseenQuestions.length < count) {
       // إذا استُنفدت الأسئلة، نقوم بتصفير السجل وإتاحة كل الأسئلة مجدداً
-      history.seenQuestions = [];
+      seenQuestions = [];
       unseenQuestions = allQuestions.slice();
     }
 
@@ -45,9 +45,16 @@ exports.getRotatedQuestions = async (req, res) => {
 
     // تحديث سجل الأسئلة المرئية
     const selectedIds = selected.map(q => q._id.toString());
-    history.seenQuestions.push(...selectedIds);
-    history.lastReset = new Date();
-    await history.save();
+    const newSeenQuestions = [...seenQuestions, ...selectedIds];
+
+    if (history) {
+      await QuizHistory.updateOne(
+        { userId, unitId },
+        { seenQuestions: newSeenQuestions, lastReset: new Date() }
+      );
+    } else {
+      await QuizHistory.create({ userId, unitId, seenQuestions: newSeenQuestions, lastReset: new Date() });
+    }
 
     const formattedQuestions = [];
     selected.forEach(q => {
@@ -80,7 +87,7 @@ exports.getRandomQuestions = async (req, res) => {
     // الحصول على جميع الأسئلة للوحدة
     const allQuestions = await Question.find({ unitId });
 
-    if (allQuestions.length === 0) {
+    if (!allQuestions || allQuestions.length === 0) {
       return res.status(404).json({ error: 'No questions found for this unit' });
     }
 
