@@ -76,7 +76,22 @@ exports.getRotatedQuestions = async (req, res) => {
       const question = { ...q };
       delete question.correctAnswer;
       delete question.correctAnswers;
-      formattedQuestions.push(question);
+      
+      // Transform to match frontend expected format
+      formattedQuestions.push({
+        _id: q.id,
+        unitId: q.unitId,
+        questionText: {
+          ar: q.question,
+          en: q.question
+        },
+        options: {
+          ar: q.options,
+          en: q.options
+        },
+        type: q.type === 'multiple' ? 'mcq' : q.type,
+        explanation: q.explanation
+      });
     });
 
     res.status(200).json(formattedQuestions);
@@ -124,7 +139,22 @@ exports.getRandomQuestions = async (req, res) => {
       // إزالة معلومات الإجابة الصحيحة من الاستجابة لضمان النزاهة
       delete question.correctAnswer;
       delete question.correctAnswers;
-      randomQuestions.push(question);
+      
+      // Transform to match frontend expected format
+      randomQuestions.push({
+        _id: q.id,
+        unitId: q.unitId,
+        questionText: {
+          ar: q.question,
+          en: q.question
+        },
+        options: {
+          ar: q.options,
+          en: q.options
+        },
+        type: q.type === 'multiple' ? 'mcq' : q.type,
+        explanation: q.explanation
+      });
     });
 
     res.status(200).json(randomQuestions);

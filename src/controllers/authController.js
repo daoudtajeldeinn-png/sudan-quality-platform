@@ -8,7 +8,7 @@ const registerUser = async (req, res) => {
     // Demo mode bypass using in-memory DB
     if (req.isDemoMode) {
       const { email, displayName = email.split('@')[0], password, userId, photoURL } = req.body;
-
+      
       // Check existing in demo DB
       const existingUser = await req.demoDB.findUserByEmail(email);
       if (existingUser) {
@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
           process.env.JWT_SECRET || "sudan_quality_secret",
           { expiresIn: "24h" }
         );
-
+        
         return res.status(200).json({
           success: true,
           token,
@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
           }
         });
       }
-
+      
       const demoUser = await req.demoDB.createUser({
         userId: userId || `demo_${Date.now()}`,
         email,
@@ -37,13 +37,13 @@ const registerUser = async (req, res) => {
         photoURL: photoURL || null,
         authProvider: userId ? 'google' : 'local'
       });
-
+      
       const token = jwt.sign(
         { userId: demoUser._id, email: demoUser.email },
         process.env.JWT_SECRET || "sudan_quality_secret",
         { expiresIn: "24h" }
       );
-
+      
       return res.status(201).json({
         success: true,
         token,
@@ -55,7 +55,7 @@ const registerUser = async (req, res) => {
         }
       });
     }
-
+    
     // Normal Supabase flow for production
     const { email, displayName = email.split('@')[0], password, userId } = req.body;
     const isGoogleUser = userId && !password;
@@ -71,10 +71,10 @@ const registerUser = async (req, res) => {
       .eq('email', email)
       .single();
 
-    if (existingUser) {
+    if (existingUser && !existingError) {
       // إذا كان مستخدم جوجل، نسمح بتسجيل الدخول مباشرة والحصول على التوكن
       const token = jwt.sign(
-        { userId: existingUser.email, email: existingUser.email, authProvider: 'google' },
+        { userId: existingUser.userId, email: existingUser.email, authProvider: existingUser.authProvider },
         process.env.JWT_SECRET || "sudan_quality_secret",
         { expiresIn: "24h" }
       );
@@ -83,10 +83,10 @@ const registerUser = async (req, res) => {
         success: true,
         token,
         user: {
-          userId: existingUser.email,
+          userId: existingUser.userId,
           email: existingUser.email,
-          displayName: existingUser.email.split('@')[0],
-          photoURL: null
+          displayName: existingUser.displayName,
+          photoURL: existingUser.photoURL
         }
       });
     }
@@ -102,13 +102,14 @@ const registerUser = async (req, res) => {
     const { data: user, error: insertError } = await req.supabase
       .from('users')
       .insert({
+        userId: userId || `user_${Date.now()}`,
         email,
-        progress: {
-          completedUnits: [],
-          currentUnit: null,
-          totalScore: 0,
-          certificates: []
-        },
+        authProvider: isGoogleUser ? 'google' : 'local',
+        displayName,
+        photoURL: req.body.photoURL || null,
+        password: hashedPassword,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
         xp: 0,
         level: 1,
         badges: [],
@@ -116,19 +117,25 @@ const registerUser = async (req, res) => {
           totalQuizzes: 0,
           perfectScores: 0,
           lecturesCompleted: 0
+        },
+        progress: {
+          completedUnits: [],
+          currentUnit: null,
+          totalScore: 0,
+          certificates: []
         }
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Supabase insert error:', insertError);
+      console.error('❌ Create user error:', insertError);
       return res.status(500).json({ error: insertError.message });
     }
 
     // إنشاء JWT token لكل المستخدمين
     const token = jwt.sign(
-      { userId: user.email, email: user.email, authProvider: isGoogleUser ? 'google' : 'local' },
+      { userId: user.userId, email: user.email, authProvider: user.authProvider },
       process.env.JWT_SECRET || "sudan_quality_secret",
       { expiresIn: "24h" }
     );
@@ -137,18 +144,18 @@ const registerUser = async (req, res) => {
       success: true,
       token,
       user: {
-        userId: user.email,
+        userId: user.userId,
         email: user.email,
-        displayName: displayName,
-        photoURL: null
+        displayName: user.displayName,
+        photoURL: user.photoURL
       }
     });
   } catch (error) {
     console.error("CRITICAL Registration error:", error);
-    res.status(500).json({
-      error: "حدث خطأ في الخادم",
+    res.status(500).json({ 
+      error: "حدث خطأ في الخادم", 
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
     });
   }
 };
@@ -172,17 +179,17 @@ const getUser = async (req, res) => {
       const { data: user, error } = await req.supabase
         .from('users')
         .select('*')
-        .eq('email', userId)
+        .eq('userId', userId)
         .single();
 
       if (error || !user) {
         return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       res.json({
-        userId: user.email,
+        userId: user.userId,
         email: user.email,
-        displayName: user.email.split('@')[0],
-        photoURL: null
+        displayName: user.displayName,
+        photoURL: user.photoURL
       });
     }
 
