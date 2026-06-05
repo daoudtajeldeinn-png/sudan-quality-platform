@@ -1,0 +1,72 @@
+﻿[
+  {
+    "unitId": "gmp-intro",
+    "questionText": "ما هو الهدف الرئيسي من تطبيق مبادئ GMP؟",
+    "options": [
+      "تقليل التكاليف",
+      "ضمان جودة وسلامة المنتجات الدوائية",
+      "زيادة الإنتاج فقط",
+      "تحسين التسويق"
+    ],
+    "correctAnswer": 1,
+    "explanation": "الهدف الرئيسي من GMP هو ضمان أن المنتجات الدوائية تُنتج وفقاً لأعلى معايير الجودة والسلامة",
+    "difficulty": "easy",
+    "category": "GMP"
+  },
+  {
+    "unitId": "gmp-intro",
+    "questionText": "أي من العوامل التالية يُعتبر جزءاً أساسياً من نظام GMP؟",
+    "options": [
+      "التنظيف والتعقيم",
+      "تقليل عدد الموظفين",
+      "استخدام أحدث المعدات فقط",
+      "التركيز على الربح فقط"
+    ],
+    "correctAnswer": 0,
+    "explanation": "التنظيف والتعقيم من المبادئ الأساسية في تطبيق GMP لضمان عدم تلوث المنتجات",
+    "difficulty": "easy",
+    "category": "GMP"
+  },
+  {
+    "unitId": "gmp-intro",
+    "questionText": "ما الذي يجب أن يتضمنه نظام التوثيق في GMP؟",
+    "options": [
+      "توثيق جميع العمليات الإنتاجية",
+      "توثيق المصاريف فقط",
+      "توثيق الشكاوى من العملاء فقط",
+      "لا حاجة للتوثيق"
+    ],
+    "correctAnswer": 0,
+    "explanation": "نظام التوثيق في GMP يتطلب توثيق جميع العمليات للتحقق من الامتثال للمعايير",
+    "difficulty": "medium",
+    "category": "GMP"
+  },
+  {
+    "unitId": "glp-basics",
+    "questionText": "ما هو الفرق الأساسي بين GLP و GMP؟",
+    "options": [
+      "GLP للإنتاج و GMP للمختبرات",
+      "GLP للمختبرات و GMP للإنتاج",
+      "كلاهما للإنتاج",
+      "كلاهما للمختبرات"
+    ],
+    "correctAnswer": 1,
+    "explanation": "GLP (Good Laboratory Practice) يطبق على المختبرات بينما GMP (Good Manufacturing Practice) يطبق على التصنيع",
+    "difficulty": "medium",
+    "category": "GLP"
+  },
+  {
+    "unitId": "glp-basics",
+    "questionText": "أي من العناصر التالية ضرورية في تصميم الدراسة وفق GLP؟",
+    "options": [
+      "خطة الدراسة المكتوبة مسبقاً",
+      "إجراء التجارب بشكل عشوائي",
+      "استخدام مواد غير موثقة",
+      "عدم وجود رقابة على الجودة"
+    ],
+    "correctAnswer": 0,
+    "explanation": "خطة الدراسة المكتوبة مسبقاً ضرورية لضمان جودة وموثوقية النتائج في GLP",
+    "difficulty": "hard",
+    "category": "GLP"
+  }
+]

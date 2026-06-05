@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.log
+.DS_Store
+.nyc_output
+coverage/
+*.tsbuildinfo
+dist/
+build/
+.vercel
+.env*.local
