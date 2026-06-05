@@ -1,29 +1,33 @@
-const Certificate = require('../models/Certificate');
-const User = require('../models/User');
+const supabase = require('../config/supabase');
 
 // Internal: Create cert document (refactored)
-const createCertDoc = async (userId, userName, level, includedUnits, unitId, unitName, score, percentage) => {
+const createCertDoc = async (supabase, userId, userName, level, includedUnits, unitId, unitName, score, percentage) => {
   const certNumber = `SQP-L${level}-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
   const verifyUrl = `${process.env.FRONTEND_URL || ''}/verify?id=${certNumber}`;
 
-  const cert = await Certificate.create({
-    userId,
-    userName,
-    level,
-    includedUnits,
-    unitId: includedUnits?.length > 1 ? null : unitId,
-    unitName,
-    score,
-    percentage,
-    certNumber,
-    verifyUrl,
-    certificateData: {
+  const { data: cert, error } = await supabase
+    .from('certificates')
+    .insert({
+      userId,
+      userName,
+      level,
+      includedUnits,
+      unitId: includedUnits?.length > 1 ? null : unitId,
+      unitName,
+      score,
+      percentage,
       certNumber,
       verifyUrl,
-      issuedAt: new Date().toISOString()
-    }
-  });
+      certificateData: {
+        certNumber,
+        verifyUrl,
+        issuedAt: new Date().toISOString()
+      }
+    })
+    .select()
+    .single();
 
+  if (error) throw error;
   return cert;
 };
 
@@ -46,21 +50,43 @@ exports.awardCertificateSmart = async (req, res) => {
     }
 
     // Get or create user
-    let user = await User.findOne({ email: userId });
+    const { data: user, error: userError } = await req.supabase
+      .from('users')
+      .select('*')
+      .eq('email', userId)
+      .single();
+
+    if (userError && userError.code !== 'PGRST116') {
+      console.error('Supabase error:', userError);
+      return res.status(500).json({ error: userError.message });
+    }
+
+    let userData = user;
+    // Auto-create user if not exists
     if (!user) {
-      user = await User.create({
-        email: userId,
-        progress: {
-          completedUnits: [],
-          certificates: [],
-          level: 1
-        }
-      });
+      const { data: newUser, error: insertError } = await req.supabase
+        .from('users')
+        .insert({
+          email: userId,
+          progress: {
+            completedUnits: [],
+            certificates: [],
+            level: 1
+          }
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Supabase insert error:', insertError);
+        return res.status(500).json({ error: insertError.message });
+      }
+      userData = newUser;
       console.log(`[Auto-create] Created user ${userId}`);
     }
 
     // Mark unit complete if not already
-    const progress = user.progress || { completedUnits: [], certificates: [], level: 1 };
+    const progress = userData.progress || { completedUnits: [], certificates: [], level: 1 };
     if (!progress.completedUnits.includes(unitId)) {
       progress.completedUnits.push(unitId);
     }
@@ -69,7 +95,12 @@ exports.awardCertificateSmart = async (req, res) => {
     let cert;
 
     // Check for duplicate cert for this unit
-    const existingCert = await Certificate.findOne({ userId, unitId });
+    const { data: existingCert, error: existingError } = await req.supabase
+      .from('certificates')
+      .select('*')
+      .eq('userId', userId)
+      .eq('unitId', unitId)
+      .single();
 
     if (existingCert) {
       console.log(`[Award] Cert already exists for ${userId}/${unitId}, skipping`);
@@ -77,11 +108,11 @@ exports.awardCertificateSmart = async (req, res) => {
     }
 
     // Always award one certificate per unit
-    cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
+    cert = await createCertDoc(req.supabase, userId, userName, level, null, unitId, unitName, score, percentage);
 
     if (cert) {
       progress.certificates.push({
-        certificateId: cert._id,
+        certificateId: cert.id,
         issueDate: new Date().toISOString(),
         score,
         unitType: unitName,
@@ -89,10 +120,10 @@ exports.awardCertificateSmart = async (req, res) => {
         level
       });
 
-      await User.updateOne(
-        { email: userId },
-        { progress }
-      );
+      await req.supabase
+        .from('users')
+        .update({ progress, updated_at: new Date().toISOString() })
+        .eq('email', userId);
     }
 
     return res.json({ success: true, certificate: cert || null, level, completedCount: progress.completedUnits.length });
@@ -106,7 +137,7 @@ exports.awardCertificateSmart = async (req, res) => {
 exports.createCertificate = async (req, res) => {
   try {
     const { userId, userName, unitId, unitName, score, percentage, level = 2 } = req.body;
-    const cert = await createCertDoc(userId, userName, level, null, unitId, unitName, score, percentage);
+    const cert = await createCertDoc(req.supabase, userId, userName, level, null, unitId, unitName, score, percentage);
     return res.json({ success: true, certificate: cert });
   } catch (err) {
     console.error('createCertificate error', err);
@@ -120,10 +151,14 @@ exports.verifyByNumber = async (req, res) => {
     const certNumber = req.query.certNumber || req.query.id;
     if (!certNumber) return res.status(400).json({ error: 'certNumber required' });
 
-    const cert = await Certificate.findOne({ certNumber });
+    const { data: cert, error } = await req.supabase
+      .from('certificates')
+      .select('*')
+      .eq('certNumber', certNumber)
+      .single();
 
-    if (!cert) return res.status(404).json({ found: false });
-    return res.json({ found: true, id: cert._id, data: cert });
+    if (error || !cert) return res.status(404).json({ found: false });
+    return res.json({ found: true, id: cert.id, data: cert });
   } catch (err) {
     console.error('verifyByNumber error', err);
     return res.status(500).json({ error: 'internal' });
@@ -136,12 +171,23 @@ exports.checkUserCertificate = async (req, res) => {
     const { userId, unitId } = req.query;
     if (!userId || !unitId) return res.status(400).json({ error: 'userId and unitId required' });
 
-    const cert = await Certificate.findOne({ userId, unitId });
+    const { data: cert, error } = await req.supabase
+      .from('certificates')
+      .select('*')
+      .eq('userId', userId)
+      .eq('unitId', unitId)
+      .single();
 
-    if (!cert) {
+    if (!cert || error) {
       // Check if in bundled includedUnits
-      const bundledCert = await Certificate.findOne({ userId, 'includedUnits.unitId': unitId });
-      if (!bundledCert) return res.json({ found: false });
+      const { data: bundledCert, error: bundledError } = await req.supabase
+        .from('certificates')
+        .select('*')
+        .eq('userId', userId)
+        .contains('includedUnits', [{ unitId }])
+        .single();
+
+      if (!bundledCert || bundledError) return res.json({ found: false });
       return res.json({ found: true, data: bundledCert });
     }
     return res.json({ found: true, data: cert });

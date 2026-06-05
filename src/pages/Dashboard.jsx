@@ -56,6 +56,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   const [userCertLevel, setUserCertLevel] = useState(1);
   const [certificates, setCertificates] = useState([]);
   const [currentUnit, setCurrentUnit] = useState(null);
+  const [completedUnits, setCompletedUnits] = useState({});
 
   const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
@@ -114,7 +115,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                 }
                 reconciled[unitId] = Math.max(prev[unitId] || 0, remoteProgress[unitId]);
               });
-              
+
               if (needsSync && user.uid) {
                 console.log('Pushing reconciled local progress to cloud...');
                 apiService.syncUserStats(user.uid, {
@@ -130,6 +131,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
             setUserCertLevel(profile.progress.level || 1);
             if (profile.progress.unitStates) {
               setUnitStates(prev => ({ ...profile.progress.unitStates, ...prev }));
+            }
+            // Load completed units from profile
+            if (profile.completedUnits) {
+              setCompletedUnits(profile.completedUnits);
             }
             try {
                 const certsData = await apiService.getUserCertificates(user.uid, authToken);
@@ -861,12 +866,24 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                   <div>
                     <button onClick={() => setCurrentTrack(null)} style={{ marginBottom: '20px' }}>← Back</button>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                      {units.map(unit => (
-                        <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card" style={{ padding: '25px', backgroundColor: 'var(--bg-card)', borderRadius: '20px', textAlign: 'center', border: `2px solid ${unit.color}` }}>
-                          <div style={{ fontSize: '2.5rem' }}>{UNIT_ICONS[unit.id]?.icon}</div>
-                          <h4>{unit.title}</h4>
-                        </div>
-                      ))}
+                      {units.map(unit => {
+                        const isCompleted = completedUnits[unit.id]?.completed;
+                        const completionScore = completedUnits[unit.id]?.score;
+                        return (
+                          <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card" style={{ padding: '25px', backgroundColor: 'var(--bg-card)', borderRadius: '20px', textAlign: 'center', border: `2px solid ${unit.color}`, position: 'relative' }}>
+                            {isCompleted && (
+                              <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#28a745', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}>✓</div>
+                            )}
+                            <div style={{ fontSize: '2.5rem' }}>{UNIT_ICONS[unit.id]?.icon}</div>
+                            <h4>{unit.title}</h4>
+                            {isCompleted && (
+                              <div style={{ fontSize: '0.8rem', color: '#28a745', fontWeight: 'bold', marginTop: '5px' }}>
+                                {completionScore}%
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

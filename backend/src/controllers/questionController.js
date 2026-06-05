@@ -79,13 +79,16 @@ exports.getRotatedQuestions = async (req, res) => {
       
       // Transform to match frontend expected format
       formattedQuestions.push({
-        id: q.id,
+        _id: q.id,
         unitId: q.unitId,
         questionText: {
           ar: q.question,
           en: q.question
         },
-        options: q.options,
+        options: {
+          ar: q.options,
+          en: q.options
+        },
         type: q.type === 'multiple' ? 'mcq' : q.type,
         explanation: q.explanation
       });
@@ -139,13 +142,16 @@ exports.getRandomQuestions = async (req, res) => {
       
       // Transform to match frontend expected format
       randomQuestions.push({
-        id: q.id,
+        _id: q.id,
         unitId: q.unitId,
         questionText: {
           ar: q.question,
           en: q.question
         },
-        options: q.options,
+        options: {
+          ar: q.options,
+          en: q.options
+        },
         type: q.type === 'multiple' ? 'mcq' : q.type,
         explanation: q.explanation
       });

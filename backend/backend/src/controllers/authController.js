@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const supabase = require('../config/supabase');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -56,7 +56,7 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Normal MongoDB flow for production
+    // Normal Supabase flow for production
     const { email, displayName = email.split('@')[0], password, userId } = req.body;
     const isGoogleUser = userId && !password;
 
@@ -65,7 +65,11 @@ const registerUser = async (req, res) => {
     }
 
     // التحقق من وجود البريد الإلكتروني
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser, error: existingError } = await req.supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
 
     if (existingUser) {
       // إذا كان مستخدم جوجل، نسمح بتسجيل الدخول مباشرة والحصول على التوكن
@@ -95,25 +99,32 @@ const registerUser = async (req, res) => {
     }
 
     // إنشاء مستخدم جديد
-    const user = await User.create({
-      email,
-      password: hashedPassword,
-      displayName,
-      progress: {
-        completedUnits: [],
-        currentUnit: null,
-        totalScore: 0,
-        certificates: []
-      },
-      xp: 0,
-      level: 1,
-      badges: [],
-      stats: {
-        totalQuizzes: 0,
-        perfectScores: 0,
-        lecturesCompleted: 0
-      }
-    });
+    const { data: user, error: insertError } = await req.supabase
+      .from('users')
+      .insert({
+        email,
+        progress: {
+          completedUnits: [],
+          currentUnit: null,
+          totalScore: 0,
+          certificates: []
+        },
+        xp: 0,
+        level: 1,
+        badges: [],
+        stats: {
+          totalQuizzes: 0,
+          perfectScores: 0,
+          lecturesCompleted: 0
+        }
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Supabase insert error:', insertError);
+      return res.status(500).json({ error: insertError.message });
+    }
 
     // إنشاء JWT token لكل المستخدمين
     const token = jwt.sign(
@@ -158,9 +169,13 @@ const getUser = async (req, res) => {
         photoURL: user.photoURL
       });
     } else {
-      const user = await User.findOne({ email: userId });
+      const { data: user, error } = await req.supabase
+        .from('users')
+        .select('*')
+        .eq('email', userId)
+        .single();
 
-      if (!user) {
+      if (error || !user) {
         return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       res.json({

@@ -74,13 +74,10 @@ const syncUserStats = async (req, res) => {
       if (badges !== undefined) updateData.badges = badges;
       if (stats !== undefined) updateData.stats = stats;
       if (progress !== undefined) {
-        if (progress.unitScores) updateData['progress.unitScores'] = progress.unitScores;
-        if (progress.unitStates) updateData['progress.unitStates'] = progress.unitStates;
-        if (progress.lastPlayed !== undefined) updateData['progress.lastPlayed'] = progress.lastPlayed;
-        if (progress.totalScore !== undefined) updateData['progress.totalScore'] = progress.totalScore;
-        if (progress.level !== undefined) updateData['progress.level'] = progress.level;
+        // Merge progress with existing progress
+        updateData.progress = progress;
       }
-      updateData.lastLogin = new Date().toISOString();
+      updateData.updated_at = new Date().toISOString();
 
       // Check if user exists
       const { data: existingUser } = await req.supabase
@@ -205,10 +202,86 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
+// Mark a unit as completed
+const markUnitCompleted = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { unitId, score, totalQuestions } = req.body;
+
+    if (req.isDemoMode) {
+      const user = await req.demoDB.findUserById(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      const completedUnits = user.progress?.completedUnits || [];
+      if (!completedUnits.includes(unitId)) {
+        completedUnits.push(unitId);
+      }
+
+      const completionDates = user.progress?.completionDates || {};
+      completionDates[unitId] = new Date().toISOString();
+
+      await req.demoDB.updateUser(userId, {
+        progress: {
+          ...user.progress,
+          completedUnits,
+          completionDates
+        }
+      });
+
+      res.json({ success: true, completedUnits, completionDates });
+    } else {
+      const { data: user, error: userError } = await req.supabase
+        .from('users')
+        .select('*')
+        .eq('userId', userId)
+        .single();
+
+      if (userError || !user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const completedUnits = user.completedUnits || {};
+      const completionDates = user.completionDates || {};
+
+      // Mark unit as completed with score
+      completedUnits[unitId] = {
+        completed: true,
+        score,
+        totalQuestions,
+        completedAt: new Date().toISOString()
+      };
+      completionDates[unitId] = new Date().toISOString();
+
+      const { data: updatedUser, error: updateError } = await req.supabase
+        .from('users')
+        .update({
+          completedUnits,
+          completionDates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('userId', userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('❌ Mark unit completed error:', updateError);
+        return res.status(500).json({ error: updateError.message });
+      }
+
+      console.log(`✅ Unit ${unitId} marked as completed for user ${userId}`);
+      res.json({ success: true, completedUnits, completionDates });
+    }
+  } catch (error) {
+    console.error("❌ Mark unit completed error:", error);
+    res.status(500).json({ error: "فشل تحديث حالة الوحدة: " + error.message });
+  }
+};
+
 
 module.exports = {
   getUserProfile,
   syncUserStats,
   getCertificates,
-  getLeaderboard
+  getLeaderboard,
+  markUnitCompleted
 };

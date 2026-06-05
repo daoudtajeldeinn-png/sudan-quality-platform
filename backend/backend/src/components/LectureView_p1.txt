@@ -1,0 +1,300 @@
+﻿import React, { useState, useEffect } from 'react';
+
+
+const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
+  const { language, t, theme } = useLanguage();
+  const { addXp, updateStats, stats } = useGamification();
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [completedSlides, setCompletedSlides] = useState([0]); // First slide is always unlocked
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [slideKey, setSlideKey] = useState(0); // For animation trigger
+  
+  // Get the unit content - ensure it exists
+  const unit = educationalContent?.units?.[unitId];
+
+  // Get slides first
+  const slides = unit?.slides || [];
+
+  // Get unit info - use defaults if not available
+  // Content.js may not have title/description, so use fallbacks
+  const unitTitle = slides?.[0]?.[language]?.title || unitId.toUpperCase().replace('-', ' ');
+  const unitDescription = unit?.description?.[language] || (language === 'ar' 
+    ? 'ط¯ط±ط§ط³ط© ط´ط§ظ…ظ„ط© ظ„ظ…ط¨ط§ط¯ط¦ ط§ظ„ط¬ظˆط¯ط© ط§ظ„ط¯ظˆط§ط¦ظٹط©' 
+    : 'Comprehensive study of pharmaceutical quality principles');
+  const unitLearningObjectives = unit?.learningObjectives || [];
+
+  if (!unit || slides.length === 0) {
+    return (
+      <div style={{ padding: '50px', textAlign: 'center' }}>
+        <p>ظ…ط§ط¯ط© ط¹ظ„ظ…ظٹط© ط؛ظٹط± ظ…طھظˆظپط±ط© ط­ط§ظ„ظٹط§ظ‹ ظ„ظ‡ط°ظ‡ ط§ظ„ظˆط­ط¯ط©.</p>
+        <button onClick={onBack} style={{ padding: '10px 20px', borderRadius: '8px', cursor: 'pointer' }}>{t('back')}</button>
+      </div>
+    );
+  }
+
+  const currentSlide = slides[currentSlideIndex];
+  const progress = ((completedSlides.length) / slides.length) * 100;
+
+  // Get the unit color
+  const unitColor = UNIT_COLORS[unitId] || '#28a745';
+
+  const handleNext = () => {
+    if (showWelcome) {
+      setShowWelcome(false);
+      return;
+    }
+    if (showCompletion) {
+      onProceedToQuiz();
+      return;
+    }
+    if (currentSlideIndex < slides.length - 1) {
+      const nextIdx = currentSlideIndex + 1;
+      if (!completedSlides.includes(nextIdx)) {
+        setCompletedSlides(prev => [...prev, nextIdx]);
+      }
+      // Trigger animation
+      setSlideKey(prev => prev + 1);
+      setCurrentSlideIndex(nextIdx);
+    } else {
+      // Final slide reached
+      if (completedSlides.length >= slides.length) {
+        setShowCompletion(true);
+        addXp(30); // Award XP for completing lecture
+        updateStats({ lecturesCompleted: stats.lecturesCompleted + 1 });
+      } else {
+        alert(language === 'ar' ? 'ظٹط±ط¬ظ‰ ط§ط³طھط¹ط±ط§ط¶ ط¬ظ…ظٹط¹ ط§ظ„ط´ط±ط§ط¦ط­ ط£ظˆظ„ط§ظ‹' : 'Please view all slides first');
+      }
+    }
+  };
+
+  const handlePrevious = () => {
+    if (showWelcome) return;
+    if (showCompletion) {
+      setShowCompletion(false);
+      return;
+    }
+    if (currentSlideIndex > 0) {
+      // Trigger animation
+      setSlideKey(prev => prev + 1);
+      setCurrentSlideIndex(currentSlideIndex - 1);
+    }
+  };
+
+  const handleJumpToSlide = (index) => {
+    setShowWelcome(false);
+    setShowCompletion(false);
+    setCurrentSlideIndex(index);
+    if (!completedSlides.includes(index)) {
+      setCompletedSlides(prev => [...prev, index]);
+    }
+  };
+
+  const renderWelcomeScreen = () => (
+    <div className="welcome-screen animate-fade-in" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      textAlign: 'center',
+      padding: '40px'
+    }}>
+      <div style={{
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        backgroundColor: '#28a745',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '30px',
+        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+      }}>
+        <span style={{ fontSize: '3rem' }}>ًں“ڑ</span>
+      </div>
+      
+      <h2 style={{ 
+        color: '#28a745', 
+        fontSize: '2.5rem', 
+        marginBottom: '20px',
+        fontWeight: '800'
+      }}>
+        {language === 'ar' ? 'ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒ' : 'Welcome'}
+      </h2>
+      
+      <p style={{
+        fontSize: '1.5rem',
+        color: 'var(--text-primary)',
+        marginBottom: '10px'
+      }}>
+        {language === 'ar' ? 'ط§ظ„ط·ط§ظ„ط¨:' : 'Student:'} <strong>{t('userName')}</strong>
+      </p>
+      
+      <h3 style={{
+        fontSize: '1.8rem',
+        color: 'var(--text-primary)',
+        marginTop: '20px',
+        marginBottom: '30px'
+      }}>
+        {unitTitle}
+      </h3>
+      
+      <p style={{
+        fontSize: '1.1rem',
+        color: 'var(--text-secondary)',
+        maxWidth: '600px',
+        lineHeight: '1.8'
+      }}>
+        {unitDescription}
+      </p>
+      
+      <div style={{
+        marginTop: '40px',
+        display: 'flex',
+        gap: '20px',
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
+        {unitLearningObjectives && unitLearningObjectives.map((obj, idx) => (
+          <div key={idx} style={{
+            backgroundColor: 'var(--bg-card)',
+            padding: '15px 25px',
+            borderRadius: '12px',
+            border: '1px solid var(--border-color)',
+            maxWidth: '300px',
+            color: 'var(--text-primary)'
+          }}>
+            <span style={{ marginLeft: language === 'ar' ? '0' : '10px', marginRight: language === 'ar' ? '10px' : '0' }}>âœ“</span>
+            {obj[language]}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCompletionScreen = () => (
+    <div className="completion-screen animate-fade-in" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      textAlign: 'center',
+      padding: '40px'
+    }}>
+      <div style={{
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        backgroundColor: '#28a745',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '30px',
+        boxShadow: '0 10px 40px rgba(40, 167, 69, 0.3)'
+      }}>
+        <span style={{ fontSize: '3rem' }}>ًںژ‰</span>
+      </div>
+      
+      <h2 style={{ 
+        color: '#28a745', 
+        fontSize: '2.5rem', 
+        marginBottom: '20px',
+        fontWeight: '800'
+      }}>
+        {language === 'ar' ? 'طھظ‡ط§ظ†ظٹظ†ط§!' : 'Congratulations!'}
+      </h2>
+      
+      <p style={{
+        fontSize: '1.3rem',
+        color: 'var(--text-primary)',
+        marginBottom: '10px'
+      }}>
+        {language === 'ar' ? 'ظ„ظ‚ط¯ ط£ظƒظ…ظ„طھ:' : 'You have completed:'}
+      </p>
+      
+      <h3 style={{
+        fontSize: '1.8rem',
+        color: 'var(--text-primary)',
+        marginTop: '10px',
+        marginBottom: '20px'
+      }}>
+        {unitTitle}
+      </h3>
+      
+      <p style={{
+        fontSize: '1.5rem',
+        color: '#28a745',
+        marginBottom: '30px'
+      }}>
+        {language === 'ar' ? 'ط§ظ„ط·ط§ظ„ط¨:' : 'Student:'} <strong>{t('userName')}</strong>
+      </p>
+      
+      <div style={{
+        backgroundColor: 'var(--bg-card)',
+        padding: '20px 40px',
+        borderRadius: '16px',
+        border: '2px solid var(--border-color)',
+        marginBottom: '30px'
+      }}>
+        <p style={{
+          fontSize: '1.1rem',
+          color: 'var(--text-primary)',
+          margin: '0'
+        }}>
+          {language === 'ar' ? 'ط£ظ†طھ ط§ظ„ط¢ظ† ط¬ط§ظ‡ط² ظ„ط§ط¬طھظٹط§ط² ط§ظ„ط§ظ…طھط­ط§ظ† ط§ظ„ظ†ظ‡ط§ط¦ظٹ' : 'You are now ready to take the final exam'}
+        </p>
+      </div>
+      
+      <p style={{
+        fontSize: '1rem',
+        color: 'var(--text-secondary)'
+      }}>
+        {language === 'ar' 
+          ? `ظ„ظ‚ط¯ ط§ط³طھط¹ط±ط¶طھ ${completedSlides.length} ظ…ظ† ${slides.length} ط´ط±ظٹط­ط©`
+          : `You have viewed ${completedSlides.length} of ${slides.length} slides`}
+      </p>
+    </div>
+  );
+
+  const renderContent = () => {
+    if (currentSlide.type === 'learning') {
+      // Parse bullet lists from text (e.g., "- Item")
+      const parseBullets = (text) => {
+        return text.split('\n').map((line, idx) => {
+          if (line.trim().startsWith('- ') || line.trim().startsWith('â€¢ ')) {
+            return <li key={idx} style={{ marginBottom: '0.8rem', fontSize: '1.25rem' }}>{line.trim().substring(2).trim()}</li>;
+          }
+          return <p key={idx} style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>{line}</p>;
+        });
+      };
+
+      return (
+        <div key={slideKey} className="slide-content animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+          {currentSlide.regulatoryRef && (
+            <div style={{
+              backgroundColor: 'var(--bg-warning)',
+              border: '1px solid var(--border-warning)',
+              color: 'var(--text-warning)',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              marginBottom: '20px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span>âڑ–ï¸ڈ</span> {currentSlide.regulatoryRef.code}
+            </div>
+          )}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            marginBottom: '25px'
+          }}>
+          </div>
+          <div style={{ 

@@ -1,11 +1,7 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const dns = require('dns');
 const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
-
-// Force Google DNS for SRV resolution (fixes connection issues in some regions)
-dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const authRoutes = require('./src/routes/authRoutes');
 const questionRoutes = require('./src/routes/questionRoutes');
@@ -16,8 +12,6 @@ const { DemoDB } = require('./src/data/demoQuestions');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://daoudtajeldeinn_db_user:9xEajIUAs9eAVg1p@sudanqualityplateform2.hkq9hs1.mongodb.net/sudan_quality_db?retryWrites=true&w=majority";
 
 // ─── MIDDLEWARE ─────────────────────────────────────────────────────────────
 app.use(cors({
@@ -39,14 +33,16 @@ app.use(express.json());
 let isConnected = false;
 let isDemoMode = false;
 
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://daoudtajeldeinn113:Daoud2002@cluster0.mongodb.net/sudan-quality-platform?retryWrites=true&w=majority';
+
 const connectDB = async () => {
     if (isConnected) return;
     try {
-        console.log("--- DB Connection Attempt ---");
+        console.log("--- MongoDB Connection Check ---");
         await mongoose.connect(MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000 // fail fast in serverless
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            connectTimeoutMS: 10000,
         });
         isConnected = true;
         isDemoMode = false;
@@ -76,7 +72,7 @@ app.get('/', (req, res) => {
     res.json({
         message: 'منصة السودان للجودة - API works!',
         status: isDemoMode ? 'demo' : 'production',
-        database: isDemoMode ? 'Demo Mode' : 'MongoDB Atlas'
+        database: isDemoMode ? 'Demo Mode' : 'MongoDB'
     });
 });
 

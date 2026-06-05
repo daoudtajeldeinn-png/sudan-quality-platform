@@ -234,6 +234,17 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
     }
     updateStats({ totalQuizzes: stats.totalQuizzes + 1 });
 
+    // Mark unit as completed if score >= 90
+    if (finalScore >= 90 && userId) {
+      apiService.markUnitCompleted(userId, unitId, finalScore, questions.length)
+        .then(response => {
+          console.log('[Quiz] Unit marked as completed:', response);
+        })
+        .catch(error => {
+          console.error('[Quiz] Failed to mark unit as completed:', error);
+        });
+    }
+
     if (onQuizComplete) {
       onQuizComplete({
         score: finalScore,
