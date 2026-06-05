@@ -1,5 +1,4 @@
-const User = require("../models/User");
-const Certificate = require("../models/Certificate");
+const supabase = require('../config/supabase');
 
 // الحصول على الملف الشخصي الكامل (XP, Level, Badges, Progress)
 const getUserProfile = async (req, res) => {
@@ -13,21 +12,36 @@ const getUserProfile = async (req, res) => {
       if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
       return res.json(user);
     } else {
-      let user = await User.findOne({ userId });
-      
-      if (!user && userId) {
-        console.log(`✨ Auto-creating profile for: ${userId}`);
-        user = new User({
-          userId,
-          email: `${userId}@sudan-quality.com`,
-          displayName: "Quality Member",
-          createdAt: new Date(),
-          progress: { completedUnits: [], certificates: [] }
-        });
-        await user.save();
+      const { data: user, error } = await req.supabase
+        .from('users')
+        .select('*')
+        .eq('userId', userId)
+        .single();
+
+      if (error || !user) {
+        if (userId) {
+          console.log(`✨ Auto-creating profile for: ${userId}`);
+          const { data: newUser, error: insertError } = await req.supabase
+            .from('users')
+            .insert({
+              userId,
+              email: `${userId}@sudan-quality.com`,
+              displayName: "Quality Member",
+              createdAt: new Date().toISOString(),
+              progress: { completedUnits: [], certificates: [] }
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('❌ Create user error:', insertError);
+            return res.status(500).json({ error: insertError.message });
+          }
+          return res.json(newUser);
+        }
+        return res.status(404).json({ error: "User not found" });
       }
-      
-      if (!user) return res.status(404).json({ error: "User not found after creation attempt" });
+
       res.json(user);
     }
   } catch (error) {
@@ -66,23 +80,50 @@ const syncUserStats = async (req, res) => {
         if (progress.totalScore !== undefined) updateData['progress.totalScore'] = progress.totalScore;
         if (progress.level !== undefined) updateData['progress.level'] = progress.level;
       }
-      updateData.lastLogin = new Date();
+      updateData.lastLogin = new Date().toISOString();
 
-      // البحث عن المستخدم وتحديثه (تفعيل upsert لإنشاء المستخدم إذا لم يوجد)
-      const user = await User.findOneAndUpdate(
-        { userId },
-        { 
-          $set: updateData,
-          $setOnInsert: {
+      // Check if user exists
+      const { data: existingUser } = await req.supabase
+        .from('users')
+        .select('userId')
+        .eq('userId', userId)
+        .single();
+
+      if (existingUser) {
+        // Update existing user
+        const { data: user, error } = await req.supabase
+          .from('users')
+          .update(updateData)
+          .eq('userId', userId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Update user error:', error);
+          return res.status(500).json({ error: error.message });
+        }
+        console.log(`✅ User sync successful for: ${userId}`);
+        res.json({ success: true, user });
+      } else {
+        // Create new user
+        const { data: user, error } = await req.supabase
+          .from('users')
+          .insert({
+            userId,
             email: `${userId}@sudan-quality.com`,
-            displayName: "Quality Member"
-          }
-        },
-        { new: true, upsert: true } // Changed upsert to true to fix 404/500 loop
-      );
-      
-      console.log(`✅ User sync successful for: ${userId}`);
-      res.json({ success: true, user });
+            displayName: "Quality Member",
+            ...updateData
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Create user error:', error);
+          return res.status(500).json({ error: error.message });
+        }
+        console.log(`✅ User sync successful for: ${userId}`);
+        res.json({ success: true, user });
+      }
     }
   } catch (error) {
     console.error("❌ Sync stats fatal error:", error);
@@ -103,10 +144,26 @@ const getCertificates = async (req, res) => {
         completedCount: user.progress?.completedUnits?.length || 0 
       });
     } else {
-      const user = await User.findOne({ userId });
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      const certificates = await Certificate.find({ userId, status: 'active' });
-      res.json({ certificates: certificates || [], completedCount: certificates.length });
+      const { data: user, error: userError } = await req.supabase
+        .from('users')
+        .select('*')
+        .eq('userId', userId)
+        .single();
+
+      if (userError || !user) return res.status(404).json({ error: 'User not found' });
+
+      const { data: certificates, error: certError } = await req.supabase
+        .from('certificates')
+        .select('*')
+        .eq('userId', userId)
+        .eq('status', 'active');
+
+      if (certError) {
+        console.error('❌ Get certificates error:', certError);
+        return res.status(500).json({ error: certError.message });
+      }
+
+      res.json({ certificates: certificates || [], completedCount: certificates ? certificates.length : 0 });
     }
 
   } catch (err) {
@@ -128,11 +185,18 @@ const getLeaderboard = async (req, res) => {
         }));
       res.json(topUsers);
     } else {
-      const topUsers = await User.find({}, 'displayName xp level photoURL')
-        .sort({ xp: -1 })
+      const { data: topUsers, error } = await req.supabase
+        .from('users')
+        .select('displayName, xp, level, photoURL')
+        .order('xp', { ascending: false })
         .limit(10);
-      
-      res.json(topUsers);
+
+      if (error) {
+        console.error('❌ Leaderboard error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      res.json(topUsers || []);
     }
 
   } catch (error) {

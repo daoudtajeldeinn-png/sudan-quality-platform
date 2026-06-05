@@ -1,5 +1,4 @@
-const Question = require('../models/Question');
-const QuizHistory = require('../models/QuizHistory');
+const supabase = require('../config/supabase');
 
 // الحصول على أسئلة مع مراعاة التدوير لعدم التكرار
 exports.getRotatedQuestions = async (req, res) => {
@@ -21,22 +20,35 @@ exports.getRotatedQuestions = async (req, res) => {
       return exports.getRandomQuestions(req, res);
     }
 
-    const allQuestions = await Question.find({ unitId });
-    if (allQuestions.length === 0) {
+    const { data: allQuestions, error } = await req.supabase
+      .from('questions')
+      .select('*')
+      .eq('unitId', unitId);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!allQuestions || allQuestions.length === 0) {
       return res.status(404).json({ error: 'No questions found for this unit' });
     }
 
     // جلب سجل المستخدم للوحدة
-    let history = await QuizHistory.findOne({ userId, unitId });
-    if (!history) {
-      history = new QuizHistory({ userId, unitId, seenQuestions: [] });
-    }
+    const { data: history } = await req.supabase
+      .from('quiz_history')
+      .select('*')
+      .eq('userId', userId)
+      .eq('unitId', unitId)
+      .single();
 
-    let unseenQuestions = allQuestions.filter(q => !history.seenQuestions.includes(q._id.toString()));
+    let seenQuestions = history?.seenQuestions || [];
+
+    let unseenQuestions = allQuestions.filter(q => !seenQuestions.includes(q.id.toString()));
 
     if (unseenQuestions.length < count) {
       // إذا استُنفدت الأسئلة، نقوم بتصفير السجل وإتاحة كل الأسئلة مجدداً
-      history.seenQuestions = [];
+      seenQuestions = [];
       unseenQuestions = allQuestions.slice();
     }
 
@@ -44,17 +56,39 @@ exports.getRotatedQuestions = async (req, res) => {
     const selected = shuffled.slice(0, Math.min(count, allQuestions.length));
 
     // تحديث سجل الأسئلة المرئية
-    const selectedIds = selected.map(q => q._id.toString());
-    history.seenQuestions.push(...selectedIds);
-    history.lastReset = new Date();
-    await history.save();
+    const selectedIds = selected.map(q => q.id.toString());
+    const newSeenQuestions = [...seenQuestions, ...selectedIds];
+
+    if (history) {
+      await req.supabase
+        .from('quiz_history')
+        .update({ seenQuestions: newSeenQuestions, lastReset: new Date().toISOString() })
+        .eq('userId', userId)
+        .eq('unitId', unitId);
+    } else {
+      await req.supabase
+        .from('quiz_history')
+        .insert({ userId, unitId, seenQuestions: newSeenQuestions, lastReset: new Date().toISOString() });
+    }
 
     const formattedQuestions = [];
     selected.forEach(q => {
-      const question = q.toObject();
+      const question = { ...q };
       delete question.correctAnswer;
       delete question.correctAnswers;
-      formattedQuestions.push(question);
+      
+      // Transform to match frontend expected format
+      formattedQuestions.push({
+        id: q.id,
+        unitId: q.unitId,
+        questionText: {
+          ar: q.question,
+          en: q.question
+        },
+        options: q.options,
+        type: q.type === 'multiple' ? 'mcq' : q.type,
+        explanation: q.explanation
+      });
     });
 
     res.status(200).json(formattedQuestions);
@@ -78,9 +112,17 @@ exports.getRandomQuestions = async (req, res) => {
     }
 
     // الحصول على جميع الأسئلة للوحدة
-    const allQuestions = await Question.find({ unitId });
+    const { data: allQuestions, error } = await req.supabase
+      .from('questions')
+      .select('*')
+      .eq('unitId', unitId);
 
-    if (allQuestions.length === 0) {
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!allQuestions || allQuestions.length === 0) {
       return res.status(404).json({ error: 'No questions found for this unit' });
     }
 
@@ -90,11 +132,23 @@ exports.getRandomQuestions = async (req, res) => {
     const selected = shuffled.slice(0, Math.min(count, allQuestions.length));
 
     selected.forEach(q => {
-      const question = q.toObject();
+      const question = { ...q };
       // إزالة معلومات الإجابة الصحيحة من الاستجابة لضمان النزاهة
       delete question.correctAnswer;
       delete question.correctAnswers;
-      randomQuestions.push(question);
+      
+      // Transform to match frontend expected format
+      randomQuestions.push({
+        id: q.id,
+        unitId: q.unitId,
+        questionText: {
+          ar: q.question,
+          en: q.question
+        },
+        options: q.options,
+        type: q.type === 'multiple' ? 'mcq' : q.type,
+        explanation: q.explanation
+      });
     });
 
     res.status(200).json(randomQuestions);
@@ -122,9 +176,13 @@ exports.checkAnswer = async (req, res) => {
       });
     }
 
-    const question = await Question.findById(questionId);
+    const { data: question, error } = await req.supabase
+      .from('questions')
+      .select('*')
+      .eq('id', questionId)
+      .single();
 
-    if (!question) {
+    if (error || !question) {
       return res.status(404).json({ error: 'Question not found' });
     }
 

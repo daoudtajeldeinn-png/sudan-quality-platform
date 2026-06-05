@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const supabase = require('../config/supabase');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -56,24 +56,29 @@ const registerUser = async (req, res) => {
       });
     }
     
-    // Normal Mongoose flow for production
+    // Normal Supabase flow for production
     const { email, displayName = email.split('@')[0], password, userId } = req.body;
-    const isGoogleUser = userId && !password; 
-    
+    const isGoogleUser = userId && !password;
+
     if (!isGoogleUser && (!password || password.length < 6)) {
       return res.status(400).json({ error: "كلمة المرور مطلوبة (6 أحرف على الأقل)" });
     }
 
     // التحقق من وجود البريد الإلكتروني
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const { data: existingUser, error: existingError } = await req.supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (existingUser && !existingError) {
       // إذا كان مستخدم جوجل، نسمح بتسجيل الدخول مباشرة والحصول على التوكن
       const token = jwt.sign(
         { userId: existingUser.userId, email: existingUser.email, authProvider: existingUser.authProvider },
         process.env.JWT_SECRET || "sudan_quality_secret",
         { expiresIn: "24h" }
       );
-      
+
       return res.status(200).json({
         success: true,
         token,
@@ -85,50 +90,56 @@ const registerUser = async (req, res) => {
         }
       });
     }
+
     let hashedPassword = null;
     if (!isGoogleUser) {
       // Local users only: hash password
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(password, salt);
     }
-    
-    // إنشاء مستخدم جديد
-    const user = new User({
-      userId: userId || `user_${Date.now()}`,
-      email,
-      authProvider: isGoogleUser ? 'google' : 'local',
 
-      displayName,
-      photoURL: req.body.photoURL || null,
-      password: hashedPassword,
-      createdAt: new Date(),
-      lastLogin: new Date(),
-      xp: 0,
-      level: 1,
-      badges: [],
-      stats: {
-        totalQuizzes: 0,
-        perfectScores: 0,
-        lecturesCompleted: 0
-      },
-      progress: {
-        completedUnits: [],
-        currentUnit: null,
-        totalScore: 0,
-        certificates: []
-      }
-    });
-    
-    await user.save();
-    
+    // إنشاء مستخدم جديد
+    const { data: user, error: insertError } = await req.supabase
+      .from('users')
+      .insert({
+        userId: userId || `user_${Date.now()}`,
+        email,
+        authProvider: isGoogleUser ? 'google' : 'local',
+        displayName,
+        photoURL: req.body.photoURL || null,
+        password: hashedPassword,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        xp: 0,
+        level: 1,
+        badges: [],
+        stats: {
+          totalQuizzes: 0,
+          perfectScores: 0,
+          lecturesCompleted: 0
+        },
+        progress: {
+          completedUnits: [],
+          currentUnit: null,
+          totalScore: 0,
+          certificates: []
+        }
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('❌ Create user error:', insertError);
+      return res.status(500).json({ error: insertError.message });
+    }
+
     // إنشاء JWT token لكل المستخدمين
     const token = jwt.sign(
       { userId: user.userId, email: user.email, authProvider: user.authProvider },
-
       process.env.JWT_SECRET || "sudan_quality_secret",
       { expiresIn: "24h" }
     );
-    
+
     res.status(201).json({
       success: true,
       token,
@@ -165,8 +176,13 @@ const getUser = async (req, res) => {
         photoURL: user.photoURL
       });
     } else {
-      const user = await User.findOne({ userId });
-      if (!user) {
+      const { data: user, error } = await req.supabase
+        .from('users')
+        .select('*')
+        .eq('userId', userId)
+        .single();
+
+      if (error || !user) {
         return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       res.json({
