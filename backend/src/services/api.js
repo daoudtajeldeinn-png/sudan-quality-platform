@@ -152,6 +152,22 @@ export const apiService = {
     }
   },
 
+  // Mark a unit as completed
+  markUnitCompleted: async (userId, unitId, score, totalQuestions) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/user/complete/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unitId, score, totalQuestions }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Mark unit completed error:', error);
+      throw error;
+    }
+  },
+
   // Get user certificates
   getUserCertificates: async (userId, authToken = null) => {
     try {

@@ -161,7 +161,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
       // Server-side validation
       try {
         setIsVerifying(true);
-        const result = await apiService.checkAnswer(q._id, answer);
+        const result = await apiService.checkAnswer(q._id, answer, q.shuffledIndices);
         isCorrect = result.isCorrect;
         explanationObj = result.explanation || { ar: '', en: '' };
       } catch (error) {

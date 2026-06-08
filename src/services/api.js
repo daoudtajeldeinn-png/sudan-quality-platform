@@ -1,7 +1,7 @@
-export const APP_VERSION = '1.0.8';
+export const APP_VERSION = '1.0.10';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
-  ? 'https://backend-kappa-eight-30.vercel.app/api'
+  ? 'https://sudan-quality-platform.vercel.app/api'
   : 'http://localhost:5000/api');
 
 // Helper for timeout-aware fetch
@@ -81,12 +81,12 @@ export const apiService = {
   },
 
   // التحقق من إجابة السؤال عبر السيرفر
-  checkAnswer: async (questionId, userAnswer) => {
+  checkAnswer: async (questionId, userAnswer, shuffledIndices = null) => {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/questions/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId, userAnswer }),
+        body: JSON.stringify({ questionId, userAnswer, shuffledIndices }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();

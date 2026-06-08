@@ -1,7 +1,7 @@
 // Sudan Quality Platform — Service Worker v4
 // Strategy: Network-first for app shell, Cache-first for static assets
 
-const CACHE_VERSION = 'sqp-v4';
+const CACHE_VERSION = 'sqp-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 

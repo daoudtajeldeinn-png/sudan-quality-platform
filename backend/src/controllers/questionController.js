@@ -167,7 +167,7 @@ exports.getRandomQuestions = async (req, res) => {
 // التحقق من إجابة السؤال
 exports.checkAnswer = async (req, res) => {
   try {
-    const { questionId, userAnswer } = req.body;
+    const { questionId, userAnswer, shuffledIndices } = req.body;
 
     // Check for Demo Mode
     if (req.isDemoMode) {
@@ -197,6 +197,10 @@ exports.checkAnswer = async (req, res) => {
     if (question.type === 'fill') {
       const normalizedUser = String(userAnswer || '').trim().toLowerCase();
       isCorrect = (question.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+    } else if (question.type === 'multiple' && shuffledIndices && Array.isArray(shuffledIndices)) {
+      // Account for shuffled indices in MCQ questions
+      const originalIdx = shuffledIndices[userAnswer];
+      isCorrect = String(originalIdx) === String(question.correctAnswer);
     } else {
       isCorrect = question.correctAnswer === userAnswer;
     }
