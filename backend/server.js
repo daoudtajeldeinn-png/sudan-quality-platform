@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: '*',
+  origin: ['https://decisive-octane-472816-d3.web.app', 'https://decisive-octane-472816-d3.firebaseapp.com', '*'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['X-Requested-With', 'Content-Type', 'Authorization']
