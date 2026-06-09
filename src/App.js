@@ -8,7 +8,7 @@ function App() {
   const [showDashboard, setShowDashboard] = useState(false);
 
   // Replace this with your Vercel URL
-  const API_BASE_URL = 'https://sudan-quality-platform.vercel.app';
+  const API_BASE_URL = 'https://sudan-quality-platform-5aekyyazn-daoudtajeldeinn-pngs-projects.vercel.app';
 
   useEffect(() => {
     // محاولة تحميل Firebase

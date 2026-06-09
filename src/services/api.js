@@ -1,7 +1,7 @@
 export const APP_VERSION = '1.0.10';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
-  ? 'https://sudan-quality-platform.vercel.app/api'
+  ? 'https://sudan-quality-platform-5aekyyazn-daoudtajeldeinn-pngs-projects.vercel.app/api'
   : 'http://localhost:5000/api');
 
 // Helper for timeout-aware fetch
