@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
-  ? 'https://sudan-quality-platform-5aekyyazn-daoudtajeldeinn-pngs-projects.vercel.app/api'
+  ? 'https://backend-lime-gamma-gf9yal9mmd.vercel.app/api'
   : 'http://localhost:5000/api');
 
 // Helper for timeout-aware fetch
