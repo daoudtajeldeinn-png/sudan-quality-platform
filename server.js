@@ -45,8 +45,8 @@ const checkSupabaseConnection = async () => {
         isDemoMode = false;
         console.log('✅ Supabase connected successfully');
     } catch (err) {
-        console.error('❌ Supabase Connection Error:', err.message);
-        console.error('❌ Full error:', JSON.stringify(err, null, 2));
+        console.error('❌ Supabase Connection Error:', err ? err.message : err);
+        console.error('❌ Full error:', err);
         console.log('⚠️ SWITCHING TO DEMO MODE');
         isDemoMode = true;
         isSupabaseConnected = false;
@@ -54,11 +54,20 @@ const checkSupabaseConnection = async () => {
 };
 
 app.use(async (req, res, next) => {
-    await checkSupabaseConnection();
-    req.isDemoMode = isDemoMode;
-    req.demoDB = DemoDB;
-    req.supabase = supabase;
-    next();
+    try {
+        await checkSupabaseConnection();
+        req.isDemoMode = isDemoMode;
+        req.demoDB = DemoDB;
+        req.supabase = supabase;
+        next();
+    } catch (err) {
+        console.error('Error in Supabase connection middleware:', err);
+        // Fall back to demo mode instead of failing the request
+        req.isDemoMode = true;
+        req.demoDB = DemoDB;
+        req.supabase = supabase;
+        next();
+    }
 });
 
 // ─── ROUTES ─────────────────────────────────────────────────────────────────
