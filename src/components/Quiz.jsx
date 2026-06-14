@@ -21,6 +21,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [currentExplanation, setCurrentExplanation] = useState({ ar: '', en: '' });
   const [certName, setCertName] = useState(user?.displayName || '');
+  const [certLang, setCertLang] = useState('bilingual');
   const [isGenerating, setIsGenerating] = useState(false);
   // Track which answers were verified as correct during the quiz
   const [answerResults, setAnswerResults] = useState([]);
@@ -235,8 +236,9 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
     updateStats({ totalQuizzes: stats.totalQuizzes + 1 });
 
     // Mark unit as completed if score >= 90
-    if (finalScore >= 90 && userId) {
-      apiService.markUnitCompleted(userId, unitId, finalScore, questions.length)
+    const currentUserId = user ? (user.uid || user.userId || user.email) : null;
+    if (finalScore >= 90 && currentUserId) {
+      apiService.markUnitCompleted(currentUserId, unitId, finalScore, questions.length)
         .then(response => {
           console.log('[Quiz] Unit marked as completed:', response);
         })
@@ -558,6 +560,27 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
                   fontSize: '1.1rem'
                 }}
               />
+
+              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.9rem', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  {language === 'ar' ? 'لغة الشهادة:' : 'Certificate Language:'}
+                </p>
+                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', fontSize: '1rem', color: 'var(--text-primary)' }}>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="ar" checked={certLang === 'ar'} onChange={(e) => setCertLang(e.target.value)} />
+                    العربية
+                  </label>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="en" checked={certLang === 'en'} onChange={(e) => setCertLang(e.target.value)} />
+                    English
+                  </label>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="bilingual" checked={certLang === 'bilingual'} onChange={(e) => setCertLang(e.target.value)} />
+                    {language === 'ar' ? 'ثنائية اللغة' : 'Bilingual'}
+                  </label>
+                </div>
+              </div>
+
               <button 
                 onClick={generatePDF} 
                 disabled={isGenerating || !certName.trim()}
@@ -606,7 +629,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
         </div>
 
         {/* Hidden Certificate Template for PDF Rendering */}
-        <div id="certificate-template" className={`certificate-container ${language === 'ar' ? 'rtl-cert' : ''}`} style={{ 
+        <div id="certificate-template" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{ 
           position: 'absolute', // Absolute instead of Fixed to avoid viewport clipping
           top: '-9999px', // Far off-screen
           left: '0',
@@ -619,25 +642,37 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
           <div className="certificate-content">
             <img src={pharmaLogo} className="cert-logo" alt="logo" />
             <h1 className="cert-header">
-              {language === 'ar' ? 'شهادة إتمام' : 'Certificate of Completion'}
+              {certLang === 'bilingual' 
+                ? 'شهادة إتمام / Certificate of Completion'
+                : certLang === 'ar' ? 'شهادة إتمام' : 'Certificate of Completion'}
             </h1>
             <p className="cert-text">
-              {language === 'ar' ? 'يُشهد المجلس القومي للأدوية والسموم بأن:' : 'This is to certify that:'}
+              {certLang === 'bilingual'
+                ? 'تشهد منصة السودان للجودة بأن: / Sudan Quality Platform certifies that:'
+                : certLang === 'ar' ? 'تشهد منصة السودان للجودة بأن:' : 'Sudan Quality Platform certifies that:'}
             </p>
             <div className="cert-name">{certName}</div>
             <p className="cert-text" style={{ marginTop: '20px' }}>
-              {language === 'ar' ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في:' : 'has successfully completed the professional training in:'}
+              {certLang === 'bilingual'
+                ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في: / has successfully completed the professional training in:'
+                : certLang === 'ar' ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في:' : 'has successfully completed the professional training in:'}
             </p>
             <div className="cert-track">
-              {unitTitle[language]}
+              {certLang === 'bilingual' 
+                ? `${unitTitle.ar || unitTitle} / ${unitTitle.en || unitTitle}`
+                : unitTitle[certLang] || unitTitle.en || unitTitle.ar || unitTitle}
             </div>
             <div className="cert-details">
-              <div className={`cert-detail-item ${language === 'ar' ? 'rtl' : ''}`}>
-                <div className="cert-label">{language === 'ar' ? 'التاريخ' : 'Date'}</div>
-                <div className="cert-value">{new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</div>
+              <div className={`cert-detail-item ${certLang === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">
+                  {certLang === 'bilingual' ? 'التاريخ / Date' : certLang === 'ar' ? 'التاريخ' : 'Date'}
+                </div>
+                <div className="cert-value">{new Date().toLocaleDateString(certLang === 'en' ? 'en-US' : 'ar-EG')}</div>
               </div>
-              <div className={`cert-detail-item ${language === 'ar' ? 'rtl' : ''}`}>
-                <div className="cert-label">{language === 'ar' ? 'النتيجة' : 'Final Score'}</div>
+              <div className={`cert-detail-item ${certLang === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">
+                  {certLang === 'bilingual' ? 'النتيجة / Final Score' : certLang === 'ar' ? 'النتيجة' : 'Final Score'}
+                </div>
                 <div className="cert-value">%{score}</div>
               </div>
             </div>

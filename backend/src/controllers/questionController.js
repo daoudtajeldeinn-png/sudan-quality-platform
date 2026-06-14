@@ -176,7 +176,7 @@ exports.checkAnswer = async (req, res) => {
         return res.status(404).json({ error: result.message });
       }
       return res.status(200).json({
-        isCorrect: result.correct,
+        isCorrect: result.isCorrect || result.correct,
         correctAnswer: result.correctAnswer,
         explanation: result.explanation || 'No explanation available in demo mode'
       });

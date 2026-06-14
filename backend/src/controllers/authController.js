@@ -7,7 +7,11 @@ const registerUser = async (req, res) => {
   try {
     // Demo mode bypass using in-memory DB
     if (req.isDemoMode) {
-      const { email, displayName = email.split('@')[0], password, userId, photoURL } = req.body;
+      if (!req.body || !req.body.email) {
+        return res.status(400).json({ error: "البريد الإلكتروني مطلوب" });
+      }
+      const { email, password, userId, photoURL } = req.body;
+      const displayName = req.body.displayName || email.split('@')[0];
       
       // Check existing in demo DB
       const existingUser = await req.demoDB.findUserByEmail(email);
@@ -57,7 +61,11 @@ const registerUser = async (req, res) => {
     }
     
     // Normal Supabase flow for production
-    const { email, displayName = email.split('@')[0], password, userId } = req.body;
+    if (!req.body || !req.body.email) {
+      return res.status(400).json({ error: "البريد الإلكتروني مطلوب" });
+    }
+    const { email, password, userId } = req.body;
+    const displayName = req.body.displayName || email.split('@')[0];
     const isGoogleUser = userId && !password;
 
     if (!isGoogleUser && (!password || password.length < 6)) {

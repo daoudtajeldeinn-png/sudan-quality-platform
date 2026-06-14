@@ -72,7 +72,12 @@ export const apiService = {
       if (params.toString()) url += `?${params.toString()}`;
 
       const response = await fetchWithTimeout(url);
-      if (!response.ok) throw new Error('Backend unreachable');
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('No questions found in database for this unit');
+        }
+        throw new Error(`Backend error: ${response.status}`);
+      }
       return await response.json();
     } catch (error) {
       console.warn('Falling back to Demo Mode data:', error);
