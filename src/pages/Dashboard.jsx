@@ -23,7 +23,7 @@ const TRACKS = [
   { id: 'validation', titleKey: 'track_validation', units: ['validation-qualification', 'adv-validation'], icon: '✅', color: '#20c997' },
   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
-  { id: 'specialized', title: 'المسارات التخصصية المتقدمة', titleKey: 'track_specialized', units: ['cleaning-validation'], icon: '🧪', color: '#6610f2' },
+  { id: 'advanced_validation', titleKey: 'track_advanced_validation', units: ['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'], icon: '🧪', color: '#6610f2' },
 ];
 
 // Unit icons mapping
@@ -48,6 +48,10 @@ const UNIT_ICONS = {
   'adv-qrm': { icon: '⚠️+', color: '#ec4899', title: { ar: 'تطبيقات QRM', en: 'Adv. QRM' } },
   'adv-gdp': { icon: '🚚+', color: '#f97316', title: { ar: 'سلسلة التبريد', en: 'Adv. GDP' } },
   'cleaning-validation': { icon: '🧼', color: '#17a2b8', title: { ar: 'التحقق من التنظيف', en: 'Cleaning Validation' } },
+  'process-validation': { icon: '🔄', color: '#10b981', title: { ar: 'التحقق من العمليات', en: 'Process Validation' } },
+  'hold-time-stability': { icon: '⏳', color: '#f59e0b', title: { ar: 'ثبات فترة الاستبقاء', en: 'Hold Time Stability' } },
+  'method-validation': { icon: '🧪', color: '#3b82f6', title: { ar: 'التحقق من طرق التحليل', en: 'Analytical Method Validation' } },
+  'equipment-qualification': { icon: '⚙️', color: '#8b5cf6', title: { ar: 'تأهيل الأجهزة والمرافق', en: 'Equipment Qualification' } },
 };
 
 const Dashboard = ({ user, onLogout, authToken }) => {
@@ -72,7 +76,8 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
     'batch-records': 0, 'nmpb-reg': 0,
     'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
-    'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0
+    'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
+    'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0
   });
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
@@ -171,6 +176,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                     { id: 'adv-glp', title: t('adv_glp') }, { id: 'adv-iso-17025', title: t('adv_iso_17025') },
                     { id: 'adv-validation', title: t('adv_validation') }, { id: 'adv-qrm', title: t('adv_qrm') },
                     { id: 'adv-gdp', title: t('adv_gdp') }, { id: 'cleaning-validation', title: t('cleaningValidation') },
+                    { id: 'process-validation', title: t('processValidation') },
+                    { id: 'hold-time-stability', title: t('holdTimeStability') },
+                    { id: 'method-validation', title: t('methodValidation') },
+                    { id: 'equipment-qualification', title: t('equipmentQualification') },
                   ].find(u => u.id === unitId);
 
                   if (!unitDef) continue;
@@ -288,6 +297,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     { id: 'adv-qrm', title: t('adv_qrm'), subtitle: t('unit5'), color: '#db2777' },
     { id: 'adv-gdp', title: t('adv_gdp'), subtitle: t('unit6'), color: '#ea580c' },
     { id: 'cleaning-validation', title: t('cleaningValidation'), subtitle: t('unit_spec'), color: '#17a2b8' },
+    { id: 'process-validation', title: t('processValidation'), subtitle: t('unit_spec'), color: '#10b981' },
+    { id: 'hold-time-stability', title: t('holdTimeStability'), subtitle: t('unit_spec'), color: '#f59e0b' },
+    { id: 'method-validation', title: t('methodValidation'), subtitle: t('unit_spec'), color: '#3b82f6' },
+    { id: 'equipment-qualification', title: t('equipmentQualification'), subtitle: t('unit_spec'), color: '#8b5cf6' },
   ];
 
   const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
@@ -744,7 +757,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           unitId={currentUnit} 
           onQuizComplete={handleQuizComplete} 
           user={user} 
-          count={currentUnit === 'cleaning-validation' ? 15 : 10}
+          count={['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'].includes(currentUnit) ? 15 : 10}
         />
       </div>
     );
