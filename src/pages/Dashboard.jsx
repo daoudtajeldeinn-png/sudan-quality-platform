@@ -384,6 +384,20 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         })();
       }
 
+      if (isNewSuccess) {
+        if (unitId === 'cleaning-validation') {
+          awardBadge('cleaning-expert', 'Cleaning Expert 🧼', '🧼');
+        } else if (unitId === 'equipment-qualification') {
+          awardBadge('qualification-master', 'Qualification Master ⚙️', '⚙️');
+        } else if (unitId === 'method-validation') {
+          awardBadge('analytical-expert', 'Analytical Expert 🧪', '🧪');
+        } else if (unitId === 'process-validation' || unitId === 'hold-time-stability') {
+          if (newProgress['process-validation'] >= 90 && newProgress['hold-time-stability'] >= 90) {
+            awardBadge('validation-expert', 'Validation Expert 🔄', '🔄');
+          }
+        }
+      }
+
       const allOthersPassed = allTrackUnits.filter(id => id !== unitId).every(id => (newProgress[id] || 0) >= 90);
 
       if (isNewSuccess && allOthersPassed) newProgress[`completionDate_academy`] = new Date().toISOString();
