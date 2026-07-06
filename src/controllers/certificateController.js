@@ -86,14 +86,20 @@ exports.awardCertificateSmart = async (req, res) => {
     const level = user.progress?.level || user.level || 1;
     let cert;
 
-    // Check for duplicate cert for this unit
-    const { data: existingCert } = await req.supabase
+    // Check for duplicate cert for this unit.
+    // IMPORTANT: certificates created from bundled/multi-unit awards may store unitId as NULL
+    // while still listing the real units inside includedUnits.
+    const { data: existingCerts } = await req.supabase
       .from('certificates')
       .select('*')
       .eq('userId', userId)
-      .eq('unitId', unitId)
-      .eq('status', 'active')
-      .single();
+      .eq('status', 'active');
+
+    const existingCert = existingCerts?.find(c => {
+      if (c.unitId && c.unitId === unitId) return true;
+      return Array.isArray(c.includedUnits) && c.includedUnits.some(u => u?.unitId === unitId);
+    });
+
 
     if (existingCert) {
       console.log(`[Award] Cert already exists for ${userId}/${unitId}, skipping`);
