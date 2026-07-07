@@ -603,227 +603,55 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         zIndex: 2000, padding: '40px', overflowY: 'auto'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
-          <div className={certLang === 'ar' ? 'rtl-cert' : ''} style={{
-            position: 'relative',
-            direction: certLang === 'ar' ? 'rtl' : 'ltr',
+          <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
+            backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
+            padding: '40px 60px', borderRadius: '4px', position: 'relative',
+            border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
+            textAlign: 'center',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
+            display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            fontFamily: certLang === 'ar' ? "'IBM Plex Sans Arabic', 'Amiri', serif" : "'Inter', 'IBM Plex Sans', sans-serif"
           }}>
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              width: '600px', height: '600px', backgroundImage: `url(${LOGO_PATH})`,
+              backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+              opacity: 0.03, pointerEvents: 'none', zIndex: 1
+            }}></div>
+
             <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
               {/* Header */}
-              {viewType !== 'cert' && (
-                <div style={{ 
-                  position: 'absolute', top: '-10px', 
-                  right: certLang === 'ar' ? '-20px' : 'auto', 
-                  left: certLang === 'en' ? '-20px' : 'auto', 
-                  display: 'flex', 
-                  flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
-                  alignItems: 'center', gap: '20px', zIndex: 100 
-                }}>
-                  <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.8rem', lineHeight: '1.2' }}>{current.authority}</div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
-                  </div>
-                  <img src={LOGO_PATH} alt="Logo" style={{ width: '100px', height: '100px' }} />
+              <div style={{ 
+                position: 'absolute', top: '-10px', 
+                right: certLang === 'ar' ? '-20px' : 'auto', 
+                left: certLang === 'en' ? '-20px' : 'auto', 
+                display: 'flex', 
+                flexDirection: certLang === 'ar' ? 'row' : 'row-reverse',
+                alignItems: 'center', gap: '20px', zIndex: 100 
+              }}>
+                <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--pharma-navy)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '1.8rem', lineHeight: '1.2' }}>{current.authority}</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--regulatory-amber)' }}>{current.subAuthority}</div>
                 </div>
-              )}
+                <img src={LOGO_PATH} alt="Logo" style={{ width: '100px', height: '100px' }} />
+              </div>
 
               {viewType === 'cert' ? (
-                <>
-                  <style>
-                    {`
-                      .cert-container-new {
-                        width: 297mm;
-                        height: 210mm;
-                        padding: 15mm;
-                        background-color: #fff;
-                        position: relative;
-                        box-sizing: border-box;
-                        background-image:
-                          linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
-                          url('https://www.transparenttextures.com/patterns/paper.png');
-                        border: 20px solid transparent;
-                        border-image: url('https://img.freepik.com/free-vector/golden-ornamental-frame-background_52683-30528.jpg') 100 round;
-                        font-family: 'Cairo', sans-serif;
-                      }
-
-                      .cert-inner-border {
-                        border: 2px solid #d4af37;
-                        height: 100%;
-                        width: 100%;
-                        box-sizing: border-box;
-                        padding: 20px;
-                        position: relative;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: space-between;
-                      }
-
-                      .cert-header {
-                        text-align: center;
-                      }
-
-                      .platform-name {
-                        font-size: 28px;
-                        font-weight: bold;
-                        color: #1a1a1a;
-                        margin: 0;
-                      }
-
-                      .board-name {
-                        font-size: 18px;
-                        color: #444;
-                        margin: 5px 0;
-                      }
-
-                      .main-title {
-                        font-family: 'Playfair Display', serif;
-                        font-size: 55px;
-                        color: #b8860b;
-                        text-transform: uppercase;
-                        margin: 15px 0;
-                        letter-spacing: 3px;
-                        font-weight: 700;
-                      }
-
-                      .certify-text {
-                        font-size: 20px;
-                        color: #555;
-                        margin: 10px 0;
-                      }
-
-                      .recipient-name {
-                        font-family: 'Playfair Display', serif;
-                        font-size: 50px;
-                        color: #8b6508;
-                        margin: 10px 0;
-                        font-weight: bold;
-                        border-bottom: 2px solid #d4af37;
-                        padding: 0 40px;
-                      }
-
-                      .description {
-                        font-size: 20px;
-                        color: #333;
-                        margin: 20px 0;
-                        line-height: 1.6;
-                        text-align: center;
-                        max-width: 85%;
-                      }
-
-                      .highlight {
-                        font-weight: bold;
-                        color: #000;
-                      }
-
-                      .cert-footer {
-                        width: 100%;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: flex-end;
-                        margin-top: 20px;
-                      }
-
-                      .qr-section {
-                        text-align: left;
-                        font-size: 11px;
-                        line-height: 1.4;
-                        color: #1a1a1a;
-                      }
-
-                      .signature-section {
-                        text-align: center;
-                        min-width: 250px;
-                      }
-
-                      .signature-line {
-                        border-top: 1px solid #000;
-                        margin-top: 5px;
-                        padding-top: 5px;
-                        color: #1a1a1a;
-                        font-weight: bold;
-                      }
-
-                      .signature-name {
-                        font-family: 'Amiri', serif;
-                        font-size: 20px;
-                        font-weight: bold;
-                        color: #1a1a1a;
-                      }
-
-                      .seal-container {
-                        position: absolute;
-                        bottom: 40px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                      }
-                    `}
-                  </style>
-
-                  <div className="cert-container-new" id="certificate-printable" style={{ direction: 'ltr' }}>
-                    <div className="cert-inner-border">
-                      <div className="cert-header">
-                        <h1 className="platform-name">Sudan Quality Platform</h1>
-                        <p className="board-name">Quality & Accreditation Board</p>
-                      </div>
-
-                      <div className="main-title">CERTIFICATE OF COMPLETION</div>
-
-                      <div className="certify-text">This is to certify that</div>
-
-                      <div className="recipient-name">
-                        {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
-                      </div>
-
-                      <div className="description">
-                        Has successfully completed the <br/>
-                        <span className="highlight">{unitName || 'Professional Pharmaceutical Training Program'}</span>
-                        <br/> unit and <br/>
-                        <span className="highlight">demonstrated professional proficiency.</span>
-                      </div>
-
-                      <div className="seal-container">
-                        <div style={{
-                          width: '100px',
-                          height: '100px',
-                          borderRadius: '50%',
-                          border: '4px double #d4af37',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#d4af37',
-                          fontWeight: 'bold',
-                          fontSize: '12px',
-                          textAlign: 'center',
-                          background: '#fff'
-                        }}>
-                          PHARMA-TECH<br/>SEAL
-                        </div>
-                      </div>
-
-                      <div className="cert-footer">
-                        <div className="qr-section" dir="ltr">
-                          <div style={{ marginBottom: '5px' }}>
-                            <QRCodeCanvas 
-                              value={`https://sudan-quality-frontend.vercel.app/verify/${user.uid || 'demo'}`} 
-                              size={70} 
-                              level="H" 
-                              includeMargin={false}
-                            />
-                          </div>
-                          <div style={{ fontWeight: 'bold' }}>CERTIFICATE VERIFICATION</div>
-                          <div>SCAN TO VALIDATE AUTHENTICITY</div>
-                          <div>ID: {user.uid?.substring(0, 8).toUpperCase() || 'BUPVJX89'}-{new Date(userProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}</div>
-                          <div>Date: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}</div>
-                        </div>
-
-                        <div className="signature-section">
-                          <div className="signature-name">د. داود تاج الدين أحمد عبد الكريم</div>
-                          <div className="signature-line">Pharma-Tech Solutions</div>
-                        </div>
-                      </div>
-                    </div>
+                <div style={{ marginTop: '130px' }}>
+                  <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+                    {current.title}
+                  </h1>
+                  <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>
+                  <div style={{ margin: '20px 0' }}>
+                    <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '600' }}>{current.intro}</p>
+                    <h2 style={{ fontSize: '3.6rem', color: 'var(--pharma-blue)', fontWeight: '700' }}>
+                      {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
+                    </h2>
                   </div>
-                </>
+                  <p style={{ fontSize: '1.3rem', margin: '20px auto', color: 'var(--text-primary)', lineHeight: '1.8', maxWidth: '850px', fontWeight: '500' }}>
+                    {current.desc}
+                  </p>
+                </div>
               ) : (
                 <div style={{ marginTop: '110px', textAlign: 'center' }}>
                   <h2 style={{ fontSize: '2.2rem', color: 'var(--pharma-navy)', marginBottom: '20px' }}>{current.transcriptTitle}</h2>
@@ -854,38 +682,36 @@ const Dashboard = ({ user, onLogout, authToken }) => {
               )}
 
               {/* Footer */}
-              {viewType !== 'cert' && (
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
-                  <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
-                    <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
-                      {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                      <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
-                        <QRCodeCanvas 
-                          value={`https://sudan-quality-frontend.vercel.app/verify/${user.uid}`} 
-                          size={65} 
-                          level="H" 
-                          includeMargin={false}
-                        />
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'left' }}>
-                        <div style={{ fontWeight: 'bold', color: 'var(--pharma-navy)' }}>CERTIFICATE VERIFICATION</div>
-                        <div>SCAN TO VALIDATE AUTHENTICITY</div>
-                        <div style={{ fontFamily: 'monospace', letterSpacing: '1px', marginTop: '3px' }}>
-                          ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date(userProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}
-                        </div>
-                      </div>
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+                <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
+                  <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
+                    {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
+                      <QRCodeCanvas 
+                        value={`https://sudan-quality-frontend.vercel.app/verify/${user.uid}`} 
+                        size={65} 
+                        level="H" 
+                        includeMargin={false}
+                      />
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
-                    <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
-                      {t('developerName')}
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'left' }}>
+                      <div style={{ fontWeight: 'bold', color: 'var(--pharma-navy)' }}>CERTIFICATE VERIFICATION</div>
+                      <div>SCAN TO VALIDATE AUTHENTICITY</div>
+                      <div style={{ fontFamily: 'monospace', letterSpacing: '1px', marginTop: '3px' }}>
+                        ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date(userProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
+                <div style={{ textAlign: 'center' }}>
+                  <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
+                  <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
+                    {t('developerName')}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
