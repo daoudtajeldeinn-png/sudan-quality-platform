@@ -197,12 +197,11 @@ exports.checkAnswer = async (req, res) => {
     if (question.type === 'fill') {
       const normalizedUser = String(userAnswer || '').trim().toLowerCase();
       isCorrect = (question.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
-    } else if ((question.type === 'multiple' || question.type === 'mcq') && shuffledIndices && Array.isArray(shuffledIndices)) {
-      // Account for shuffled indices in MCQ questions (accept both 'multiple' and 'mcq' types)
+    } else if (question.type === 'multiple' && shuffledIndices && Array.isArray(shuffledIndices)) {
+      // Account for shuffled indices in MCQ questions
       const originalIdx = shuffledIndices[userAnswer];
-      isCorrect = String(originalIdx) === String(question.correctAnswer);
+      isCorrect = Number(originalIdx) === Number(question.correctAnswer);
     } else {
-      // Normalize both sides to string to avoid type-mismatch between '0' and 0
       isCorrect = String(question.correctAnswer) === String(userAnswer);
     }
 

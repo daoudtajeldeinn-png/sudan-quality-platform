@@ -337,3 +337,4 @@ export const educationalContent = {
 ---
 
 *📌 للمساعد: ابدأ دائماً بالمرحلة 1-A (إكمال cleaning-validation) ثم 1-B (equipment-qualification). هذا الترتيب يضمن أقل استهلاك ممكن للحصة مع أعلى قيمة.*
+0
