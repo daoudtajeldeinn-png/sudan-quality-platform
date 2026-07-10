@@ -771,7 +771,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
           unitId={currentUnit} 
           onQuizComplete={handleQuizComplete} 
           user={user} 
-          count={['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'].includes(currentUnit) ? 15 : 10}
+          count={['cleaning-validation', 'process-validation', 'hold-time-stability', 'equipment-qualification'].includes(currentUnit) ? 15 : 10}
         />
       </div>
     );

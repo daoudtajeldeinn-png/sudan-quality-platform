@@ -156,7 +156,16 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
         isCorrect = answer === q.correctAnswer;
       } else if (q.type === 'fill') {
         const normalizedUser = String(answer || '').trim().toLowerCase();
-        isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+        // Support both correctAnswers (array) and correctAnswer (string/object) formats
+        let answers = q.correctAnswers || [];
+        if (answers.length === 0 && q.correctAnswer != null) {
+          if (typeof q.correctAnswer === 'object' && !Array.isArray(q.correctAnswer)) {
+            answers = Object.values(q.correctAnswer).filter(Boolean);
+          } else {
+            answers = [String(q.correctAnswer)];
+          }
+        }
+        isCorrect = answers.some(ans => String(ans).toLowerCase().trim() === normalizedUser);
       }
     } else {
       // Server-side validation
@@ -175,7 +184,16 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
           isCorrect = answer === q.correctAnswer;
         } else if (q.type === 'fill') {
           const normalizedUser = String(answer || '').trim().toLowerCase();
-          isCorrect = (q.correctAnswers || []).some(ans => ans.toLowerCase() === normalizedUser);
+          // Support both correctAnswers (array) and correctAnswer (string/object) formats
+          let answers = q.correctAnswers || [];
+          if (answers.length === 0 && q.correctAnswer != null) {
+            if (typeof q.correctAnswer === 'object' && !Array.isArray(q.correctAnswer)) {
+              answers = Object.values(q.correctAnswer).filter(Boolean);
+            } else {
+              answers = [String(q.correctAnswer)];
+            }
+          }
+          isCorrect = answers.some(ans => String(ans).toLowerCase().trim() === normalizedUser);
         }
       } finally {
         setIsVerifying(false);
