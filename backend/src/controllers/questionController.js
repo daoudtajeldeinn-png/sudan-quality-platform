@@ -200,9 +200,9 @@ exports.checkAnswer = async (req, res) => {
     } else if (question.type === 'multiple' && shuffledIndices && Array.isArray(shuffledIndices)) {
       // Account for shuffled indices in MCQ questions
       const originalIdx = shuffledIndices[userAnswer];
-      isCorrect = String(originalIdx) === String(question.correctAnswer);
+      isCorrect = Number(originalIdx) === Number(question.correctAnswer);
     } else {
-      isCorrect = question.correctAnswer === userAnswer;
+      isCorrect = String(question.correctAnswer) === String(userAnswer);
     }
 
     res.status(200).json({
