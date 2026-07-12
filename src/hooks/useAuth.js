@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../firebase/config';
-import { onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { apiService } from '../services/api';
 
 export const useAuth = () => {
@@ -10,6 +10,17 @@ export const useAuth = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Handle redirect result on mobile after returning from Google
+    getRedirectResult(auth).then(result => {
+      if (result?.user) {
+        // user will be picked up by onAuthStateChanged below
+      }
+    }).catch(err => {
+      if (err.code !== 'auth/no-redirect-operation') {
+        setError(err.message);
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         // ✅ Show user IMMEDIATELY — don't wait for backend
@@ -40,15 +51,24 @@ export const useAuth = () => {
     return unsubscribe;
   }, []);
 
+  const isMobile = () => /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const loginWithGoogle = async () => {
     setLoading(true);
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      const result = await signInWithPopup(auth, provider);
-      // Token handled in onAuthStateChanged
-      return result.user;
+
+      if (isMobile()) {
+        // Redirect flow for mobile — page will reload after Google auth
+        await signInWithRedirect(auth, provider);
+        // Nothing after this runs on mobile (page navigates away)
+      } else {
+        const result = await signInWithPopup(auth, provider);
+        setLoading(false);
+        return result.user;
+      }
     } catch (err) {
       setError(err.message);
       setLoading(false);
