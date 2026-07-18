@@ -12,12 +12,10 @@ export const useAuth = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // ✅ Show user IMMEDIATELY — don't wait for backend
         setUser(currentUser);
         setLoading(false);
         setError(null);
 
-        // Sync with backend in background (non-blocking)
         apiService.registerUser({
           userId: currentUser.uid,
           email: currentUser.email,
@@ -27,7 +25,7 @@ export const useAuth = () => {
           setAuthToken(tokenData.token || null);
         }).catch(err => {
           console.warn('Backend sync (non-critical):', err.message);
-          setAuthToken(null); // App still works without token
+          setAuthToken(null);
         });
       } else {
         setUser(null);
@@ -47,7 +45,6 @@ export const useAuth = () => {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
-      // Token handled in onAuthStateChanged
       return result.user;
     } catch (err) {
       setError(err.message);

@@ -61,7 +61,7 @@ app.use('/api/certificates', certificateRoutes);
 app.get('/', (req, res) => {
   res.json({
     name: 'منصة السودان للجودة — Backend API',
-    version: '1.0.8',
+    version: '1.0.9',
     status: 'running',
     mode: isDemoMode ? 'demo' : 'production',
     endpoints: [
