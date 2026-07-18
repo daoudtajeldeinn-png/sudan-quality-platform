@@ -10,6 +10,7 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
+import goldSeal from '../assets/gold_seal.png';
 import { QRCodeCanvas } from 'qrcode.react';
 import apiService from '../services/api';
 import '../styles/CertificateStyles.css';
@@ -343,13 +344,14 @@ const Dashboard = ({ user, onLogout, authToken }) => {
     setUserProgress(prev => {
       console.log('[QuizComplete] Previous progress:', prev);
       console.log('[QuizComplete] Previous score for unit', unitId, ':', prev[unitId]);
-      const isNewSuccess = score >= 90 && (!prev[unitId] || prev[unitId] < 90);
+      const passingThreshold = unitId === "adv-iso-17025" ? 80 : 90;
+      const isNewSuccess = score >= passingThreshold && (!prev[unitId] || prev[unitId] < passingThreshold);
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
       
       console.log('[QuizComplete] Updated unitId:', unitId, 'New score for unit:', newProgress[unitId]);
       console.log('[QuizComplete] Full new progress:', JSON.stringify(newProgress));
       
-      if (score >= 90 && user?.uid) {
+      if (score >= (unitId === "adv-iso-17025" ? 80 : 90) && user?.uid) {
         (async () => {
           try {
             // Use UNIT_ICONS for unitName to get proper English title
@@ -460,7 +462,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
   );
 
   const MicroBadge = ({ unitId, score }) => {
-    const isUnlocked = score >= 90;
+    const isUnlocked = score >= (unitId === "adv-iso-17025" ? 80 : 90);
     return (
       <div style={{
         width: '80px', height: '80px', borderRadius: '50%',
@@ -572,6 +574,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'CERTIFICATE OF COMPLETION',
         transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
         intro: 'This is to certify that',
+        issueDate: certData ? new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
         desc: certData ? `Has successfully completed the ${unitName} unit and demonstrated professional proficiency.` : 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
         date: 'Date',
         name: 'Ahmed Daoud Tajeldeinn',
@@ -585,6 +588,7 @@ const Dashboard = ({ user, onLogout, authToken }) => {
         title: 'شهادة إتمام تدريب',
         transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
         intro: 'نشهد بأن المتدرب/ـة',
+        issueDate: certData ? new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('ar-EG') : new Date().toLocaleDateString('ar-EG'),
         desc: certData ? `قد أكمل بنجاح وحدة ${unitName} وأظهر كفاءة احترافية متميزة.` : 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
         date: 'التاريخ',
         name: 'أحمد داؤود تاجر الدين',
@@ -681,8 +685,10 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                 </div>
               )}
 
+              {/* Issue Date */}
+              <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--pharma-navy)', fontWeight: '600', margin: '10px 0 0 0' }}>{certLang === 'ar' ? 'تاريخ الإصدار' : 'Issue Date'}: {current.issueDate}</p>
               {/* Footer */}
-              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
                     {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
@@ -705,9 +711,14 @@ const Dashboard = ({ user, onLogout, authToken }) => {
                     </div>
                   </div>
                 </div>
+                {/* Gold Seal - Center */}
                 <div style={{ textAlign: 'center' }}>
-                  <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
-                  <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
+                  <img src={goldSeal} alt="Gold Seal" style={{ width: '170px', height: 'auto' }} />
+                </div>
+                {/* Signature - Right */}
+                <div style={{ textAlign: 'center' }}>
+                  <img src={LOGO_PATH} alt="Logo" style={{ width: '55px', height: '55px' }} />
+                  <div style={{ width: '200px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', marginTop: '25px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1rem' }}>
                     {t('developerName')}
                   </div>
                 </div>
