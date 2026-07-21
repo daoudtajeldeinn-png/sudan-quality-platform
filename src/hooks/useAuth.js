@@ -55,6 +55,7 @@ export const useAuth = () => {
         setUser(null);
         setAuthToken(null);
         setIsAdmin(false);
+        setIsAdmin(false);
         setLoading(false);
         setError(null);
       }
