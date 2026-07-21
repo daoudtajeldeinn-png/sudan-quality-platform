@@ -14,6 +14,8 @@ import StabilityCalculator  from '../components/StabilityCalculator';
 import SamplingCalculator   from '../components/SamplingCalculator';
 import InspectionChecklist  from '../components/InspectionChecklist';
 import pharmaLogo   from '../assets/pharma_logo.png';
+import goldSeal     from '../assets/gold_seal.png';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import apiService   from '../services/api';
@@ -565,258 +567,258 @@ export default function StudentShell({ user, onLogout, authToken }) {
   };
 
   // Certificate preview overlay
+  // ── REAL CERTIFICATE VIEWER — identical to Dashboard.jsx CertificateModal ──
   if (selectedCert) {
-    const unitId   = selectedCert.unitId || '';
-    const unitName = selectedCert.unitName || UNIT_NAMES[unitId] || 'Certificate';
-    const icon     = UNIT_ICONS[unitId] || '🎓';
-    const color    = UNIT_COLORS[unitId] || S.blue;
-    const score    = selectedCert.score || selectedCert.percentage || 0;
-    const date     = selectedCert.issueDate
-      ? new Date(selectedCert.issueDate?.toDate?.() || selectedCert.issueDate).toLocaleDateString('en-GB')
-      : new Date().toLocaleDateString('en-GB');
-    const verifyId = selectedCert.verificationId || selectedCert.certNumber || selectedCert.id || '—';
-    const userName = user.displayName || user.email?.split('@')[0] || 'Student';
+    const certData = selectedCert;
+    const LOGO_PATH = pharmaLogo;
 
-    // Load all progress for stats
-    let allProgress = {};
-    try { allProgress = JSON.parse(localStorage.getItem(`sqp_progress_${user.email}`) || '{}'); } catch(e){}
-    const allUnits   = Object.keys(UNIT_NAMES);
-    const passedCount = allUnits.filter(id => (allProgress[id]||0) >= 90).length;
-    const avgScore    = allUnits.length
-      ? Math.round(allUnits.reduce((a,id)=>a+(allProgress[id]||0),0)/allUnits.length) : 0;
+    // Load progress for transcript view
+    let userProgress = {};
+    try { userProgress = JSON.parse(localStorage.getItem(`sqp_progress_${user.email}`) || '{}'); } catch(e) {}
+    const unitIds      = Object.keys(UNIT_NAMES);
+    const totalAverage = Math.round(unitIds.reduce((a,id) => a+(userProgress[id]||0), 0) / (unitIds.length||1));
 
-    return (
-      <div style={{
-        position:'fixed', inset:0, zIndex:3000,
-        background:'rgba(8,16,42,0.95)',
-        display:'flex', flexDirection:'column',
-        fontFamily:"'Inter','Segoe UI',sans-serif",
-        direction: isRtl?'rtl':'ltr',
-        overflowY:'auto',
-      }}>
-        {/* ── Top action bar ── */}
-        <div style={{
-          padding:'14px 24px', background:'rgba(255,255,255,0.04)',
-          borderBottom:'1px solid rgba(255,255,255,0.08)',
-          display:'flex', alignItems:'center', justifyContent:'space-between',
-          flexShrink:0,
+    const getUnitName = (cert, lang) => {
+      if (cert?.unitName) return cert.unitName;
+      if (cert?.unitId && UNIT_ICONS[cert.unitId])
+        return lang==='ar'
+          ? (UNIT_ICONS[cert.unitId].title?.ar || cert.unitId)
+          : (UNIT_ICONS[cert.unitId].title?.en || cert.unitId);
+      return lang==='ar' ? 'التخصصية' : 'Specialized';
+    };
+
+    // Inner component so we can use useState for certLang/viewType
+    const CertViewer = () => {
+      const [certLang, setCertLang] = useState(isRtl ? 'ar' : 'en');
+      const [viewType, setViewType] = useState('cert');
+      const unitName = getUnitName(certData, certLang);
+
+      const certContent = {
+        en: {
+          authority:       'Sudan Quality Platform',
+          subAuthority:    'Quality & Accreditation Board',
+          title:           'CERTIFICATE OF COMPLETION',
+          transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
+          intro:           'This is to certify that',
+          issueDate:       new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('en-GB'),
+          desc:            `Has successfully completed the ${unitName} unit and demonstrated professional proficiency in pharmaceutical quality standards.`,
+          date: 'Date', unitHead: 'Unit/Module Name', scoreHead: 'Score', statusHead: 'Status',
+        },
+        ar: {
+          authority:       'منصة السودان للجودة',
+          subAuthority:    'مجلس الجودة والاعتماد البرامجي',
+          title:           'شهادة إتمام تدريب',
+          transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
+          intro:           'نشهد بأن المتدرب/ـة',
+          issueDate:       new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('ar-EG'),
+          desc:            `قد أكمل بنجاح وحدة ${unitName} وأظهر كفاءة احترافية متميزة في معايير الجودة الدوائية.`,
+          date: 'التاريخ', unitHead: 'الوحدة / المسار', scoreHead: 'الدرجة', statusHead: 'الحالة',
+        },
+      };
+      const current = certContent[certLang];
+
+      const downloadPDF = async (filename) => {
+        const input = document.getElementById('shell-cert-printable');
+        if (!input) return;
+        window.scrollTo(0, 0);
+        try { await document.fonts.ready; } catch(e) {}
+        await new Promise(r => setTimeout(r, 800));
+        try {
+          const html2canvas = (await import('html2canvas')).default;
+          const { jsPDF }   = await import('jspdf');
+          html2canvas(input, { scale:2.5, useCORS:true, logging:false, letterRendering:true, allowTaint:true })
+            .then(canvas => {
+              const imgData = canvas.toDataURL('image/png');
+              const pdf     = new jsPDF({ orientation:'l', unit:'mm', format:'a4', hotfixes:['px_scaling'] });
+              pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), undefined, 'FAST');
+              pdf.save(`${filename}.pdf`);
+            });
+        } catch(err) {
+          alert('Failed to generate PDF. Please try again.');
+        }
+      };
+
+      return (
+        <div className="certificate-modal-overlay" style={{
+          position:'fixed', top:0, left:0, right:0, bottom:0,
+          backgroundColor:'rgba(10,22,40,0.9)',
+          display:'flex', justifyContent:'center', alignItems:'center',
+          zIndex:3000, padding:'40px', overflowY:'auto',
         }}>
-          <button onClick={() => setSelectedCert(null)} style={{
-            display:'flex', alignItems:'center', gap:'8px',
-            padding:'9px 18px', borderRadius:'10px',
-            background:`linear-gradient(135deg,${S.gold},${S.goldLt})`,
-            color:S.navy, border:'none', cursor:'pointer',
-            fontSize:'13px', fontWeight:'700',
-          }}>
-            {isRtl ? '→ العودة للشهادات' : '← Back to Certificates'}
-          </button>
-          <div style={{ color:'rgba(255,255,255,0.5)', fontSize:'12px' }}>
-            Sudan Quality Platform — {isRtl?'عرض الشهادة':'Certificate Viewer'}
-          </div>
-          <button
-            onClick={() => { setSelectedCert(null); setActivePage('academy'); }}
-            style={{
-              padding:'9px 18px', borderRadius:'10px',
-              background:`linear-gradient(135deg,${S.navyMid},${S.navy})`,
-              color:'white', border:`1px solid rgba(212,175,55,0.3)`,
-              cursor:'pointer', fontSize:'13px', fontWeight:'600',
-            }}>
-            {isRtl ? '⬇️ تحميل PDF' : '⬇️ Download PDF'}
-          </button>
-        </div>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'20px', width:'100%' }}>
 
-        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 24px', gap:'28px' }}>
+            {/* ══ EXACT SAME CERTIFICATE AS Dashboard.jsx ══ */}
+            <div
+              id="shell-cert-printable"
+              className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`}
+              style={{
+                backgroundColor:'var(--bg-card, white)',
+                width:'297mm', height:'210mm',
+                padding:'40px 60px', borderRadius:'4px', position:'relative',
+                border:'15px solid var(--pharma-navy, #0f2557)',
+                outline:'5px solid var(--pharma-gold, #d4af37)',
+                outlineOffset:'-25px',
+                textAlign:'center',
+                boxShadow:'0 30px 60px rgba(0,0,0,0.5)',
+                direction: certLang==='ar' ? 'rtl' : 'ltr',
+                display:'flex', flexDirection:'column', justifyContent:'space-between',
+                fontFamily: certLang==='ar'
+                  ? "'IBM Plex Sans Arabic','Amiri',serif"
+                  : "'Inter','IBM Plex Sans',sans-serif",
+              }}>
 
-          {/* ══ REAL CERTIFICATE DESIGN ══ */}
-          <div style={{
-            width:'100%', maxWidth:'820px',
-            background:'white',
-            border:`14px solid ${S.navy}`,
-            outline:`4px solid ${S.gold}`,
-            outlineOffset:'-22px',
-            borderRadius:'4px',
-            padding:'36px 48px',
-            position:'relative',
-            boxShadow:'0 20px 60px rgba(0,0,0,0.5)',
-            textAlign:'center',
-          }}>
-            {/* Watermark */}
-            <div style={{
-              position:'absolute', top:'50%', left:'50%',
-              transform:'translate(-50%,-50%)',
-              fontSize:'120px', opacity:0.04, pointerEvents:'none',
-              zIndex:0, userSelect:'none',
-            }}>{icon}</div>
-
-            {/* Header row: logo + title + logo */}
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', position:'relative', zIndex:1 }}>
-              <div style={{ textAlign:'left' }}>
-                <div style={{ fontSize:'18px', fontWeight:'800', color:S.navy }}>Sudan Quality Platform</div>
-                <div style={{ fontSize:'11px', color:S.gold, fontWeight:'700', letterSpacing:'0.08em' }}>
-                  Quality & Accreditation Board
-                </div>
-              </div>
+              {/* Watermark */}
               <div style={{
-                width:'72px', height:'72px', borderRadius:'50%',
-                background:`linear-gradient(135deg,${S.navy},${S.navyMid})`,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                fontSize:'36px', border:`3px solid ${S.gold}`,
-                boxShadow:`0 0 0 4px rgba(212,175,55,0.2)`,
-              }}>{icon}</div>
-              <div style={{ textAlign:'right' }}>
-                <div style={{ fontSize:'11px', color:S.sub }}>
-                  {isRtl?'تاريخ الإصدار':'Issue Date'}: {date}
-                </div>
-                <div style={{ fontSize:'10px', color:S.sub, marginTop:'4px', fontFamily:'monospace' }}>
-                  ID: {String(verifyId).substring(0,14).toUpperCase()}
-                </div>
-              </div>
-            </div>
+                position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+                width:'600px', height:'600px',
+                backgroundImage:`url(${LOGO_PATH})`,
+                backgroundSize:'contain', backgroundRepeat:'no-repeat', backgroundPosition:'center',
+                opacity:0.03, pointerEvents:'none', zIndex:1,
+              }}/>
 
-            {/* Title */}
-            <div style={{ position:'relative', zIndex:1 }}>
-              <div style={{ width:'80px', height:'3px', background:S.gold, margin:'0 auto 18px', borderRadius:'2px' }}/>
-              <div style={{ fontSize:'28px', fontWeight:'900', color:S.navy, letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:'6px' }}>
-                {isRtl ? 'شهادة إتمام تدريب' : 'Certificate of Completion'}
-              </div>
-              <div style={{ width:'80px', height:'3px', background:S.gold, margin:'18px auto', borderRadius:'2px' }}/>
+              <div style={{ position:'relative', zIndex:5, display:'flex', flexDirection:'column', flex:1, justifyContent:'space-between' }}>
 
-              {/* Recipient */}
-              <div style={{ fontSize:'13px', color:S.sub, marginBottom:'8px', fontWeight:'500' }}>
-                {isRtl ? 'نشهد بأن المتدرب/ة' : 'This is to certify that'}
-              </div>
-              <div style={{ fontSize:'36px', fontWeight:'800', color:S.blue, marginBottom:'16px', letterSpacing:'-0.01em' }}>
-                {userName}
-              </div>
-
-              {/* Description */}
-              <div style={{ fontSize:'14px', color:S.text, lineHeight:'1.7', maxWidth:'560px', margin:'0 auto 24px', fontWeight:'500' }}>
-                {isRtl
-                  ? `قد أكمل بنجاح وحدة "${unitName}" وأظهر كفاءة احترافية متميزة في معايير الجودة الدوائية.`
-                  : `Has successfully completed the "${unitName}" unit and demonstrated professional proficiency in pharmaceutical quality standards.`
-                }
-              </div>
-
-              {/* Score badge */}
-              {score > 0 && (
+                {/* Header: logo + authority */}
                 <div style={{
-                  display:'inline-flex', alignItems:'center', gap:'8px',
-                  background: score>=90 ? 'rgba(29,158,117,0.1)' : 'rgba(245,158,11,0.1)',
-                  border: `2px solid ${score>=90 ? S.green : '#f59e0b'}`,
-                  borderRadius:'14px', padding:'8px 20px', marginBottom:'24px',
+                  position:'absolute', top:'-10px',
+                  right: certLang==='ar' ? '-20px' : 'auto',
+                  left:  certLang==='en' ? '-20px' : 'auto',
+                  display:'flex',
+                  flexDirection: certLang==='ar' ? 'row' : 'row-reverse',
+                  alignItems:'center', gap:'20px', zIndex:100,
                 }}>
-                  <span style={{ fontSize:'20px' }}>⭐</span>
-                  <span style={{ fontSize:'18px', fontWeight:'800', color: score>=90 ? S.green : '#ba7517' }}>{score}%</span>
-                  <span style={{ fontSize:'12px', color:S.sub, fontWeight:'500' }}>
-                    {isRtl?'درجة النجاح':'Achievement Score'}
-                  </span>
-                </div>
-              )}
-
-              {/* Footer: QR + seal + signature */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:'20px', paddingTop:'16px', borderTop:`1px solid rgba(212,175,55,0.3)` }}>
-                {/* Verification */}
-                <div style={{ textAlign:'left', fontSize:'10px', color:S.sub }}>
-                  <div style={{ fontWeight:'700', color:S.navy, fontSize:'11px', marginBottom:'4px' }}>CERTIFICATE VERIFICATION</div>
-                  <div style={{ fontFamily:'monospace', fontSize:'10px' }}>{String(verifyId).substring(0,24)}</div>
-                  <div style={{ marginTop:'4px' }}>
-                    <a href={`https://decisive-octane-472816-d3.web.app/verify`} target="_blank" rel="noreferrer"
-                      style={{ color:S.blue, fontSize:'10px', textDecoration:'none', fontWeight:'600' }}>
-                      🔗 Verify Online
-                    </a>
+                  <div style={{ textAlign: certLang==='ar'?'right':'left', color:'var(--pharma-navy,#0f2557)' }}>
+                    <div style={{ fontWeight:'bold', fontSize:'1.8rem', lineHeight:'1.2' }}>{current.authority}</div>
+                    <div style={{ fontSize:'0.9rem', fontWeight:'bold', color:'var(--regulatory-amber,#d4af37)' }}>{current.subAuthority}</div>
                   </div>
+                  <img src={LOGO_PATH} alt="Logo" style={{ width:'100px', height:'100px' }}/>
                 </div>
-                {/* Gold seal */}
-                <div style={{
-                  width:'80px', height:'80px', borderRadius:'50%',
-                  background:`linear-gradient(135deg,${S.gold},${S.goldLt})`,
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:'36px', border:`4px solid ${S.gold}`,
-                  boxShadow:`0 0 0 6px rgba(212,175,55,0.15), 0 4px 16px rgba(212,175,55,0.3)`,
-                }}>🏅</div>
-                {/* Signature */}
-                <div style={{ textAlign:'right' }}>
-                  <div style={{ fontSize:'13px', fontWeight:'800', color:S.navy, borderTop:`2px solid ${S.navy}`, paddingTop:'6px', minWidth:'160px' }}>
-                    Dr. Daoud Tajeldeinn
-                  </div>
-                  <div style={{ fontSize:'10px', color:S.sub, marginTop:'3px' }}>
-                    {isRtl?'مؤسس المنصة':'Platform Director'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* ══ STATS SECTION ══ */}
-          <div style={{ width:'100%', maxWidth:'820px' }}>
-            <div style={{ fontSize:'16px', fontWeight:'700', color:'white', marginBottom:'16px', opacity:0.9 }}>
-              📊 {isRtl ? 'إحصائيات التقدم الكلي' : 'Overall Progress Report'}
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'16px' }}>
-              {[
-                { label:isRtl?'وحدات اكتملت':'Completed',    value:passedCount,         icon:'✅', color:S.green  },
-                { label:isRtl?'متبقية':'Remaining',           value:24-passedCount,      icon:'⏳', color:'#f59e0b' },
-                { label:isRtl?'متوسط الدرجات':'Avg Score',   value:`${avgScore}%`,      icon:'📊', color:S.blue   },
-                { label:isRtl?'نسبة الإتمام':'Completion',   value:`${Math.round(passedCount/24*100)}%`, icon:'🎯', color:S.gold },
-              ].map(s=>(
-                <div key={s.label} style={{
-                  background:'rgba(255,255,255,0.07)', borderRadius:'14px',
-                  padding:'16px', textAlign:'center',
-                  border:'1px solid rgba(255,255,255,0.1)',
-                }}>
-                  <div style={{ fontSize:'22px', marginBottom:'6px' }}>{s.icon}</div>
-                  <div style={{ fontSize:'22px', fontWeight:'800', color:s.color }}>{s.value}</div>
-                  <div style={{ fontSize:'11px', color:'rgba(255,255,255,0.5)', marginTop:'4px' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
+                {/* Body */}
+                {viewType === 'cert' ? (
+                  <div style={{ marginTop:'130px' }}>
+                    <h1 style={{ fontSize:'3.2rem', color:'var(--pharma-navy,#0f2557)', marginBottom:'5px', textTransform:'uppercase', letterSpacing:'2px', fontWeight:'800' }}>
+                      {current.title}
+                    </h1>
+                    <div style={{ width:'200px', height:'4px', backgroundColor:'var(--pharma-gold,#d4af37)', margin:'15px auto' }}/>
+                    <div style={{ margin:'20px 0' }}>
+                      <p style={{ fontSize:'1.4rem', color:'var(--text-secondary,#64748b)', marginBottom:'10px', fontWeight:'600' }}>{current.intro}</p>
+                      <h2 style={{ fontSize:'3.6rem', color:'var(--pharma-blue,#185fa5)', fontWeight:'700' }}>
+                        {user.displayName || user.email?.split('@')[0]}
+                      </h2>
+                    </div>
+                    <p style={{ fontSize:'1.3rem', margin:'20px auto', color:'var(--text-primary,#1a2a4a)', lineHeight:'1.8', maxWidth:'850px', fontWeight:'500' }}>
+                      {current.desc}
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ marginTop:'110px', textAlign:'center' }}>
+                    <h2 style={{ fontSize:'2.2rem', color:'var(--pharma-navy,#0f2557)', marginBottom:'20px' }}>{current.transcriptTitle}</h2>
+                    <div style={{ maxHeight:'400px', overflowY:'hidden', padding:'0 40px' }}>
+                      <table style={{ width:'100%', borderCollapse:'collapse', backgroundColor:'rgba(255,255,255,0.5)', border:'1px solid var(--border-color,#e4e8f0)' }}>
+                        <thead>
+                          <tr style={{ backgroundColor:'var(--pharma-navy,#0f2557)', color:'white' }}>
+                            <th style={{ padding:'12px', border:'1px solid #ddd' }}>{current.unitHead}</th>
+                            <th style={{ padding:'12px', border:'1px solid #ddd' }}>{current.scoreHead}</th>
+                            <th style={{ padding:'12px', border:'1px solid #ddd' }}>{current.statusHead}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {unitIds.map(id => (
+                            <tr key={id}>
+                              <td style={{ padding:'8px', border:'1px solid #ddd', textAlign:certLang==='ar'?'right':'left' }}>
+                                {certLang==='ar' ? (UNIT_ICONS[id]?.title?.ar||id) : (UNIT_ICONS[id]?.title?.en||id)}
+                              </td>
+                              <td style={{ padding:'8px', border:'1px solid #ddd', fontWeight:'bold', color:'var(--pharma-green,#1d9e75)' }}>
+                                %{userProgress[id]||0}
+                              </td>
+                              <td style={{ padding:'8px', border:'1px solid #ddd', color:(userProgress[id]||0)>=90?'#28a745':'#999' }}>
+                                {(userProgress[id]||0)>=90?'PASSED':'PENDING'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style={{ marginTop:'20px', fontWeight:'bold', fontSize:'1.4rem', color:'var(--pharma-navy,#0f2557)' }}>
+                      {certLang==='ar'?'متوسط الدرجات الكلي':'Overall Performance Average'}: %{totalAverage}
+                    </div>
+                  </div>
+                )}
 
-            {/* Progress bar for each unit — compact */}
-            <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:'14px', padding:'20px', border:'1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ fontSize:'13px', fontWeight:'600', color:'rgba(255,255,255,0.7)', marginBottom:'14px' }}>
-                {isRtl?'أداء جميع الوحدات':'All Units Performance'}
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                {allUnits.map(id => {
-                  const sc = allProgress[id]||0;
-                  const passed = sc >= (id==='adv-iso-17025'?80:90);
-                  return (
-                    <div key={id} style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                      <span style={{ fontSize:'13px', flexShrink:0 }}>{UNIT_ICONS[id]||'📄'}</span>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:'10px', color:'rgba(255,255,255,0.5)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:'3px' }}>
-                          {UNIT_NAMES[id]}
-                        </div>
-                        <div style={{ height:'5px', background:'rgba(255,255,255,0.1)', borderRadius:'3px', overflow:'hidden' }}>
-                          <div style={{ height:'5px', width:`${sc}%`, background: passed?S.green:'#f59e0b', borderRadius:'3px' }}/>
+                {/* Issue date */}
+                <p style={{ textAlign:'center', fontSize:'1rem', color:'var(--pharma-navy,#0f2557)', fontWeight:'600', margin:'10px 0 0 0' }}>
+                  {certLang==='ar'?'تاريخ الإصدار':'Issue Date'}: {current.issueDate}
+                </p>
+
+                {/* Footer: QR + Gold Seal + Signature */}
+                <div style={{ marginTop:'10px', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'0 20px' }}>
+                  <div style={{ textAlign:certLang==='ar'?'right':'left', color:'var(--text-secondary,#64748b)' }}>
+                    <p style={{ margin:'5px 0', fontWeight:'700', fontSize:'1rem', color:'var(--pharma-navy,#0f2557)' }}>
+                      {current.date}: {new Date(certData.issueDate||certData.createdAt||Date.now()).toLocaleDateString()}
+                    </p>
+                    <div style={{ display:'flex', alignItems:'center', gap:'10px', marginTop:'10px' }}>
+                      <div style={{ backgroundColor:'white', padding:'5px', borderRadius:'4px', border:'1px solid #ddd' }}>
+                        <QRCodeCanvas
+                          value={`https://decisive-octane-472816-d3.web.app/verify/${user.uid}`}
+                          size={65} level="H" includeMargin={false}
+                        />
+                      </div>
+                      <div style={{ fontSize:'0.7rem', color:'var(--text-secondary,#64748b)', textAlign:'left' }}>
+                        <div style={{ fontWeight:'bold', color:'var(--pharma-navy,#0f2557)' }}>CERTIFICATE VERIFICATION</div>
+                        <div>SCAN TO VALIDATE AUTHENTICITY</div>
+                        <div style={{ fontFamily:'monospace', letterSpacing:'1px', marginTop:'3px' }}>
+                          ID: {user.uid?.substring(0,8).toUpperCase()}-{(certData.verificationId||certData.id||'').toString().substring(0,8).toUpperCase()}
                         </div>
                       </div>
-                      <span style={{ fontSize:'10px', color: passed?S.green:'rgba(255,255,255,0.4)', fontWeight:'700', flexShrink:0, width:'32px', textAlign:'right' }}>
-                        {sc>0?`${sc}%`:'—'}
-                      </span>
                     </div>
-                  );
-                })}
+                  </div>
+
+                  {/* Gold Seal — same image as Dashboard.jsx */}
+                  <div style={{ textAlign:'center' }}>
+                    <img src={goldSeal} alt="Gold Seal" style={{ width:'170px', height:'auto' }}/>
+                  </div>
+
+                  {/* Signature */}
+                  <div style={{ textAlign:'center' }}>
+                    <img src={LOGO_PATH} alt="Logo" style={{ width:'55px', height:'55px' }}/>
+                    <div style={{ width:'200px', borderTop:'2px solid var(--pharma-navy,#0f2557)', paddingTop:'8px', marginTop:'25px', fontWeight:'800', color:'var(--pharma-navy,#0f2557)', fontSize:'1rem' }}>
+                      Dr. Daoud Tajeldeinn
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
+
+            {/* Controls — outside printable div, same as Dashboard.jsx */}
+            <div className="no-print" style={{ display:'flex', gap:'15px', zIndex:3000, paddingBottom:'40px', flexWrap:'wrap', justifyContent:'center' }}>
+              <button onClick={() => setCertLang(certLang==='en'?'ar':'en')}
+                style={{ background:'#6c757d', color:'white', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'150px' }}>
+                🌐 {certLang==='en'?'Arabic / عربي':'English'}
+              </button>
+              <button onClick={() => setViewType(viewType==='cert'?'transcript':'cert')}
+                style={{ background:'var(--regulatory-amber,#d4af37)', color:'#1a2a4a', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'150px' }}>
+                {viewType==='cert'?'📄 View Transcript':'📜 View Certificate'}
+              </button>
+              <button onClick={() => downloadPDF(viewType==='cert'?'Certificate':'Transcript')}
+                style={{ background:'var(--primary-color,#0f2557)', color:'white', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'150px' }}>
+                ⬇️ Download {viewType==='cert'?'PDF':'Transcript'}
+              </button>
+              <button onClick={() => setSelectedCert(null)}
+                style={{ background:'#333', color:'white', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'100px' }}>
+                {isRtl?'→ رجوع':'← Back'}
+              </button>
+            </div>
+
           </div>
-
-          {/* Bottom back button */}
-          <button onClick={() => setSelectedCert(null)} style={{
-            padding:'14px 40px', borderRadius:'14px',
-            background:`linear-gradient(135deg,${S.gold},${S.goldLt})`,
-            color:S.navy, border:'none', cursor:'pointer',
-            fontSize:'14px', fontWeight:'700',
-            boxShadow:'0 4px 20px rgba(212,175,55,0.3)',
-            marginBottom:'16px',
-          }}>
-            {isRtl ? '→ العودة إلى قائمة الشهادات' : '← Back to Certificates'}
-          </button>
-
         </div>
-      </div>
-    );
+      );
+    };
+
+    return <CertViewer />;
   }
+
 
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', fontFamily:"'Inter','Segoe UI',sans-serif", direction: isRtl?'rtl':'ltr' }}>
