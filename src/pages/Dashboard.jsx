@@ -699,10 +699,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 </div>
               )}
 
-              {/* Issue Date */}
-              <p style={{ textAlign: 'center', fontSize: '1rem', color: 'var(--pharma-navy)', fontWeight: '600', margin: '10px 0 0 0' }}>{certLang === 'ar' ? 'تاريخ الإصدار' : 'Issue Date'}: {current.issueDate}</p>
               {/* Footer */}
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
                     {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
@@ -727,7 +725,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 </div>
                 {/* Gold Seal - Center */}
                 <div style={{ textAlign: 'center' }}>
-                  <img src={goldSeal} alt="Gold Seal" style={{ width: '170px', height: 'auto' }} />
+                  <img src={goldSeal} alt="Gold Seal" style={{ width: '140px', height: 'auto' }} />
                 </div>
                 {/* Signature - Right */}
                 <div style={{ textAlign: 'center' }}>
