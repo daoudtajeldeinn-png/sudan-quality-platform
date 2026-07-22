@@ -55,7 +55,7 @@ const UNIT_ICONS = {
   'equipment-qualification': { icon: '⚙️', color: '#8b5cf6', title: { ar: 'تأهيل الأجهزة والمرافق', en: 'Equipment Qualification' } },
 };
 
-const Dashboard = ({ user, onLogout, authToken, activeTab }) => {
+const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClosed }) => {
   const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
   const { xp, level, badges, getXpToNextLevel, stats, updateStats, addXp, awardBadge } = useGamification();
   const [userCertLevel, setUserCertLevel] = useState(1);
@@ -66,6 +66,20 @@ const Dashboard = ({ user, onLogout, authToken, activeTab }) => {
   const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [selectedCert, setSelectedCert] = useState(null);
+
+  useEffect(() => {
+    if (certToOpen) {
+      setSelectedCert(certToOpen);
+      setShowCertificate(true);
+    }
+  }, [certToOpen]);
+
+  useEffect(() => {
+    if (certToOpen) {
+      setSelectedCert(certToOpen);
+      setShowCertificate(true);
+    }
+  }, [certToOpen]);
   const [isSampleMode, setIsSampleMode] = useState(false);
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
@@ -737,7 +751,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab }) => {
             <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
               ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
             </button>
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); if(onCertClosed) onCertClosed(); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
               {t('back')}
             </button>
           </div>

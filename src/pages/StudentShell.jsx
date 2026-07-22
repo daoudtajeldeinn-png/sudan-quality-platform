@@ -409,7 +409,7 @@ export default function StudentShell({ user, onLogout, authToken }) {
   const [sidebarOpen, setSidebarOpen]   = useState(true);
   const [activePage, setActivePage]     = useState('academy');
   const [openTool, setOpenTool]         = useState(null);
-  const [selectedCert, setSelectedCert] = useState(null); // cert object to preview
+  const [certToOpen, setCertToOpen] = useState(null);
   const isRtl = language === 'ar';
 
   // If a tool is open, show full-screen overlay
@@ -554,15 +554,15 @@ export default function StudentShell({ user, onLogout, authToken }) {
     switch(activePage) {
       case 'academy':
         // Pass activeTab='academy' so Dashboard shows academy view
-        return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" />;
+        return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" certToOpen={certToOpen} onCertClosed={() => setCertToOpen(null)} />;
       case 'toolkit':
         return <ToolkitGrid isRtl={isRtl} onOpen={setOpenTool} />;
       case 'analytics':
         return <AnalyticsView user={user} authToken={authToken} isRtl={isRtl} />;
       case 'certificates':
-        return <CertificatesView user={user} authToken={authToken} isRtl={isRtl} onViewCert={setSelectedCert} />;
+        return <CertificatesView user={user} authToken={authToken} isRtl={isRtl} onViewCert={(cert) => { setCertToOpen(cert); setActivePage('academy'); }} />;
       default:
-        return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" />;
+        return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" certToOpen={certToOpen} onCertClosed={() => setCertToOpen(null)} />;
     }
   };
 
