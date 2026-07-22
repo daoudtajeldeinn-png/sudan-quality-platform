@@ -794,7 +794,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab }) => {
       {showCertificate && <CertificateModal isSample={isSampleMode} certData={selectedCert} />}
       {showDevProfile && <DeveloperProfileModal />}
 
-      <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
+      {!activeTab && <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <img src={LOGO_PATH} alt="Pharma Logo" style={{ width: '55px', height: '55px' }} />
           <div>
@@ -815,7 +815,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab }) => {
           </div>
           <button onClick={onLogout} className="btn-logout">{t('logout')}</button>
         </div>
-      </header>
+      </header>}
 
       {/* PROMINENT BANNER ALWAYS VISIBLE */}
       <div style={{
