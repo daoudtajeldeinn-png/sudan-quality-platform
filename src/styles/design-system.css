@@ -570,3 +570,6 @@
   .sidebar { display: none; }
   .topbar { padding: 0 var(--space-4); }
 }
+
+/* Arabic fonts for certificates */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap');
