@@ -295,14 +295,14 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: S.navy }}>
-                {['#', 'Student', 'Email', 'XP', 'Level', 'Joined'].map(h => (
+                {['#', 'Student', 'Email', 'XP', 'Level', 'Last Login', 'Status'].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: S.sub }}>
+                <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: S.sub }}>
                   <div style={{ fontSize: '32px', marginBottom: '8px' }}>👥</div>
                   <div>No users found</div>
                 </td></tr>
@@ -330,7 +330,21 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '12px', color: S.sub }}>
-                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : '—'}
+                    {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('en-GB') : '—'}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    {(() => {
+                      const daysSince = u.lastLogin
+                        ? Math.floor((Date.now() - new Date(u.lastLogin)) / 86400000) : 999;
+                      const isActive  = daysSince <= 14;
+                      return (
+                        <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', fontWeight: '600',
+                          background: isActive ? 'rgba(29,158,117,0.1)' : 'rgba(220,38,38,0.1)',
+                          color: isActive ? S.green : S.danger }}>
+                          {isActive ? '● Active' : `⚠ ${daysSince}d inactive`}
+                        </span>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}
