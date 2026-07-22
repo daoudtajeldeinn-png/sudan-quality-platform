@@ -24,7 +24,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['X-Requested-With', 'Content-Type', 'Authorization']
+  allowedHeaders: ['X-Requested-With', 'Content-Type', 'Authorization', 'x-admin-email']
 };
 
 app.use(cors(corsOptions));
@@ -56,6 +56,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/certificates', certificateRoutes);
+const adminRoutes = require('./src/routes/adminRoutes');
+app.use('/api/admin', adminRoutes);
 
 // Root route — informational, so browser doesn't show "Cannot GET /"
 app.get('/', (req, res) => {

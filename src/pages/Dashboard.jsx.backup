@@ -10,7 +10,6 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
-import goldSeal from '../assets/gold_seal.png';
 import { QRCodeCanvas } from 'qrcode.react';
 import apiService from '../services/api';
 import '../styles/CertificateStyles.css';
@@ -55,7 +54,7 @@ const UNIT_ICONS = {
   'equipment-qualification': { icon: '⚙️', color: '#8b5cf6', title: { ar: 'تأهيل الأجهزة والمرافق', en: 'Equipment Qualification' } },
 };
 
-const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClosed }) => {
+const Dashboard = ({ user, onLogout, authToken }) => {
   const { language, toggleLanguage, t, theme, toggleTheme } = useLanguage();
   const { xp, level, badges, getXpToNextLevel, stats, updateStats, addXp, awardBadge } = useGamification();
   const [userCertLevel, setUserCertLevel] = useState(1);
@@ -66,20 +65,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const [isLectureMode, setIsLectureMode] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [selectedCert, setSelectedCert] = useState(null);
-
-  useEffect(() => {
-    if (certToOpen) {
-      setSelectedCert(certToOpen);
-      setShowCertificate(true);
-    }
-  }, [certToOpen]);
-
-  useEffect(() => {
-    if (certToOpen) {
-      setSelectedCert(certToOpen);
-      setShowCertificate(true);
-    }
-  }, [certToOpen]);
   const [isSampleMode, setIsSampleMode] = useState(false);
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
@@ -358,14 +343,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     setUserProgress(prev => {
       console.log('[QuizComplete] Previous progress:', prev);
       console.log('[QuizComplete] Previous score for unit', unitId, ':', prev[unitId]);
-      const passingThreshold = unitId === "adv-iso-17025" ? 80 : 90;
-      const isNewSuccess = score >= passingThreshold && (!prev[unitId] || prev[unitId] < passingThreshold);
+      const isNewSuccess = score >= 90 && (!prev[unitId] || prev[unitId] < 90);
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
       
       console.log('[QuizComplete] Updated unitId:', unitId, 'New score for unit:', newProgress[unitId]);
       console.log('[QuizComplete] Full new progress:', JSON.stringify(newProgress));
       
-      if (score >= (unitId === "adv-iso-17025" ? 80 : 90) && user?.uid) {
+      if (score >= 90 && user?.uid) {
         (async () => {
           try {
             // Use UNIT_ICONS for unitName to get proper English title
@@ -476,7 +460,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   );
 
   const MicroBadge = ({ unitId, score }) => {
-    const isUnlocked = score >= (unitId === "adv-iso-17025" ? 80 : 90);
+    const isUnlocked = score >= 90;
     return (
       <div style={{
         width: '80px', height: '80px', borderRadius: '50%',
@@ -588,7 +572,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         title: 'CERTIFICATE OF COMPLETION',
         transcriptTitle: 'ACADEMIC TRANSCRIPT & COURSE DETAILS',
         intro: 'This is to certify that',
-        issueDate: certData ? new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
         desc: certData ? `Has successfully completed the ${unitName} unit and demonstrated professional proficiency.` : 'Has successfully completed the Professional Pharmaceutical Training Program and demonstrated exceptional proficiency in GxP standards, Quality Management Systems, and Regulatory Compliance.',
         date: 'Date',
         name: 'Ahmed Daoud Tajeldeinn',
@@ -602,7 +585,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         title: 'شهادة إتمام تدريب',
         transcriptTitle: 'السجل الأكاديمي وتفاصيل البرنامج',
         intro: 'نشهد بأن المتدرب/ـة',
-        issueDate: certData ? new Date(certData.issueDate?.toDate?.() || certData.issueDate || certData.createdAt?.toDate?.() || certData.createdAt || Date.now()).toLocaleDateString('ar-EG') : new Date().toLocaleDateString('ar-EG'),
         desc: certData ? `قد أكمل بنجاح وحدة ${unitName} وأظهر كفاءة احترافية متميزة.` : 'قد أكمل بنجاح برنامج التدريب الدوائي الاحترافي وأظهر كفاءة استثنائية في معايير GxP، نظم إدارة الجودة، والامتثال الرقابي.',
         date: 'التاريخ',
         name: 'أحمد داؤود تاجر الدين',
@@ -622,9 +604,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
           <div id="certificate-printable" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{
-            backgroundColor: 'var(--bg-card)', width: '297mm', height: '210mm',
+            backgroundImage: "url('/src/assets/certificate_bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', width: '297mm', height: '210mm',
             padding: '40px 60px', borderRadius: '4px', position: 'relative',
-            border: '15px solid var(--pharma-navy)', outline: '5px solid var(--pharma-gold)', outlineOffset: '-25px',
+            border: 'none',
             textAlign: 'center',
             boxShadow: '0 30px 60px rgba(0,0,0,0.5)', direction: certLang === 'ar' ? 'rtl' : 'ltr',
             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -700,7 +682,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               )}
 
               {/* Footer */}
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
                     {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
@@ -723,14 +705,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     </div>
                   </div>
                 </div>
-                {/* Gold Seal - Center */}
                 <div style={{ textAlign: 'center' }}>
-                  <img src={goldSeal} alt="Gold Seal" style={{ width: '140px', height: 'auto' }} />
-                </div>
-                {/* Signature - Right */}
-                <div style={{ textAlign: 'center' }}>
-                  <img src={LOGO_PATH} alt="Logo" style={{ width: '55px', height: '55px' }} />
-                  <div style={{ width: '200px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', marginTop: '25px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1rem' }}>
+                  <img src={LOGO_PATH} alt="Seal" style={{ width: '70px', height: '70px' }} />
+                  <div style={{ width: '220px', borderTop: '2px solid var(--pharma-navy)', paddingTop: '8px', fontWeight: '800', color: 'var(--pharma-navy)', fontSize: '1.1rem' }}>
                     {t('developerName')}
                   </div>
                 </div>
@@ -749,7 +726,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
               ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
             </button>
-            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); if(onCertClosed) onCertClosed(); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
+            <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
               {t('back')}
             </button>
           </div>
@@ -794,7 +771,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           unitId={currentUnit} 
           onQuizComplete={handleQuizComplete} 
           user={user} 
-          count={['cleaning-validation', 'process-validation', 'hold-time-stability', 'equipment-qualification'].includes(currentUnit) ? 15 : 10}
+          count={['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'].includes(currentUnit) ? 15 : 10}
         />
       </div>
     );
@@ -806,7 +783,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       {showCertificate && <CertificateModal isSample={isSampleMode} certData={selectedCert} />}
       {showDevProfile && <DeveloperProfileModal />}
 
-      {!activeTab && <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
+      <header className="main-header glass-panel" style={{ borderRadius: '0 0 24px 24px', margin: '0 20px', backgroundColor: 'var(--primary-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <img src={LOGO_PATH} alt="Pharma Logo" style={{ width: '55px', height: '55px' }} />
           <div>
@@ -827,7 +804,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           </div>
           <button onClick={onLogout} className="btn-logout">{t('logout')}</button>
         </div>
-      </header>}
+      </header>
 
       {/* PROMINENT BANNER ALWAYS VISIBLE */}
       <div style={{
