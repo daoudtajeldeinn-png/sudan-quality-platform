@@ -622,7 +622,8 @@ export default function StudentShell({ user, onLogout, authToken }) {
         if (!input) return;
         window.scrollTo(0, 0);
         try { await document.fonts.ready; } catch(e) {}
-        await new Promise(r => setTimeout(r, 800));
+        // Force Arabic font load
+        await new Promise(r => setTimeout(r, 2000));
         try {
           const html2canvas = (await import('html2canvas')).default;
           const { jsPDF }   = await import('jspdf');
@@ -747,12 +748,10 @@ export default function StudentShell({ user, onLogout, authToken }) {
                 )}
 
                 {/* Issue date */}
-                <p style={{ textAlign:'center', fontSize:'1rem', color:'var(--pharma-navy,#0f2557)', fontWeight:'600', margin:'10px 0 0 0' }}>
-                  {certLang==='ar'?'تاريخ الإصدار':'Issue Date'}: {current.issueDate}
-                </p>
+
 
                 {/* Footer: QR + Gold Seal + Signature */}
-                <div style={{ marginTop:'10px', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'0 20px' }}>
+                <div style={{ marginTop:'10px', display:'flex', justifyContent:'space-between', alignItems:'flex-end', padding:'0 20px' }}>
                   <div style={{ textAlign:certLang==='ar'?'right':'left', color:'var(--text-secondary,#64748b)' }}>
                     <p style={{ margin:'5px 0', fontWeight:'700', fontSize:'1rem', color:'var(--pharma-navy,#0f2557)' }}>
                       {current.date}: {new Date(certData.issueDate||certData.createdAt||Date.now()).toLocaleDateString()}
@@ -793,10 +792,7 @@ export default function StudentShell({ user, onLogout, authToken }) {
 
             {/* Controls — outside printable div, same as Dashboard.jsx */}
             <div className="no-print" style={{ display:'flex', gap:'15px', zIndex:3000, paddingBottom:'40px', flexWrap:'wrap', justifyContent:'center' }}>
-              <button onClick={() => setCertLang(certLang==='en'?'ar':'en')}
-                style={{ background:'#6c757d', color:'white', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'150px' }}>
-                🌐 {certLang==='en'?'Arabic / عربي':'English'}
-              </button>
+
               <button onClick={() => setViewType(viewType==='cert'?'transcript':'cert')}
                 style={{ background:'var(--regulatory-amber,#d4af37)', color:'#1a2a4a', border:'none', padding:'12px 24px', borderRadius:'8px', cursor:'pointer', fontSize:'14px', fontWeight:'600', minWidth:'150px' }}>
                 {viewType==='cert'?'📄 View Transcript':'📜 View Certificate'}
