@@ -459,21 +459,193 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
   };
 
   /* ── QUESTIONS ── */
-  const Questions = () => (
-    <div style={{ padding: '24px' }}>
-      <div style={{ background: S.card, borderRadius: '16px', border: `1px solid ${S.border}`, padding: '50px', textAlign: 'center' }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>❓</div>
-        <div style={{ fontSize: '18px', fontWeight: '700', color: S.text, marginBottom: '10px' }}>Question Manager</div>
-        <div style={{ fontSize: '13px', color: S.sub, marginBottom: '28px', maxWidth: '400px', margin: '0 auto 28px', lineHeight: '1.6' }}>
-          Manage quiz questions for each course unit. For now, use Supabase dashboard to add, edit, or delete questions directly.
+  const Questions = () => {
+    const UNIT_LIST = [
+      {id:'gmp-intro',label:'GMP Basics'},{id:'glp-basics',label:'GLP Basics'},
+      {id:'iso-17025',label:'ISO 17025'},{id:'ich-guidelines',label:'ICH Guidelines'},
+      {id:'validation-qualification',label:'Validation & Qualification'},{id:'data-integrity',label:'Data Integrity'},
+      {id:'qrm-basics',label:'QRM Basics'},{id:'gdp-basics',label:'GDP Basics'},
+      {id:'ich-q10',label:'ICH Q10'},{id:'sterile-annex1',label:'Sterile Manufacturing'},
+      {id:'gamp5-basics',label:'GAMP5 Basics'},{id:'batch-records',label:'Batch Records'},
+      {id:'nmpb-reg',label:'NMPB Regulatory'},{id:'adv-gmp',label:'Advanced GMP'},
+      {id:'adv-glp',label:'Advanced GLP'},{id:'adv-iso-17025',label:'Advanced ISO 17025'},
+      {id:'adv-validation',label:'Advanced Validation'},{id:'adv-qrm',label:'Advanced QRM'},
+      {id:'adv-gdp',label:'Advanced GDP'},{id:'cleaning-validation',label:'Cleaning Validation'},
+      {id:'process-validation',label:'Process Validation'},{id:'hold-time-stability',label:'Hold Time Stability'},
+      {id:'method-validation',label:'Method Validation'},{id:'equipment-qualification',label:'Equipment Qualification'},
+    ];
+    const API_URL = 'https://backend-lime-gamma-gf9yal9mmd.vercel.app/api';
+    const headers = { 'Content-Type':'application/json', 'x-admin-email': user.email };
+
+    const [selectedUnit, setSelectedUnit] = React.useState('');
+    const [questions, setQuestions]       = React.useState([]);
+    const [qLoading, setQLoading]         = React.useState(false);
+    const [showForm, setShowForm]         = React.useState(false);
+    const [editQ, setEditQ]               = React.useState(null);
+    const [form, setForm]                 = React.useState({ question:'', options:['','','',''], correctAnswer:0, explanation:'' });
+    const [saving, setSaving]             = React.useState(false);
+    const [msg, setMsg]                   = React.useState('');
+
+    const loadQuestions = async (unitId) => {
+      setQLoading(true);
+      try {
+        const res  = await fetch(`${API_URL}/admin/questions/${unitId}`, { headers });
+        const data = await res.json();
+        setQuestions(data.questions || []);
+      } catch(e) { console.error(e); }
+      setQLoading(false);
+    };
+
+    const handleUnitChange = (e) => {
+      setSelectedUnit(e.target.value);
+      setShowForm(false);
+      setEditQ(null);
+      if (e.target.value) loadQuestions(e.target.value);
+      else setQuestions([]);
+    };
+
+    const resetForm = () => {
+      setForm({ question:'', options:['','','',''], correctAnswer:0, explanation:'' });
+      setEditQ(null);
+      setShowForm(false);
+    };
+
+    const openEdit = (q) => {
+      setEditQ(q);
+      const opts = Array.isArray(q.options) ? [...q.options] : ['','','',''];
+      while (opts.length < 4) opts.push('');
+      setForm({ question: q.question||'', options: opts, correctAnswer: q.correctAnswer||0, explanation: q.explanation||'' });
+      setShowForm(true);
+    };
+
+    const handleSave = async () => {
+      if (!form.question.trim()) { setMsg('❌ Question text is required'); return; }
+      setSaving(true); setMsg('');
+      try {
+        const body = { ...form, unitId: selectedUnit, options: form.options.filter(o => o.trim()) };
+        const url  = editQ ? `${API_URL}/admin/questions/${editQ.id}` : `${API_URL}/admin/questions`;
+        const res  = await fetch(url, { method: editQ ? 'PUT' : 'POST', headers, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (data.success) { setMsg('✅ Saved!'); resetForm(); loadQuestions(selectedUnit); }
+        else setMsg(`❌ ${data.error}`);
+      } catch(e) { setMsg('❌ Error saving'); }
+      setSaving(false);
+    };
+
+    const handleDelete = async (id) => {
+      if (!window.confirm('Delete this question?')) return;
+      try {
+        const res  = await fetch(`${API_URL}/admin/questions/${id}`, { method:'DELETE', headers });
+        const data = await res.json();
+        if (data.success) { setMsg('✅ Deleted'); loadQuestions(selectedUnit); }
+        else setMsg(`❌ ${data.error}`);
+      } catch(e) { setMsg('❌ Error deleting'); }
+    };
+
+    return (
+      <div style={{ padding:'24px', display:'flex', flexDirection:'column', gap:'20px' }}>
+        {/* Unit selector */}
+        <div style={{ background:S.card, borderRadius:'16px', border:`1px solid ${S.border}`, padding:'20px', display:'flex', alignItems:'center', gap:'16px', flexWrap:'wrap' }}>
+          <div style={{ fontSize:'14px', fontWeight:'700', color:S.text }}>❓ Question Manager</div>
+          <select value={selectedUnit} onChange={handleUnitChange} style={{ padding:'10px 16px', borderRadius:'10px', border:`1px solid ${S.border}`, fontSize:'13px', color:S.text, flex:1, minWidth:'200px', outline:'none', background:S.bg }}>
+            <option value="">— Select a unit —</option>
+            {UNIT_LIST.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+          </select>
+          {selectedUnit && (
+            <button onClick={() => { setShowForm(true); setEditQ(null); setForm({ question:'', options:['','','',''], correctAnswer:0, explanation:'' }); }}
+              style={{ padding:'10px 20px', borderRadius:'10px', background:`linear-gradient(135deg,${S.green},#0f6e56)`, color:'white', border:'none', fontSize:'13px', fontWeight:'600', cursor:'pointer' }}>
+              + Add Question
+            </button>
+          )}
+          {msg && <div style={{ fontSize:'13px', color: msg.startsWith('✅') ? S.green : S.danger, fontWeight:'600' }}>{msg}</div>}
         </div>
-        <a href="https://supabase.com/dashboard/project/xxlxfhlliojkplrcvukc" target="_blank" rel="noreferrer"
-          style={{ display: 'inline-block', padding: '12px 28px', background: `linear-gradient(135deg,${S.navyMid},${S.navy})`, color: 'white', borderRadius: '12px', textDecoration: 'none', fontSize: '13px', fontWeight: '600', boxShadow: '0 4px 14px rgba(26,58,122,0.3)' }}>
-          Open Supabase Dashboard →
-        </a>
+
+        {/* Add/Edit Form */}
+        {showForm && (
+          <div style={{ background:S.card, borderRadius:'16px', border:`2px solid ${S.blue}`, padding:'24px' }}>
+            <div style={{ fontSize:'14px', fontWeight:'700', color:S.text, marginBottom:'16px' }}>
+              {editQ ? '✏️ Edit Question' : '➕ New Question'}
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ fontSize:'12px', color:S.sub, fontWeight:'600', display:'block', marginBottom:'6px' }}>Question Text *</label>
+                <textarea value={form.question} onChange={e => setForm({...form, question:e.target.value})}
+                  rows={3} placeholder="Enter the question..."
+                  style={{ width:'100%', padding:'10px', borderRadius:'10px', border:`1px solid ${S.border}`, fontSize:'13px', resize:'vertical', outline:'none', fontFamily:'inherit', boxSizing:'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize:'12px', color:S.sub, fontWeight:'600', display:'block', marginBottom:'6px' }}>Answer Options</label>
+                {form.options.map((opt, idx) => (
+                  <div key={idx} style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
+                    <input type="radio" name="correct" checked={form.correctAnswer === idx} onChange={() => setForm({...form, correctAnswer:idx})} />
+                    <input value={opt} onChange={e => { const opts=[...form.options]; opts[idx]=e.target.value; setForm({...form, options:opts}); }}
+                      placeholder={`Option ${idx+1}${form.correctAnswer===idx?' (correct)':''}`}
+                      style={{ flex:1, padding:'8px 12px', borderRadius:'8px', border:`1px solid ${form.correctAnswer===idx ? S.green : S.border}`, fontSize:'13px', outline:'none' }} />
+                  </div>
+                ))}
+                <div style={{ fontSize:'11px', color:S.sub, marginTop:'4px' }}>Select the radio button next to the correct answer</div>
+              </div>
+              <div>
+                <label style={{ fontSize:'12px', color:S.sub, fontWeight:'600', display:'block', marginBottom:'6px' }}>Explanation (optional)</label>
+                <input value={form.explanation} onChange={e => setForm({...form, explanation:e.target.value})}
+                  placeholder="Why is this the correct answer?"
+                  style={{ width:'100%', padding:'10px', borderRadius:'10px', border:`1px solid ${S.border}`, fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button onClick={handleSave} disabled={saving}
+                  style={{ padding:'10px 24px', borderRadius:'10px', background:`linear-gradient(135deg,${S.navyMid},${S.navy})`, color:'white', border:'none', fontSize:'13px', fontWeight:'600', cursor:'pointer', opacity: saving?0.6:1 }}>
+                  {saving ? '⌛ Saving...' : '💾 Save Question'}
+                </button>
+                <button onClick={resetForm}
+                  style={{ padding:'10px 20px', borderRadius:'10px', background:S.bg, border:`1px solid ${S.border}`, fontSize:'13px', fontWeight:'600', cursor:'pointer', color:S.text }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Questions list */}
+        {selectedUnit && (
+          <div style={{ background:S.card, borderRadius:'16px', border:`1px solid ${S.border}`, overflow:'hidden' }}>
+            <div style={{ padding:'16px 20px', borderBottom:`1px solid ${S.border}`, background:S.bg, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ fontSize:'14px', fontWeight:'700', color:S.text }}>
+                {UNIT_LIST.find(u=>u.id===selectedUnit)?.label} — {questions.length} questions
+              </div>
+            </div>
+            {qLoading ? (
+              <div style={{ padding:'40px', textAlign:'center', color:S.sub }}>⌛ Loading questions...</div>
+            ) : questions.length === 0 ? (
+              <div style={{ padding:'40px', textAlign:'center', color:S.sub }}>
+                <div style={{ fontSize:'32px', marginBottom:'8px' }}>❓</div>
+                <div>No questions yet. Click "+ Add Question" to create one.</div>
+              </div>
+            ) : questions.map((q, i) => (
+              <div key={q.id} style={{ padding:'16px 20px', borderBottom:`1px solid ${S.bg}`, display:'flex', gap:'16px', alignItems:'flex-start' }}>
+                <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:`linear-gradient(135deg,${S.navyMid},${S.navy})`, color:'white', fontSize:'12px', fontWeight:'700', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{i+1}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:'13px', fontWeight:'600', color:S.text, marginBottom:'8px' }}>{q.question}</div>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
+                    {(Array.isArray(q.options)?q.options:[]).map((opt, idx) => (
+                      <span key={idx} style={{ fontSize:'11px', padding:'3px 10px', borderRadius:'6px', background: idx===q.correctAnswer ? 'rgba(29,158,117,0.12)' : S.bg, color: idx===q.correctAnswer ? S.green : S.sub, border:`1px solid ${idx===q.correctAnswer ? S.green : S.border}`, fontWeight: idx===q.correctAnswer ? '700' : '400' }}>
+                        {idx===q.correctAnswer ? '✓ ' : ''}{opt}
+                      </span>
+                    ))}
+                  </div>
+                  {q.explanation && <div style={{ fontSize:'11px', color:S.sub, marginTop:'6px', fontStyle:'italic' }}>💡 {q.explanation}</div>}
+                </div>
+                <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
+                  <button onClick={() => openEdit(q)} style={{ padding:'6px 12px', borderRadius:'8px', background:'rgba(24,95,165,0.1)', border:`1px solid ${S.blue}`, color:S.blue, fontSize:'11px', fontWeight:'600', cursor:'pointer' }}>✏️ Edit</button>
+                  <button onClick={() => handleDelete(q.id)} style={{ padding:'6px 12px', borderRadius:'8px', background:'rgba(220,38,38,0.1)', border:`1px solid ${S.danger}`, color:S.danger, fontSize:'11px', fontWeight:'600', cursor:'pointer' }}>🗑️ Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
+
 
   /* ── SETTINGS ── */
   const Settings = () => (

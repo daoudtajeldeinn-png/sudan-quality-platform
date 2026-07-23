@@ -98,3 +98,54 @@ router.delete('/users/:userId/progress', adminAuth, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── QUESTION MANAGER ──
+
+// GET /api/admin/questions/:unitId
+router.get('/questions/:unitId', adminAuth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('unitId', req.params.unitId)
+      .order('id', { ascending: true });
+    if (error) throw error;
+    res.json({ questions: data || [] });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST /api/admin/questions
+router.post('/questions', adminAuth, async (req, res) => {
+  try {
+    const { unitId, question, options, correctAnswer, type, explanation } = req.body;
+    const { data, error } = await supabase
+      .from('questions')
+      .insert({ unitId, question, options, correctAnswer, type: type||'mcq', explanation: explanation||'' })
+      .select().single();
+    if (error) throw error;
+    res.json({ success: true, question: data });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/admin/questions/:id
+router.put('/questions/:id', adminAuth, async (req, res) => {
+  try {
+    const { question, options, correctAnswer, type, explanation } = req.body;
+    const { data, error } = await supabase
+      .from('questions')
+      .update({ question, options, correctAnswer, type, explanation })
+      .eq('id', req.params.id)
+      .select().single();
+    if (error) throw error;
+    res.json({ success: true, question: data });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// DELETE /api/admin/questions/:id
+router.delete('/questions/:id', adminAuth, async (req, res) => {
+  try {
+    const { error } = await supabase.from('questions').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
