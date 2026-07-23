@@ -533,6 +533,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           const pdfHeight = pdf.internal.pageSize.getHeight();
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
           pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
+          if (prevLang === 'ar') setCertLang('ar');
           logAuditTrail('eventCert');
         });
       } catch (error) {
