@@ -59,7 +59,7 @@ const LoadingSpinner = () => (
 );
 
 function AppContent() {
-  const { user, authToken, loading, error, isAdmin, loginWithGoogle, logout } = useAuth();
+  const { user, authToken, loading, error, isAdmin, isInactive, daysSinceLogin, setIsInactive, loginWithGoogle, logout } = useAuth();
   const [studentView, setStudentView] = useState(false);
 
   if (loading) return <LoadingSpinner />;
@@ -91,6 +91,36 @@ function AppContent() {
           disabled={loading}>
           الدخول بحساب Google
         </button>
+      </div>
+    );
+  }
+
+  if (user && isInactive) {
+    return (
+      <div style={{
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+        height:'100vh', background:'linear-gradient(135deg,#0f2557,#1a3a7a)',
+        color:'white', textAlign:'center', padding:'40px', fontFamily:"'Inter',sans-serif"
+      }}>
+        <div style={{ fontSize:'64px', marginBottom:'20px' }}>⏰</div>
+        <h1 style={{ fontSize:'26px', fontWeight:'700', marginBottom:'12px' }}>Account Inactive</h1>
+        <p style={{ fontSize:'15px', opacity:0.75, maxWidth:'420px', lineHeight:'1.7', marginBottom:'8px' }}>
+          Your account has been inactive for <strong style={{color:'#d4af37'}}>{daysSinceLogin} days</strong>.
+          Please contact the administrator to reactivate your account.
+        </p>
+        <p style={{ fontSize:'13px', opacity:0.5, marginBottom:'30px' }}>
+          حسابك غير نشط. يرجى التواصل مع المسؤول لإعادة التفعيل.
+        </p>
+        <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', justifyContent:'center' }}>
+          <button onClick={() => setIsInactive(false)} style={{
+            padding:'12px 28px', borderRadius:'10px', background:'#d4af37',
+            color:'#1a2a4a', border:'none', fontWeight:'700', cursor:'pointer', fontSize:'14px'
+          }}>Continue Anyway</button>
+          <button onClick={logout} style={{
+            padding:'12px 28px', borderRadius:'10px', background:'rgba(255,255,255,0.1)',
+            color:'white', border:'1px solid rgba(255,255,255,0.3)', fontWeight:'600', cursor:'pointer', fontSize:'14px'
+          }}>Sign Out</button>
+        </div>
       </div>
     );
   }

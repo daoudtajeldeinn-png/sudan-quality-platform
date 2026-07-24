@@ -533,6 +533,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           const pdfHeight = pdf.internal.pageSize.getHeight();
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
           pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
+          if (prevLang === 'ar') setCertLang('ar');
           logAuditTrail('eventCert');
         });
       } catch (error) {
@@ -656,7 +657,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
               {viewType === 'cert' ? (
                 <div style={{ marginTop: '130px' }}>
-                  <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '800' }}>
+                  <h1 style={{ fontSize: '3.2rem', color: 'var(--pharma-navy)', marginBottom: '5px', textTransform: certLang === 'ar' ? 'none' : 'uppercase', letterSpacing: certLang === 'ar' ? 'normal' : '2px', fontWeight: '800' }}>
                     {current.title}
                   </h1>
                   <div style={{ width: '200px', height: '4px', backgroundColor: 'var(--pharma-gold)', margin: '15px auto' }}></div>

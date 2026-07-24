@@ -14,6 +14,8 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isInactive, setIsInactive] = useState(false);
+  const [daysSinceLogin, setDaysSinceLogin] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -32,6 +34,10 @@ export const useAuth = () => {
           photoURL: currentUser.photoURL
         }).then(tokenData => {
           setAuthToken(tokenData.token || null);
+          if (tokenData.inactive === true) {
+            setIsInactive(true);
+            setDaysSinceLogin(tokenData.daysSince || 0);
+          }
         }).catch(err => {
           console.warn('Backend sync (non-critical):', err.message);
           setAuthToken(null); // App still works without token
@@ -40,6 +46,8 @@ export const useAuth = () => {
         setUser(null);
         setAuthToken(null);
         setIsAdmin(false);
+        setIsInactive(false);
+        setDaysSinceLogin(0);
         setLoading(false);
         setError(null);
       }
@@ -75,5 +83,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, authToken, loading, error, isAdmin, loginWithGoogle, logout };
+  return { user, authToken, loading, error, isAdmin, isInactive, daysSinceLogin, setIsInactive, loginWithGoogle, logout };
 };
