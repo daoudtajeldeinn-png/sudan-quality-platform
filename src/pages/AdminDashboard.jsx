@@ -57,6 +57,14 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
   const [loading, setLoading]           = useState(true);
   const [searchQuery, setSearchQuery]   = useState('');
   const [sidebarOpen, setSidebarOpen]   = useState(true);
+  const [windowWidth, setWindowWidth]   = React.useState(window.innerWidth);
+  const isMobile = windowWidth < 768;
+
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -104,7 +112,8 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
   /* ── SIDEBAR ── */
   const Sidebar = () => (
     <div style={{
-      width: sidebarOpen ? '240px' : '64px',
+      width: isMobile ? '0' : sidebarOpen ? '240px' : '64px',
+      display: isMobile ? 'none' : 'flex',
       background: `linear-gradient(180deg, ${S.navy} 0%, ${S.navyMid} 55%, ${S.navyDk} 100%)`,
       display: 'flex', flexDirection: 'column', flexShrink: 0,
       transition: 'width 0.22s ease', overflow: 'hidden',
@@ -706,10 +715,34 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
           </div>
         ) : (
           <div style={{ flex: 1, overflow: 'auto' }}>
-            <ActiveSection />
+            <div style={{ paddingBottom: isMobile ? '72px' : '0' }}><ActiveSection /></div>
           </div>
         )}
       </div>
+      {/* Mobile bottom nav */}
+      {isMobile && (
+        <div style={{
+          position:'fixed', bottom:0, left:0, right:0, zIndex:200,
+          background:`linear-gradient(135deg,${S.navy},${S.navyMid})`,
+          display:'flex', justifyContent:'space-around', alignItems:'center',
+          padding:'8px 0', borderTop:`2px solid ${S.gold}`,
+          boxShadow:'0 -4px 20px rgba(0,0,0,0.3)',
+        }}>
+          {NAV_ITEMS.map(item => {
+            const active = activeSection === item.id;
+            return (
+              <button key={item.id} onClick={() => setActiveSection(item.id)} style={{
+                display:'flex', flexDirection:'column', alignItems:'center', gap:'3px',
+                background:'none', border:'none', cursor:'pointer', padding:'6px 8px',
+                color: active ? S.gold : 'rgba(255,255,255,0.5)',
+              }}>
+                <span style={{ fontSize:'20px' }}>{item.icon}</span>
+                <span style={{ fontSize:'9px', fontWeight: active?'700':'400' }}>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
