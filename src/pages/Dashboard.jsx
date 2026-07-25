@@ -830,8 +830,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         </div>
       </header>}
 
-      {/* PROMINENT BANNER ALWAYS VISIBLE */}
-      <div style={{
+      {/* PROMINENT BANNER — only show when not in StudentShell */}
+      {!activeTab && <div style={{
         background: 'linear-gradient(90deg, #d4edda, #c3e6cb)',
         color: '#155724',
         padding: '20px',
@@ -849,8 +849,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         </div>
       </div>
 
-      {/* Certificates Section */}
-      <section style={{ padding: '30px', borderRadius: '24px', margin: '0 20px 30px', background: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+      {/* Certificates Section — hidden in StudentShell (has own tab) */}
+      {!activeTab && <section style={{ padding: '30px', borderRadius: '24px', margin: '0 20px 30px', background: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
         <h3 style={{ color: '#17a2b8' }}>🎯 الشهادات المحقّقة ({certificates.length})</h3>
         <div style={{ fontSize: '1.1rem', marginBottom: '15px', color: '#28a745', fontWeight: 'bold' }}>
           كل كورس اكتمل بنسبة 90%+ = شهادة
@@ -868,7 +868,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             </button>
           </div>
         )) : <p style={{ color: '#6c757d' }}>ابدأ الكورسات لتحقيق شهاداتك!</p>}
-      </section>
+      </section>}
 
 
       <div className="glass-panel" style={{ margin: '15px 20px 0', padding: '12px 25px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
