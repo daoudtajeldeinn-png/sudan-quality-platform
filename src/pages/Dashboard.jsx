@@ -847,7 +847,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         <div>
           <span>نظام المنصة: <strong style={{ color: '#28a745' }}>شهادة معتمدة لكل كورس على حدة</strong></span>
         </div>
-      </div>
+      </div>}
 
       {/* Certificates Section — hidden in StudentShell (has own tab) */}
       {!activeTab && <section style={{ padding: '30px', borderRadius: '24px', margin: '0 20px 30px', background: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
