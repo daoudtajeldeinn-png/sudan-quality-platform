@@ -48,7 +48,7 @@ const S = {
   sub:     '#64748b',
 };
 
-export default function AdminDashboard({ user, onLogout, authToken }) {
+export default function AdminDashboard({ user, onLogout, authToken, onSwitchView }) {
   const { language } = useLanguage();
   const [activeSection, setActiveSection] = useState('overview');
   const [users, setUsers]               = useState([]);
@@ -204,6 +204,11 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
             style={{ padding: '8px 14px 8px 32px', borderRadius: '10px', border: `1px solid ${S.border}`, fontSize: '13px', width: '220px', outline: 'none', background: S.bg, color: S.text }} />
         </div>
         <button onClick={fetchData} style={{ padding: '8px 14px', borderRadius: '10px', background: S.navyMid, color: 'white', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>↻ Refresh</button>
+        {onSwitchView && (
+          <button onClick={onSwitchView} style={{ padding: '8px 14px', borderRadius: '10px', background: `linear-gradient(135deg,${S.green},#0f6e56)`, color: 'white', border: 'none', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>
+            👁️ Student View
+          </button>
+        )}
       </div>
     </div>
   );

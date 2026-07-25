@@ -129,29 +129,12 @@ function AppContent() {
     <ErrorBoundary>
       <GamificationProvider userId={user.uid} userEmail={user.email} authToken={authToken} loading={loading}>
         <Suspense fallback={<LoadingSpinner />}>
-          {/* Admin view toggle button */}
-          {isAdmin && (
-            <div style={{
-              position:'fixed', bottom:'20px', right:'20px', zIndex:9999,
-              display:'flex', gap:'8px'
-            }}>
-              <button
-                onClick={() => setStudentView(!studentView)}
-                style={{
-                  padding:'10px 18px', borderRadius:'10px', border:'none', cursor:'pointer',
-                  background: studentView ? 'linear-gradient(135deg,#1a3a7a,#0f2557)' : 'linear-gradient(135deg,#1d9e75,#0f6e56)',
-                  color:'white', fontWeight:'600', fontSize:'13px',
-                  boxShadow:'0 4px 15px rgba(0,0,0,0.25)'
-                }}>
-                {studentView ? '⚙️ Admin View' : '👁️ Student View'}
-              </button>
-            </div>
-          )}
+
 
           {isAdmin && !studentView ? (
-            <AdminDashboard user={user} onLogout={logout} authToken={authToken} />
+            <AdminDashboard user={user} onLogout={logout} authToken={authToken} onSwitchView={() => setStudentView(true)} />
           ) : (
-            <StudentShell user={user} onLogout={logout} authToken={authToken} />
+            <StudentShell user={user} onLogout={logout} authToken={authToken} onSwitchView={() => setStudentView(false)} isAdmin={isAdmin} />
           )}
         </Suspense>
       </GamificationProvider>
