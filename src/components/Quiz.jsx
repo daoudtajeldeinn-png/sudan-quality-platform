@@ -122,9 +122,6 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
 
   const processQuestions = (rawQuestions) => {
     return rawQuestions.map(q => {
-      // Normalize correctAnswer to string for reliable comparisons across frontend/backends
-      const normalizedCorrect = q.correctAnswer !== undefined && q.correctAnswer !== null ? String(q.correctAnswer) : '';
-
       if (q.type === 'mcq' || !q.type) {
         // Handle case where options might be missing but we expect 10 questions
         const optionsCount = q.options ? q.options.en.length : 0;
@@ -132,11 +129,10 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
         return {
           ...q,
           type: 'mcq',
-          correctAnswer: normalizedCorrect,
           shuffledIndices: shuffleArray(indices)
         };
       }
-      return { ...q, type: q.type || 'mcq', correctAnswer: normalizedCorrect };
+      return { ...q, type: q.type || 'mcq' };
     });
   };
 
@@ -155,10 +151,9 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
       // Local validation for Demo Mode
       if (q.type === 'mcq') {
         const originalIdx = q.shuffledIndices[answer];
-        // Compare as strings to avoid type-mismatch (e.g. '0' vs 0)
-        isCorrect = String(originalIdx) === String(q.correctAnswer);
+        isCorrect = originalIdx === q.correctAnswer;
       } else if (q.type === 'tf') {
-        isCorrect = String(answer) === String(q.correctAnswer);
+        isCorrect = answer === q.correctAnswer;
       } else if (q.type === 'fill') {
         const normalizedUser = String(answer || '').trim().toLowerCase();
         // Support both correctAnswers (array) and correctAnswer (string/object) formats
@@ -184,9 +179,9 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
         // Fallback to local check if server fails unexpectedly
         if (q.type === 'mcq') {
           const originalIdx = q.shuffledIndices[answer];
-          isCorrect = String(originalIdx) === String(q.correctAnswer);
+          isCorrect = originalIdx === q.correctAnswer;
         } else if (q.type === 'tf') {
-          isCorrect = String(answer) === String(q.correctAnswer);
+          isCorrect = answer === q.correctAnswer;
         } else if (q.type === 'fill') {
           const normalizedUser = String(answer || '').trim().toLowerCase();
           // Support both correctAnswers (array) and correctAnswer (string/object) formats
@@ -555,4 +550,315 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
           <h2 style={{ fontSize: '3rem', color: passed ? 'var(--primary-color)' : 'var(--text-error)', marginBottom: '10px' }}>
             %{score}
           </h2>
-          <h3>{passed ? (language === 'ar' ? 'تهانينا! لقد اجتزت الامتحان بنجاح' : 'Congratulations! You passed the exam') : (language === 'ar' ? 'للأسف لم تت[...]
+          <h3>{passed ? (language === 'ar' ? 'تهانينا! لقد اجتزت الامتحان بنجاح' : 'Congratulations! You passed the exam') : (language === 'ar' ? 'للأسف لم تتخطى درجة النجاح (90%)' : 'Sorry, you didn\'t reach the passing score (90%)')}</h3>
+
+          {passed && (
+            <div className="certificate-action-box" style={{ 
+              marginTop: '30px', 
+              padding: '25px', 
+              backgroundColor: 'rgba(40, 167, 69, 0.05)', 
+              borderRadius: '16px',
+              border: '1px dashed var(--primary-color)' 
+            }}>
+              <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: 'var(--text-secondary)' }}>
+                {language === 'ar' ? 'أدخل اسمك كما تود أن يظهر في الشهادة:' : 'Enter your name as you want it to appear on the certificate:'}
+              </p>
+              <input 
+                type="text" 
+                value={certName}
+                onChange={(e) => setCertName(e.target.value)}
+                placeholder={language === 'ar' ? 'الاسم الثنائي أو الثلاثي' : 'Your Full Name'}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  marginBottom: '15px',
+                  textAlign: 'center',
+                  fontSize: '1.1rem'
+                }}
+              />
+
+              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.9rem', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  {language === 'ar' ? 'لغة الشهادة:' : 'Certificate Language:'}
+                </p>
+                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', fontSize: '1rem', color: 'var(--text-primary)' }}>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="ar" checked={certLang === 'ar'} onChange={(e) => setCertLang(e.target.value)} />
+                    العربية
+                  </label>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="en" checked={certLang === 'en'} onChange={(e) => setCertLang(e.target.value)} />
+                    English
+                  </label>
+                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <input type="radio" value="bilingual" checked={certLang === 'bilingual'} onChange={(e) => setCertLang(e.target.value)} />
+                    {language === 'ar' ? 'ثنائية اللغة' : 'Bilingual'}
+                  </label>
+                </div>
+              </div>
+
+              <button 
+                onClick={generatePDF} 
+                disabled={isGenerating || !certName.trim()}
+                className="btn-primary"
+                style={{ 
+                  width: '100%', 
+                  padding: '15px', 
+                  fontSize: '1.1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px'
+                }}
+              >
+                {isGenerating ? '⌛...' : '🎓'} {language === 'ar' ? 'تحميل الشهادة المعتمدة (PDF)' : 'Download Certified Certificate (PDF)'}
+              </button>
+            </div>
+          )}
+
+          {!passed && (
+            <p style={{ color: 'var(--text-error)', fontWeight: 'bold', margin: '15px 0' }}>
+              {t('scoreLowWarning')}
+            </p>
+          )}
+
+          <p style={{ margin: '20px 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            {language === 'ar' ? 'لقد تمت مراجعة إجاباتك بناءً على معايير الجودة العالمية.' : 'Your answers have been reviewed based on international quality standards.'}
+          </p>
+
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '20px' }}>
+            <button onClick={() => window.location.reload()} className="btn-secondary" style={{ padding: '12px 30px' }}>
+              {language === 'ar' ? 'العودة للوحة القيادة' : 'Back to Dashboard'}
+            </button>
+
+            {!passed && (
+              <button onClick={() => {
+                setCurrentQuestionIndex(0);
+                setUserAnswers([]);
+                setQuizState('active');
+                loadQuestions();
+              }} className="btn-primary" style={{ padding: '12px 30px', backgroundColor: 'var(--btn-error-bg)' }}>
+                {t('retakeBtn')}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Hidden Certificate Template for PDF Rendering */}
+        <div id="certificate-template" className={`certificate-container ${certLang === 'ar' ? 'rtl-cert' : ''}`} style={{ 
+          position: 'absolute', // Absolute instead of Fixed to avoid viewport clipping
+          top: '-9999px', // Far off-screen
+          left: '0',
+          width: '1123px',
+          height: '794px',
+          zIndex: -1,
+          opacity: 1 // Must be 1 for capture
+        }}>
+          <img src={certBg} className="certificate-bg" alt="bg" />
+          <div className="certificate-content">
+            <img src={pharmaLogo} className="cert-logo" alt="logo" />
+            <h1 className="cert-header">
+              {certLang === 'bilingual' 
+                ? 'شهادة إتمام / Certificate of Completion'
+                : certLang === 'ar' ? 'شهادة إتمام' : 'Certificate of Completion'}
+            </h1>
+            <p className="cert-text">
+              {certLang === 'bilingual'
+                ? 'تشهد منصة السودان للجودة بأن: / Sudan Quality Platform certifies that:'
+                : certLang === 'ar' ? 'تشهد منصة السودان للجودة بأن:' : 'Sudan Quality Platform certifies that:'}
+            </p>
+            <div className="cert-name">{certName}</div>
+            <p className="cert-text" style={{ marginTop: '20px' }}>
+              {certLang === 'bilingual'
+                ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في: / has successfully completed the professional training in:'
+                : certLang === 'ar' ? 'قد اجتاز بنجاح الدورة التدريبية المتخصصة في:' : 'has successfully completed the professional training in:'}
+            </p>
+            <div className="cert-track">
+              {certLang === 'bilingual' 
+                ? `${unitTitle.ar || unitTitle} / ${unitTitle.en || unitTitle}`
+                : unitTitle[certLang] || unitTitle.en || unitTitle.ar || unitTitle}
+            </div>
+            <div className="cert-details">
+              <div className={`cert-detail-item ${certLang === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">
+                  {certLang === 'bilingual' ? 'التاريخ / Date' : certLang === 'ar' ? 'التاريخ' : 'Date'}
+                </div>
+                <div className="cert-value">{new Date().toLocaleDateString(certLang === 'en' ? 'en-US' : 'ar-EG')}</div>
+              </div>
+              <div className={`cert-detail-item ${certLang === 'ar' ? 'rtl' : ''}`}>
+                <div className="cert-label">
+                  {certLang === 'bilingual' ? 'النتيجة / Final Score' : certLang === 'ar' ? 'النتيجة' : 'Final Score'}
+                </div>
+                <div className="cert-value">%{score}</div>
+              </div>
+            </div>
+          </div>
+          <div className="cert-verification">
+            Verification ID: SQP-{unitId.toUpperCase()}-{Math.random().toString(36).substr(2, 9).toUpperCase()}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentQuestionIndex];
+
+  return (
+    <div className="quiz-container animate-fade-in" style={{
+      maxWidth: '800px',
+      margin: '0 auto',
+      padding: '20px',
+      direction: language === 'ar' ? 'rtl' : 'ltr'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>{t('quizTitle')} {isDemoMode && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>(Enhanced Multi-Type)</span>}</h2>
+        <span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{currentQuestionIndex + 1} / {questions.length}</span>
+      </div>
+
+      <div className="glass-panel" style={{
+        backgroundColor: 'var(--bg-card)',
+        padding: '40px',
+        borderRadius: '24px',
+        boxShadow: 'var(--shadow-md)',
+        border: '1px solid var(--border-color)'
+      }}>
+        <p style={{ fontSize: '1.2rem', marginBottom: '30px', fontWeight: '500', color: 'var(--text-primary)' }}>
+          {currentQuestion.questionText[language]}
+        </p>
+
+        {currentQuestion.type === 'mcq' && (
+          <div className="options-stack" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {currentQuestion.shuffledIndices.map((originalIdx, btnIdx) => {
+              const isSelected = userAnswers[currentQuestionIndex] === btnIdx;
+              return (
+                <button
+                  key={btnIdx}
+                  className={`option-btn ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleAnswerSelect(btnIdx)}
+                  style={{
+                    padding: '15px 20px',
+                    textAlign: language === 'ar' ? 'right' : 'left',
+                    borderRadius: '12px',
+                    border: `2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                    backgroundColor: isSelected ? 'var(--bg-selected)' : 'var(--bg-color)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.95rem',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {currentQuestion.options[language][originalIdx]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {currentQuestion.type === 'tf' && (
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <button
+              className={`option-btn ${userAnswers[currentQuestionIndex] === true ? 'selected' : ''}`}
+              onClick={() => handleAnswerSelect(true)}
+              style={{
+                flex: 1, padding: '15px', borderRadius: '12px', border: '2px solid',
+                borderColor: userAnswers[currentQuestionIndex] === true ? 'var(--primary-color)' : 'var(--border-color)',
+                backgroundColor: userAnswers[currentQuestionIndex] === true ? 'var(--bg-selected)' : 'var(--bg-color)',
+                cursor: 'pointer',
+                color: 'var(--text-primary)'
+              }}
+            >
+              {t('true')}
+            </button>
+            <button
+              className={`option-btn ${userAnswers[currentQuestionIndex] === false ? 'selected' : ''}`}
+              onClick={() => handleAnswerSelect(false)}
+              style={{
+                flex: 1, padding: '15px', borderRadius: '12px', border: '2px solid',
+                borderColor: userAnswers[currentQuestionIndex] === false ? 'var(--text-error)' : 'var(--border-color)',
+                backgroundColor: userAnswers[currentQuestionIndex] === false ? 'var(--bg-error-light)' : 'var(--bg-color)',
+                cursor: 'pointer',
+                color: 'var(--text-primary)'
+              }}
+            >
+              {t('false')}
+            </button>
+          </div>
+        )}
+
+        {currentQuestion.type === 'fill' && (
+          <div>
+            <input
+              type="text"
+              value={userAnswers[currentQuestionIndex] || ''}
+              onChange={(e) => handleAnswerSelect(e.target.value)}
+              placeholder={t('placeholderFill')}
+              style={{
+                width: '100%',
+                padding: '15px',
+                borderRadius: '12px',
+                border: '2px solid var(--primary-color)',
+                fontSize: '1rem',
+                outline: 'none',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-primary)'
+              }}
+            />
+          </div>
+        )}
+
+        {showExplanation && !isLastAnswerCorrect && (currentExplanation[language] || currentQuestion.explanation?.[language]) && (
+          <div className="explanation-box animate-fade-in" style={{
+            marginTop: '20px',
+            padding: '15px',
+            backgroundColor: 'var(--bg-error-light)',
+            border: '1px solid var(--border-error)',
+            borderRadius: '12px',
+            color: 'var(--text-error)',
+            fontSize: '0.9rem'
+          }}>
+            <strong style={{ display: 'block', marginBottom: '5px' }}>⚠️ {t('logicHint')}:</strong>
+            {currentExplanation[language] || currentQuestion.explanation?.[language]}
+          </div>
+        )}
+
+        <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            className="btn-primary"
+            disabled={userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === ''}
+            onClick={handleNext}
+            style={{
+              padding: '10px 35px',
+              borderRadius: '10px',
+              backgroundColor: (userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === '') ? '#ccc' : '#28a745',
+              color: 'white',
+              border: 'none',
+              cursor: (userAnswers[currentQuestionIndex] === undefined || userAnswers[currentQuestionIndex] === '') ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            {currentQuestionIndex === questions.length - 1 ? t('submitExam') : t('next')}
+          </button>
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .option-btn:hover:not(.selected) {
+          border-color: #28a745 !important;
+          background-color: #fafafa !important;
+        }
+        .animate-fade-in {
+          animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}} />
+    </div>
+  );
+};
+
+export default Quiz;
