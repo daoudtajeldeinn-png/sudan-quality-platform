@@ -433,7 +433,7 @@ export default function StudentShell({ user, onLogout, authToken }) {
     <div style={{
       width: sidebarOpen ? '230px' : '62px',
       background:`linear-gradient(180deg,${S.navy} 0%,${S.navyMid} 55%,${S.navyDk} 100%)`,
-      display:'flex', flexDirection:'column', flexShrink:0,
+      display: isMobile ? 'none' : 'flex', flexDirection:'column', flexShrink:0,
       transition:'width 0.22s ease', overflow:'hidden',
       boxShadow: isRtl ? '-4px 0 20px rgba(0,0,0,0.18)' : '4px 0 20px rgba(0,0,0,0.18)',
       zIndex:10,

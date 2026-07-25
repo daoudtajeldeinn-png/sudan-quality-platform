@@ -113,9 +113,8 @@ export default function AdminDashboard({ user, onLogout, authToken }) {
   const Sidebar = () => (
     <div style={{
       width: isMobile ? '0' : sidebarOpen ? '240px' : '64px',
-      display: isMobile ? 'none' : 'flex',
       background: `linear-gradient(180deg, ${S.navy} 0%, ${S.navyMid} 55%, ${S.navyDk} 100%)`,
-      display: 'flex', flexDirection: 'column', flexShrink: 0,
+      display: isMobile ? 'none' : 'flex', flexDirection: 'column', flexShrink: 0,
       transition: 'width 0.22s ease', overflow: 'hidden',
       boxShadow: '4px 0 20px rgba(0,0,0,0.18)'
     }}>
