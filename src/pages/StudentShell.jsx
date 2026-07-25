@@ -403,7 +403,7 @@ const ToolkitGrid = ({ isRtl, onOpen }) => (
 /* ══════════════════════════════════════════════
    MAIN SHELL
 ══════════════════════════════════════════════ */
-export default function StudentShell({ user, onLogout, authToken }) {
+export default function StudentShell({ user, onLogout, authToken, onSwitchView, isAdmin }) {
   const { language, toggleLanguage, theme, toggleTheme } = useLanguage();
   const { xp, level, getXpToNextLevel } = useGamification();
   const [sidebarOpen, setSidebarOpen]   = useState(true);
@@ -550,6 +550,11 @@ export default function StudentShell({ user, onLogout, authToken }) {
         <button onClick={toggleTheme} style={{ background:S.bg, border:`1px solid ${S.border}`, borderRadius:'8px', padding:'6px 10px', cursor:'pointer', fontSize:'14px' }}>
           {theme==='dark'?'☀️':'🌙'}
         </button>
+        {isAdmin && onSwitchView && (
+          <button onClick={onSwitchView} style={{ background:`linear-gradient(135deg,#1a3a7a,#0f2557)`, border:'none', color:'white', borderRadius:'8px', padding:'6px 14px', cursor:'pointer', fontSize:'12px', fontWeight:'600' }}>
+            ⚙️ Admin
+          </button>
+        )}
         <button onClick={toggleLanguage} style={{ background:S.navyMid, border:'none', color:'white', borderRadius:'8px', padding:'6px 14px', cursor:'pointer', fontSize:'12px', fontWeight:'600' }}>
           {language==='ar'?'EN':'AR'}
         </button>
