@@ -410,7 +410,15 @@ export default function StudentShell({ user, onLogout, authToken }) {
   const [activePage, setActivePage]     = useState('academy');
   const [openTool, setOpenTool]         = useState(null);
   const [certToOpen, setCertToOpen] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const isMobile = windowWidth < 768;
   const isRtl = language === 'ar';
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // If a tool is open, show full-screen overlay
   if (openTool) {
