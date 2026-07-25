@@ -9,6 +9,12 @@ import './App.css';
 import { LanguageProvider } from './LanguageContext';
 import { GamificationProvider } from './GamificationContext';
 import { useAuth } from './hooks/useAuth';
+import emailjs from '@emailjs/browser';
+
+// EmailJS config
+const EMAILJS_SERVICE  = 'service_5cdkh5d';
+const EMAILJS_TEMPLATE = 'template_lrfl1xq';
+const EMAILJS_KEY      = 'C-YEGgyegcQ0BL0KU';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -94,6 +100,21 @@ function AppContent() {
       </div>
     );
   }
+
+  // Send inactivity email once when flagged
+  React.useEffect(() => {
+    if (user && isInactive) {
+      emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+        to_email:      user.email,
+        user_name:     user.displayName || user.email.split('@')[0],
+        days_inactive: daysSinceLogin,
+      }, EMAILJS_KEY).then(() => {
+        console.log('✅ Inactivity email sent to:', user.email);
+      }).catch(err => {
+        console.warn('EmailJS error (non-critical):', err);
+      });
+    }
+  }, [isInactive]);
 
   if (user && isInactive) {
     return (
