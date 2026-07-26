@@ -149,3 +149,15 @@ router.delete('/questions/:id', adminAuth, async (req, res) => {
     res.json({ success: true });
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
+
+// POST /api/admin/users/:userId/reactivate
+router.post('/users/:userId/reactivate', adminAuth, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ lastLogin: new Date().toISOString() })
+      .eq('userId', req.params.userId);
+    if (error) throw error;
+    res.json({ success: true, message: 'User reactivated' });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
