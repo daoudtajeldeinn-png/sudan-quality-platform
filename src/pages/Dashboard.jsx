@@ -9,6 +9,7 @@ import InspectionChecklist from '../components/InspectionChecklist';
 import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import pharmaLogo from '../assets/pharma_logo.png';
+import { LOGO_B64, SEAL_B64 } from '../assets/certAssets.js';
 import certBg from '../assets/certificate_bg.png';
 import goldSeal from '../assets/gold_seal.png';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -534,6 +535,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
           pdf.save(`${isSample ? 'SAMPLE_' : ''}${filename}.pdf`);
           if (prevLang === 'ar') setCertLang('ar');
+          // Restore original image sources
+          Array.from(document.querySelectorAll('#certificate-printable img[alt="Logo"]')).forEach((img, i) => { img.src = origLogoSrcs[i] || img.src; });
+          Array.from(document.querySelectorAll('#certificate-printable img[alt="Gold Seal"]')).forEach((img, i) => { img.src = origSealSrcs[i] || img.src; });
           logAuditTrail('eventCert');
         });
       } catch (error) {
