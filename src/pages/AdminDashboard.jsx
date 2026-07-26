@@ -351,11 +351,32 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
                         ? Math.floor((Date.now() - new Date(u.lastLogin)) / 86400000) : 999;
                       const isActive  = daysSince <= 14;
                       return (
-                        <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', fontWeight: '600',
-                          background: isActive ? 'rgba(29,158,117,0.1)' : 'rgba(220,38,38,0.1)',
-                          color: isActive ? S.green : S.danger }}>
-                          {isActive ? '● Active' : `⚠ ${daysSince}d inactive`}
-                        </span>
+                        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                          <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', fontWeight: '600',
+                            background: isActive ? 'rgba(29,158,117,0.1)' : 'rgba(220,38,38,0.1)',
+                            color: isActive ? S.green : S.danger }}>
+                            {isActive ? '● Active' : `⚠ ${daysSince}d inactive`}
+                          </span>
+                          {!isActive && u.userId && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`https://backend-lime-gamma-gf9yal9mmd.vercel.app/api/admin/users/${u.userId}/reactivate`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type':'application/json', 'x-admin-email': user.email }
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) { alert(`✅ ${u.displayName} reactivated!`); fetchData(); }
+                                  else alert(`❌ ${data.error}`);
+                                } catch(e) { alert('❌ Error reactivating user'); }
+                              }}
+                              style={{ fontSize:'10px', padding:'3px 8px', borderRadius:'6px',
+                                background:'rgba(29,158,117,0.15)', border:`1px solid ${S.green}`,
+                                color:S.green, cursor:'pointer', fontWeight:'600', whiteSpace:'nowrap' }}>
+                              ↺ Reactivate
+                            </button>
+                          )}
+                        </div>
                       );
                     })()}
                   </td>
