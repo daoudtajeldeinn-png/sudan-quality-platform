@@ -66,6 +66,21 @@ const LoadingSpinner = () => (
 
 function AppContent() {
   const { user, authToken, loading, error, isAdmin, isInactive, daysSinceLogin, setIsInactive, loginWithGoogle, logout } = useAuth();
+
+  // Send inactivity email once when flagged — must be before any conditional returns
+  React.useEffect(() => {
+    if (user && isInactive) {
+      emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+        to_email:      user.email,
+        user_name:     user.displayName || user.email.split('@')[0],
+        days_inactive: daysSinceLogin,
+      }, EMAILJS_KEY).then(() => {
+        console.log('✅ Inactivity email sent to:', user.email);
+      }).catch(err => {
+        console.warn('EmailJS error (non-critical):', err);
+      });
+    }
+  }, [isInactive]);
   const [studentView, setStudentView] = useState(false);
 
   if (loading) return <LoadingSpinner />;
@@ -100,21 +115,6 @@ function AppContent() {
       </div>
     );
   }
-
-  // Send inactivity email once when flagged
-  React.useEffect(() => {
-    if (user && isInactive) {
-      emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-        to_email:      user.email,
-        user_name:     user.displayName || user.email.split('@')[0],
-        days_inactive: daysSinceLogin,
-      }, EMAILJS_KEY).then(() => {
-        console.log('✅ Inactivity email sent to:', user.email);
-      }).catch(err => {
-        console.warn('EmailJS error (non-critical):', err);
-      });
-    }
-  }, [isInactive]);
 
   if (user && isInactive) {
     return (
