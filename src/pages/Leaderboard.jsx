@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API = import.meta.env.VITE_API_URL || 'https://backend-lime-gamma-gf9yal9mmd.vercel.app';
+const API = import.meta.env.VITE_API_URL || 'https://backend-lime-gamma-gf9yal9mmd.vercel.app/api';
 
 const MEDALS = ['🥇','🥈','🥉'];
 const MEDAL_COLORS = ['#d4af37','#9e9e9e','#cd7f32'];
@@ -11,7 +11,7 @@ export default function Leaderboard({ user, isRtl }) {
   const [myRank, setMyRank] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/api/user/leaderboard`)
+    fetch(`${API}/user/leaderboard`)
       .then(r => r.json())
       .then(data => {
         const list = Array.isArray(data) ? data : [];
