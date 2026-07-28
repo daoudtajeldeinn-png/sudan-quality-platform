@@ -71,9 +71,9 @@ const TOOLS = [
 
 const NAV = [
   { id:'academy',     icon:'🎓', label:'Academy',      labelAr:'الأكاديمية'  },
+  { id:'analytics',   icon:'📊', label:'Analytics',    labelAr:'تقدمي'       },
+  { id:'certificates',icon:'📜', label:'Certificates', labelAr:'شهاداتي'     },
   { id:'toolkit',     icon:'🛠️', label:'Toolkit',      labelAr:'الأدوات'     },
-  { id:'analytics',   icon:'📊', label:'Analytics',    labelAr:'التحليلات'   },
-  { id:'certificates',icon:'📜', label:'Certificates', labelAr:'الشهادات'    },
 ];
 
 /* ══════════════════════════════════════════════
@@ -407,6 +407,7 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
   const { language, toggleLanguage, theme, toggleTheme } = useLanguage();
   const { xp, level, getXpToNextLevel } = useGamification();
   const [sidebarOpen, setSidebarOpen]   = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activePage, setActivePage]     = useState('academy');
   const [openTool, setOpenTool]         = useState(null);
   const [certToOpen, setCertToOpen] = useState(null);
@@ -438,14 +439,16 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
 
   /* ── sidebar ── */
   const Sidebar = () => (
-    <div style={{
-      width: sidebarOpen ? '230px' : '62px',
-      background:`linear-gradient(180deg,${S.navy} 0%,${S.navyMid} 55%,${S.navyDk} 100%)`,
-      display: isMobile ? 'none' : 'flex', flexDirection:'column', flexShrink:0,
-      transition:'width 0.22s ease', overflow:'hidden',
-      boxShadow: isRtl ? '-4px 0 20px rgba(0,0,0,0.18)' : '4px 0 20px rgba(0,0,0,0.18)',
-      zIndex:10,
-    }}>
+    <div
+      className={`sidebar${mobileSidebarOpen ? ' mobile-open' : ''}`}
+      style={{
+        width: sidebarOpen ? '230px' : '62px',
+        background:`linear-gradient(180deg,${S.navy} 0%,${S.navyMid} 55%,${S.navyDk} 100%)`,
+        display:'flex', flexDirection:'column', flexShrink:0,
+        transition:'width 0.22s ease, transform 0.3s ease', overflow:'hidden',
+        boxShadow: isRtl ? '-4px 0 20px rgba(0,0,0,0.18)' : '4px 0 20px rgba(0,0,0,0.18)',
+        zIndex:10,
+      }}>
       {/* Logo */}
       <div style={{ padding:'18px 14px', borderBottom:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', gap:'12px', justifyContent: sidebarOpen?'flex-start':'center' }}>
         <div style={{ width:'40px', height:'40px', borderRadius:'10px', overflow:'hidden', flexShrink:0, background:'white', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`0 0 0 2px ${S.gold}` }}>
@@ -473,7 +476,7 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
         {NAV.map(item => {
           const active = activePage === item.id;
           return (
-            <div key={item.id} onClick={() => setActivePage(item.id)} style={{
+            <div key={item.id} onClick={() => { setActivePage(item.id); setMobileSidebarOpen(false); }} style={{
               display:'flex', alignItems:'center', gap:'10px',
               padding: sidebarOpen ? '11px 12px' : '11px',
               borderRadius:'10px', marginBottom:'4px',
@@ -541,7 +544,12 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
   const TopBar = () => (
     <div style={{ padding:'0 20px', height:'52px', background:S.card, borderBottom:`1px solid ${S.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', boxShadow:'0 1px 6px rgba(0,0,0,0.05)', flexShrink:0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background:S.bg, border:`1px solid ${S.border}`, borderRadius:'8px', padding:'6px 10px', fontSize:'15px', cursor:'pointer', color:S.sub }}>☰</button>
+        {/* Desktop collapse */}
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background:S.bg, border:`1px solid ${S.border}`, borderRadius:'8px', padding:'6px 10px', fontSize:'15px', cursor:'pointer', color:S.sub, display:'none' }} className="hide-mobile">☰</button>
+        {/* Mobile hamburger */}
+        <button className="hamburger" onClick={() => setMobileSidebarOpen(true)} aria-label="القائمة">
+          <span/><span/><span/>
+        </button>
         <div style={{ fontSize:'14px', fontWeight:'700', color:S.text }}>
           {isRtl ? NAV.find(n=>n.id===activePage)?.labelAr : NAV.find(n=>n.id===activePage)?.label}
         </div>
@@ -582,6 +590,14 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
 
 
   return (
+    <>
+    {/* Mobile backdrop */}
+    {mobileSidebarOpen && (
+      <div
+        className="sidebar-backdrop open"
+        onClick={() => setMobileSidebarOpen(false)}
+      />
+    )}
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', fontFamily:"'Inter','Segoe UI',sans-serif", direction: isRtl?'rtl':'ltr' }}>
       <Sidebar />
       <div style={{ flex:1, overflow:'auto', background:S.bg, display:'flex', flexDirection:'column' }}>
@@ -591,5 +607,6 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
         </div>
       </div>
     </div>
+    </>
   );
 }
