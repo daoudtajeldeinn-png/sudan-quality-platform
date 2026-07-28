@@ -578,11 +578,12 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       case 'academy':
         // Pass activeTab='academy' so Dashboard shows academy view
         return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" certToOpen={certToOpen} onCertClosed={() => setCertToOpen(null)} />;
-      case 'leaderboard':  return <Leaderboard user={user} isRtl={isRtl} />;
       case 'toolkit':
         return <ToolkitGrid isRtl={isRtl} onOpen={setOpenTool} />;
       case 'analytics':
         return <AnalyticsView user={user} authToken={authToken} isRtl={isRtl} />;
+      case 'leaderboard':
+        return <Leaderboard user={user} isRtl={isRtl} />;
       case 'certificates':
         return <CertificatesView user={user} authToken={authToken} isRtl={isRtl} onViewCert={(cert) => { setCertToOpen(cert); setActivePage('academy'); }} />;
       default:
