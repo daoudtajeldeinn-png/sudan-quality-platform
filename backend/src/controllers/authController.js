@@ -49,8 +49,9 @@ const registerUser = async (req, res) => {
     // Check 14-day inactivity (only for existing users, not new ones)
     let isInactive = false;
     if (existingUser?.lastLogin) {
+      const ADMIN_EMAILS = ['daoudtajeldeinn113@gmail.com', 'daoudtajeldeinn@gmail.com'];
       const daysSinceLogin = (Date.now() - new Date(existingUser.lastLogin).getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSinceLogin > 14) isInactive = true;
+      if (daysSinceLogin > 14 && !ADMIN_EMAILS.includes(email)) isInactive = true;
     }
 
     // UPSERT on userId — if exists update lastLogin+displayName, if not create full record
