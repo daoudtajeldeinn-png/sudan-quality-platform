@@ -16,13 +16,24 @@ const getAllFirebaseUsers = async () => {
     const auth = new GoogleAuth({ credentials, scopes: ['https://www.googleapis.com/auth/firebase'] });
     const client = await auth.getClient();
     const token  = await client.getAccessToken();
-    const res = await fetch(
-      'https://identitytoolkit.googleapis.com/v1/projects/decisive-octane-472816-d3/accounts:query',
-      { method:'POST', headers:{ Authorization:`Bearer ${token.token}`, 'Content-Type':'application/json' }, body:JSON.stringify({ returnUserInfo:true }) }
-    );
-    const data = await res.json();
-    if (data.error) { console.error('Firebase REST error:', data.error); return []; }
-    return data.userInfo || [];
+
+    let allUsers = [];
+    let nextPageToken = undefined;
+    do {
+      const url = new URL('https://identitytoolkit.googleapis.com/v1/projects/decisive-octane-472816-d3/accounts:batchGet');
+      url.searchParams.set('maxResults', '1000');
+      if (nextPageToken) url.searchParams.set('nextPageToken', nextPageToken);
+      const response = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${token.token}` }
+      });
+      const data = await response.json();
+      if (data.error) { console.error('Firebase REST error:', data.error); return []; }
+      allUsers = allUsers.concat(data.users || []);
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
+
+    console.log(`Firebase users fetched: ${allUsers.length}`);
+    return allUsers;
   } catch(err) { console.error('getAllFirebaseUsers error:', err.message); return []; }
 };
 
