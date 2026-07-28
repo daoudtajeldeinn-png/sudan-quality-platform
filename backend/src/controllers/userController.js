@@ -184,7 +184,7 @@ const getLeaderboard = async (req, res) => {
     } else {
       const { data: topUsers, error } = await req.supabase
         .from('users')
-        .select('displayName, xp, level, photoURL')
+        .select('userId, displayName, xp, level, photoURL')
         .order('xp', { ascending: false })
         .limit(10);
 

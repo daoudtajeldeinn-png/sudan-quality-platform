@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Dashboard    from './Dashboard';
+import Leaderboard  from './Leaderboard';
 import FMEATool     from '../components/FMEATool';
 import BatchSignSim from '../components/BatchSignSim';
 import StabilityCalculator  from '../components/StabilityCalculator';
@@ -73,6 +74,7 @@ const NAV = [
   { id:'academy',     icon:'🎓', label:'Academy',      labelAr:'الأكاديمية'  },
   { id:'analytics',   icon:'📊', label:'Analytics',    labelAr:'تقدمي'       },
   { id:'certificates',icon:'📜', label:'Certificates', labelAr:'شهاداتي'     },
+  { id:'leaderboard', icon:'🏆', label:'Leaderboard',  labelAr:'المتصدرون'   },
   { id:'toolkit',     icon:'🛠️', label:'Toolkit',      labelAr:'الأدوات'     },
 ];
 
@@ -576,6 +578,7 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       case 'academy':
         // Pass activeTab='academy' so Dashboard shows academy view
         return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" certToOpen={certToOpen} onCertClosed={() => setCertToOpen(null)} />;
+      case 'leaderboard':  return <Leaderboard user={user} isRtl={isRtl} />;
       case 'toolkit':
         return <ToolkitGrid isRtl={isRtl} onOpen={setOpenTool} />;
       case 'analytics':
