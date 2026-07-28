@@ -39,6 +39,20 @@ const registerUser = async (req, res) => {
     const displayName = req.body.displayName || email.split('@')[0];
     const now = new Date().toISOString();
 
+    // Check existing user's lastLogin BEFORE upsert
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('lastLogin, createdAt')
+      .eq('userId', userId)
+      .single();
+
+    // Check 14-day inactivity (only for existing users, not new ones)
+    let isInactive = false;
+    if (existingUser?.lastLogin) {
+      const daysSinceLogin = (Date.now() - new Date(existingUser.lastLogin).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLogin > 14) isInactive = true;
+    }
+
     // UPSERT on userId — if exists update lastLogin+displayName, if not create full record
     const { data: user, error } = await supabase
       .from('users')
@@ -57,8 +71,8 @@ const registerUser = async (req, res) => {
         progress: { completedUnits: [], currentUnit: null, totalScore: 0, certificates: [] },
         createdAt: now,
       }, {
-        onConflict: 'userId',          // match on userId
-        ignoreDuplicates: false,       // always update lastLogin etc
+        onConflict: 'userId',
+        ignoreDuplicates: false,
       })
       .select()
       .single();
@@ -68,9 +82,15 @@ const registerUser = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log(`✅ User registered/updated: ${email}`);
+    const daysSince = existingUser?.lastLogin
+      ? Math.floor((Date.now() - new Date(existingUser.lastLogin).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    console.log(`✅ User registered/updated: ${email}${isInactive ? ` (inactive ${daysSince} days)` : ''}`);
     return res.status(200).json({
       success: true,
+      inactive: isInactive,
+      daysSince: isInactive ? daysSince : 0,
       token: makeToken(user.userId, user.email, 'google'),
       user: { userId: user.userId, email: user.email, displayName: user.displayName, photoURL: user.photoURL }
     });
