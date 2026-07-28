@@ -84,7 +84,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const [isSampleMode, setIsSampleMode] = useState(false);
   const [showPledge, setShowPledge] = useState(false);
   const [showDevProfile, setShowDevProfile] = useState(false);
-  const [viewMode, setViewMode] = useState('academy'); 
+  const [viewMode, setViewMode] = useState(activeTab || 'academy');
+
+  useEffect(() => {
+    if (activeTab && activeTab !== 'certificates' && activeTab !== 'leaderboard') {
+      setViewMode(activeTab);
+    }
+  }, [activeTab]); 
   const [currentTrack, setCurrentTrack] = useState(null); 
   const [userProgress, setUserProgress] = useState({
     'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
