@@ -719,7 +719,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                     <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
                       <QRCodeCanvas 
-                        value={`https://sudan-quality-frontend.vercel.app/verify/${user.uid}`} 
+                        value={`https://decisive-octane-472816-d3.web.app/verify?id=${certData?.certNumber || certData?.verificationId || user.uid}`} 
                         size={65} 
                         level="H" 
                         includeMargin={false}
