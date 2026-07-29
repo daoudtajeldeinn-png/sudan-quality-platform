@@ -174,6 +174,19 @@ export const apiService = {
   },
 
   // Get user certificates
+  verifyCertificateByNumber: async (certNumber) => {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/certificates/verify?id=${encodeURIComponent(certNumber)}`);
+      if (!response.ok) return { found: false };
+      const result = await response.json();
+      // Backend already returns { found, id, data } — pass through directly
+      return result;
+    } catch (error) {
+      console.error('Verify certificate error:', error);
+      return { found: false };
+    }
+  },
+
   getUserCertificates: async (userId, authToken = null) => {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/user/certificates/${userId}`, {}, authToken);

@@ -6,14 +6,26 @@ export const VerifyCertificate = () => {
   const [searchParams] = useSearchParams();
   const [certNumber, setCertNumber] = useState(searchParams.get("id") || "");
   const [result, setResult] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async (e) => {
     e.preventDefault();
     if (!certNumber.trim()) return;
     setLoading(true);
-    const certificate = await CertificateService.getCertificateByNumber(certNumber.toUpperCase());
-    setResult(certificate);
+    setNotFound(false);
+    setResult(null);
+    try {
+      const certificate = await CertificateService.getCertificateByNumber(certNumber.toUpperCase());
+      if (certificate) {
+        setResult(certificate);
+      } else {
+        setNotFound(true);
+      }
+    } catch (err) {
+      console.error('Verify error:', err);
+      setNotFound(true);
+    }
     setLoading(false);
   };
 
@@ -21,38 +33,123 @@ export const VerifyCertificate = () => {
     if (searchParams.get("id")) {
       handleVerify({ preventDefault: () => {} });
     }
+    // eslint-disable-next-line
   }, []);
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "40px 20px", direction: "rtl" }}>
-      <div style={{ textAlign: "center", marginBottom: "40px" }}>
-        <h1 style={{ color: "#10b981", fontSize: "2.5rem" }}>ÇáÊÍŞŞ ãä ÇáÔåÇÏÉ</h1>
-        <p style={{ color: "#6b7280" }}>ÊÍŞŞ ãä ÕÍÉ ÔåÇÏÇÊ ãäÕÉ ÇáÓæÏÇä ááÌæÏÉ</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f0f2f7 0%, #e4e8f0 100%)',
+      padding: '40px 20px',
+      fontFamily: "'IBM Plex Sans Arabic', 'Inter', sans-serif",
+      direction: 'rtl',
+    }}>
+      <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>ğŸ“</div>
+          <h1 style={{ color: "#0f2557", fontSize: "2rem", fontWeight: '800', margin: '0 0 8px' }}>
+            Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„Ø´Ù‡Ø§Ø¯Ø©
+          </h1>
+          <p style={{ color: "#64748b", fontSize: '15px', margin: 0 }}>
+            Ù…Ù†ØµØ© Ø§Ù„Ø³ÙˆØ¯Ø§Ù† Ù„Ù„Ø¬ÙˆØ¯Ø© â€” Sudan Quality Platform
+          </p>
+        </div>
+
+        {/* Search form */}
+        <form onSubmit={handleVerify} style={{
+          background: "white", padding: "28px", borderRadius: "18px",
+          boxShadow: "0 4px 20px rgba(15,37,87,0.08)", marginBottom: "24px"
+        }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#0f2557', marginBottom: '10px' }}>
+            Ø±Ù‚Ù… Ø§Ù„Ø´Ù‡Ø§Ø¯Ø© / Certificate Number
+          </label>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <input
+              type="text"
+              value={certNumber}
+              onChange={(e) => setCertNumber(e.target.value)}
+              placeholder="SQP-XXXXXXXX-XXXXX"
+              style={{
+                flex: "1", padding: "14px 16px", fontSize: "15px",
+                border: "2px solid #e4e8f0", borderRadius: "12px",
+                textAlign: "center", outline: 'none', fontFamily: 'monospace',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                padding: "14px 28px",
+                background: loading ? "#94a3b8" : "linear-gradient(135deg,#0f2557,#1a3a7a)",
+                color: "white", border: "none", borderRadius: "12px",
+                fontWeight: "700", fontSize: '14px',
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading ? "âŒ› Ø¬Ø§Ø±ÙŠ Ø§Ù„Ø¨Ø­Ø«..." : "ğŸ” ØªØ­Ù‚Ù‚"}
+            </button>
+          </div>
+        </form>
+
+        {/* Result: found */}
+        {result && (
+          <div style={{
+            background: "linear-gradient(135deg, #eafaf3, #d4edda)",
+            border: "2px solid #1d9e75", borderRadius: "18px",
+            padding: "32px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>âœ…</div>
+            <div style={{ fontSize: '12px', color: '#0f6e56', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '8px' }}>
+              Ø´Ù‡Ø§Ø¯Ø© ØµØ§Ù„Ø­Ø© ÙˆÙ…Ø¹ØªÙ…Ø¯Ø©
+            </div>
+            <h2 style={{ color: "#0f2557", fontSize: '1.5rem', margin: '0 0 8px' }}>
+              {result.userName}
+            </h2>
+            <p style={{ fontSize: '15px', color: '#1a3a7a', margin: '0 0 16px' }}>
+              Ø£ÙƒÙ…Ù„ Ø¨Ù†Ø¬Ø§Ø­: <strong>{result.unitName}</strong>
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '16px' }}>
+              <div>
+                <div style={{ fontSize: '28px', fontWeight: '800', color: '#1d9e75' }}>{result.percentage || result.score}%</div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>Ø§Ù„Ø¯Ø±Ø¬Ø©</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f2557', marginTop: '6px' }}>
+                  {result.createdAt ? new Date(result.createdAt).toLocaleDateString('ar-EG') : 'â€”'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¥ØµØ¯Ø§Ø±</div>
+              </div>
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace', background: 'rgba(255,255,255,0.6)', padding: '8px 16px', borderRadius: '10px', display: 'inline-block' }}>
+              {result.certNumber}
+            </div>
+          </div>
+        )}
+
+        {/* Result: not found */}
+        {notFound && (
+          <div style={{
+            background: "#fee2e2", border: "2px solid #dc2626",
+            borderRadius: "18px", padding: "32px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>âŒ</div>
+            <h2 style={{ color: "#dc2626", fontSize: '1.3rem', margin: '0 0 8px' }}>
+              Ø§Ù„Ø´Ù‡Ø§Ø¯Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©
+            </h2>
+            <p style={{ color: '#991b1b', fontSize: '14px' }}>
+              Ù„Ù… Ù†ØªÙ…ÙƒÙ† Ù…Ù† Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø´Ù‡Ø§Ø¯Ø© Ø¨Ù‡Ø°Ø§ Ø§Ù„Ø±Ù‚Ù…. ØªØ£ÙƒØ¯ Ù…Ù† Ø§Ù„Ø±Ù‚Ù… ÙˆØ­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.
+            </p>
+          </div>
+        )}
+
+        <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '12px', color: '#94a3b8' }}>
+          Â© 2026 Sudan Quality Platform
+        </div>
       </div>
-
-      <form onSubmit={handleVerify} style={{ background: "white", padding: "30px", borderRadius: "16px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", marginBottom: "30px" }}>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <input type="text" value={certNumber} onChange={(e) => setCertNumber(e.target.value)} placeholder="SQP-XXXXXXXX-XXX" style={{ flex: "1", padding: "15px", fontSize: "16px", border: "2px solid #e5e7eb", borderRadius: "10px", textAlign: "center" }} />
-          <button type="submit" disabled={loading} style={{ padding: "15px 30px", backgroundColor: loading ? "#9ca3af" : "#10b981", color: "white", border: "none", borderRadius: "10px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer" }}>
-            {loading ? "ÌÇÑí ÇáÊÍŞŞ..." : "ÊÍŞŞ"}
-          </button>
-        </div>
-      </form>
-
-      {result && (
-        <div style={{ backgroundColor: "#f0fdf4", border: "2px solid #10b981", borderRadius: "16px", padding: "40px", textAlign: "center" }}>
-          <h2 style={{ color: "#065f46" }}>{result.userName}</h2>
-          <p>ÍÇÕá Úáì ÔåÇÏÉ {result.unitName}</p>
-          <p style={{ fontSize: "24px", color: "#059669" }}>ÇáäÊíÌÉ: {result.percentage}%</p>
-          <p>ÇáÑŞã: {result.certNumber}</p>
-        </div>
-      )}
-
-      {result === null && !loading && searchParams.get("id") && (
-        <div style={{ backgroundColor: "#fee2e2", border: "2px solid #ef4444", borderRadius: "16px", padding: "40px", textAlign: "center" }}>
-          <h2 style={{ color: "#dc2626" }}>? ÇáÔåÇÏÉ ÛíÑ ãæÌæÏÉ</h2>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default VerifyCertificate;
