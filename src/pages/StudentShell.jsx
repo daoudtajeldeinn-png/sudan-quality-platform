@@ -9,6 +9,8 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard    from './Dashboard';
 import Leaderboard  from './Leaderboard';
+import ResourcesView from '../components/ResourcesView';
+import TemplatesView from '../components/TemplatesView';
 import FMEATool     from '../components/FMEATool';
 import BatchSignSim from '../components/BatchSignSim';
 import StabilityCalculator  from '../components/StabilityCalculator';
@@ -72,6 +74,8 @@ const TOOLS = [
 
 const NAV = [
   { id:'academy',     icon:'🎓', label:'Academy',      labelAr:'الأكاديمية'  },
+  { id:'resources',   icon:'📚', label:'Resources',    labelAr:'المصادر والمراجع' },
+  { id:'templates',   icon:'📋', label:'Templates',    labelAr:'القوالب النمطية' },
   { id:'analytics',   icon:'📊', label:'Analytics',    labelAr:'تقدمي'       },
   { id:'certificates',icon:'📜', label:'Certificates', labelAr:'شهاداتي'     },
   { id:'leaderboard', icon:'🏆', label:'Leaderboard',  labelAr:'المتصدرون'   },
@@ -578,6 +582,10 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       case 'academy':
         // Pass activeTab='academy' so Dashboard shows academy view
         return <Dashboard user={user} onLogout={onLogout} authToken={authToken} activeTab="academy" certToOpen={certToOpen} onCertClosed={() => setCertToOpen(null)} />;
+      case 'resources':
+        return <ResourcesView />;
+      case 'templates':
+        return <TemplatesView />;
       case 'toolkit':
         return <ToolkitGrid isRtl={isRtl} onOpen={setOpenTool} />;
       case 'analytics':
