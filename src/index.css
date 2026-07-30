@@ -111,10 +111,6 @@ input, textarea {
   border-color: var(--primary-color);
 }
 
-.track-card:hover {
-  border-color: var(--track-color, var(--primary-color));
-}
-
 .wallet-container {
   display: flex;
   gap: 15px;

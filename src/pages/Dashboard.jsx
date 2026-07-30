@@ -935,7 +935,11 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 {!currentTrack ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
                     {TRACKS.map(track => (
-                      <div key={track.id} onClick={() => setCurrentTrack(track.id)} className="interactive-card-premium track-card" style={{ padding: '35px 25px', borderRadius: '20px', textAlign: 'center', '--track-color': track.color }}>
+                      <div key={track.id} onClick={() => setCurrentTrack(track.id)} className="interactive-card-premium track-card" 
+                        style={{ padding: '35px 25px', borderRadius: '20px', textAlign: 'center' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = track.color; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                      >
                         <div style={{ fontSize: '3.5rem', marginBottom: '20px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}>{track.icon}</div>
                         <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>{t(track.titleKey)}</h4>
                       </div>
