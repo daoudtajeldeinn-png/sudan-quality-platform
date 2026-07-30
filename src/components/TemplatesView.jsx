@@ -204,7 +204,7 @@ export default function TemplatesView() {
               cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
-              justify-content: 'space-between',
+              justifyContent: 'space-between',
               transition: 'all 0.3s ease',
               boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
             }}
@@ -249,7 +249,7 @@ export default function TemplatesView() {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justify-content: 'center',
+                justifyContent: 'center',
                 gap: '8px',
               }}
             >
@@ -271,7 +271,7 @@ export default function TemplatesView() {
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
-            justify-content: 'center',
+            justifyContent: 'center',
             padding: '20px',
           }}
         >
@@ -295,7 +295,7 @@ export default function TemplatesView() {
                 padding: '20px 24px',
                 borderBottom: `1px solid ${S.border}`,
                 display: 'flex',
-                justify-content: 'space-between',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 background: S.navyDk,
               }}

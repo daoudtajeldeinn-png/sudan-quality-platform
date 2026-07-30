@@ -76,7 +76,7 @@ export default function ResourcesView() {
           display: 'flex',
           flexWrap: 'wrap',
           gap: '16px',
-          justify-content: 'space-between',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '24px',
         }}
@@ -188,7 +188,7 @@ export default function ResourcesView() {
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                justify-content: 'space-between',
+                justifyContent: 'space-between',
                 transition: 'all 0.3s ease',
                 boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
               }}

@@ -485,17 +485,30 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const MicroBadge = ({ unitId, score }) => {
     const isUnlocked = score >= (unitId === "adv-iso-17025" ? 80 : 90);
     return (
-      <div style={{
-        width: '80px', height: '80px', borderRadius: '50%',
-        backgroundColor: isUnlocked ? '#fff' : '#f0f0f0',
-        border: `3px solid ${isUnlocked ? '#28a745' : '#ddd'}`,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '5px', textAlign: 'center', cursor: isUnlocked ? 'pointer' : 'default',
-        opacity: isUnlocked ? 1 : 0.5, transition: 'all 0.3s',
-        boxShadow: isUnlocked ? '0 4px 10px rgba(40,167,69,0.2)' : 'none'
-      }} onClick={() => isUnlocked && alert(`${t('microBadge')}: ${unitId.toUpperCase()}\n${t('badgeId')}: SQP-B-${unitId.substring(0, 3).toUpperCase()}-${score}`)}>
-        <span style={{ fontSize: '1.5rem' }}>{isUnlocked ? '🥇' : '🔒'}</span>
-        <span style={{ fontSize: '0.6rem', fontWeight: 'bold', color: isUnlocked ? '#28a745' : '#999' }}>{unitId.split('-')[0].toUpperCase()}</span>
+      <div 
+        className={isUnlocked ? 'badge-unlocked' : 'badge-locked'}
+        style={{
+          width: '90px', height: '90px', borderRadius: '50%',
+          background: isUnlocked ? 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)' : 'rgba(255, 255, 255, 0.4)',
+          border: isUnlocked ? '3px solid var(--primary-color)' : '2px dashed var(--border-color)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '5px', textAlign: 'center', cursor: isUnlocked ? 'pointer' : 'default',
+          opacity: isUnlocked ? 1 : 0.8, 
+          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          boxShadow: isUnlocked ? '0 8px 25px rgba(27, 79, 138, 0.15)' : 'none',
+          backdropFilter: isUnlocked ? 'none' : 'blur(4px)',
+          transform: 'translateY(0)'
+        }} 
+        onMouseEnter={(e) => { if(isUnlocked) e.currentTarget.style.transform = 'translateY(-5px) scale(1.05)'; }}
+        onMouseLeave={(e) => { if(isUnlocked) e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
+        onClick={() => isUnlocked && alert(`${t('microBadge')}: ${unitId.toUpperCase()}\n${t('badgeId')}: SQP-B-${unitId.substring(0, 3).toUpperCase()}-${score}`)}
+      >
+        <span style={{ fontSize: '2rem', filter: isUnlocked ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' : 'opacity(0.6) grayscale(100%)' }}>
+          {isUnlocked ? '🥇' : '🔐'}
+        </span>
+        <span style={{ fontSize: '0.65rem', fontWeight: '800', marginTop: '4px', color: isUnlocked ? 'var(--primary-color)' : 'var(--text-secondary)' }}>
+          {unitId.split('-')[0].toUpperCase()}
+        </span>
       </div>
     );
   };
@@ -906,39 +919,50 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
         {viewMode === 'academy' ? (
           <div className="animate-fade-in">
-            <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', marginBottom: '30px' }}>
-              <h3 style={{ color: 'var(--primary-color)', marginBottom: '20px' }}>🏷️ {t('microBadge')} Wallet</h3>
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <section className="glass-panel" style={{ padding: '35px', borderRadius: '24px', marginBottom: '40px', position: 'relative', overflow: 'hidden' }}>
+              {/* Decorative background element */}
+              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, var(--pharma-gold) 0%, transparent 70%)', opacity: 0.1, borderRadius: '50%', pointerEvents: 'none' }}></div>
+              <h3 style={{ color: 'var(--primary-color)', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.5rem' }}>
+                <span style={{ fontSize: '1.8rem' }}>🏅</span> {t('microBadge')} Wallet
+              </h3>
+              <div className="wallet-container">
                 {unitIds.map(id => <MicroBadge key={id} unitId={id} score={userProgress[id]} />)}
               </div>
             </section>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px' }}>
-              <section className="glass-panel" style={{ padding: '30px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '40px' }}>
+              <section className="glass-panel" style={{ padding: '35px', borderRadius: '24px' }}>
                 {!currentTrack ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
                     {TRACKS.map(track => (
-                      <div key={track.id} onClick={() => setCurrentTrack(track.id)} className="interactive-card" style={{ padding: '25px', backgroundColor: 'var(--bg-card)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border-color)' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '15px' }}>{track.icon}</div>
-                        <h4>{t(track.titleKey)}</h4>
+                      <div key={track.id} onClick={() => setCurrentTrack(track.id)} className="interactive-card-premium track-card" 
+                        style={{ padding: '35px 25px', borderRadius: '20px', textAlign: 'center' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = track.color; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                      >
+                        <div style={{ fontSize: '3.5rem', marginBottom: '20px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}>{track.icon}</div>
+                        <h4 style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>{t(track.titleKey)}</h4>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div>
-                    <button onClick={() => setCurrentTrack(null)} style={{ marginBottom: '20px' }}>← Back</button>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                  <div className="animate-fade-in">
+                    <button onClick={() => setCurrentTrack(null)} style={{ marginBottom: '25px', padding: '10px 20px', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateX(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}>
+                      <span>←</span> {language === 'ar' ? 'رجوع' : 'Back'}
+                    </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px' }}>
                       {units.map(unit => {
                         const isCompleted = completedUnits[unit.id]?.completed;
                         const completionScore = completedUnits[unit.id]?.score;
                         return (
-                          <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card" style={{ padding: '25px', backgroundColor: 'var(--bg-card)', borderRadius: '20px', textAlign: 'center', border: `2px solid ${unit.color}`, position: 'relative' }}>
+                          <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card-premium" style={{ padding: '30px 20px', borderRadius: '20px', textAlign: 'center', borderTop: `4px solid ${unit.color}`, position: 'relative' }}>
                             {isCompleted && (
-                              <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#28a745', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}>✓</div>
+                              <div style={{ position: 'absolute', top: '15px', right: '15px', backgroundColor: '#10b981', color: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold', boxShadow: '0 2px 10px rgba(16,185,129,0.3)' }}>✓</div>
                             )}
-                            <div style={{ fontSize: '2.5rem' }}>{UNIT_ICONS[unit.id]?.icon}</div>
-                            <h4>{unit.title}</h4>
+                            <div style={{ fontSize: '3rem', marginBottom: '15px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))' }}>{UNIT_ICONS[unit.id]?.icon}</div>
+                            <h4 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>{unit.title}</h4>
                             {isCompleted && (
-                              <div style={{ fontSize: '0.8rem', color: '#28a745', fontWeight: 'bold', marginTop: '5px' }}>
+                              <div style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: '800', background: 'rgba(16,185,129,0.1)', padding: '5px 12px', borderRadius: '12px', display: 'inline-block' }}>
                                 {completionScore}%
                               </div>
                             )}
@@ -949,10 +973,15 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   </div>
                 )}
               </section>
-              <div className="certificate-sidebar">
-                <div className="cert-trophy">🏆</div>
-                <h2>{t('earnedCertificates')}</h2>
-                <button disabled={!allPassed} onClick={() => setShowCertificate(true)} className={`btn-cert ${allPassed ? 'active' : ''}`}>{allPassed ? t('viewCert') : 'Locked'}</button>
+              
+              <div className="cert-sidebar-premium">
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at center, rgba(201, 162, 39, 0.1) 0%, transparent 60%)', pointerEvents: 'none' }}></div>
+                <div className="cert-trophy" style={{ fontSize: '5rem', marginBottom: '20px', filter: 'drop-shadow(0 10px 15px rgba(201, 162, 39, 0.3))', animation: allPassed ? 'pulse-glow 3s infinite' : 'none', borderRadius: '50%' }}>🏆</div>
+                <h2 style={{ fontSize: '1.4rem', color: 'var(--text-primary)', marginBottom: '15px', zIndex: 1 }}>{t('earnedCertificates')}</h2>
+                {allPassed && <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '10px', zIndex: 1 }}>{language === 'ar' ? 'تهانينا! لقد أتممت جميع المتطلبات.' : 'Congratulations! You met all requirements.'}</p>}
+                <button disabled={!allPassed} onClick={() => setShowCertificate(true)} className={`btn-cert-premium ${allPassed ? 'active' : ''}`} style={{ zIndex: 1 }}>
+                  {allPassed ? (language === 'ar' ? '✨ عرض الشهادة ✨' : '✨ View Certificate ✨') : '🔒 Locked'}
+                </button>
               </div>
             </div>
           </div>
