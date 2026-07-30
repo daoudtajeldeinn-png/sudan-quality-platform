@@ -172,3 +172,30 @@ router.post('/users/:userId/reactivate', adminAuth, async (req, res) => {
     res.json({ success: true, message: 'User reactivated' });
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
+
+// GET /api/admin/analytics — real course pass rates and scores
+router.get('/analytics', adminAuth, async (req, res) => {
+  try {
+    const { data: certs } = await supabase.from('certificates').select('unitId, score, percentage');
+    const { count: totalUsers } = await supabase.from('users').select('*', { count:'exact', head:true });
+
+    // Group certs by unitId
+    const unitStats = {};
+    for (const c of (certs || [])) {
+      const uid = c.unitId;
+      if (!uid) continue;
+      if (!unitStats[uid]) unitStats[uid] = { count: 0, totalScore: 0 };
+      unitStats[uid].count += 1;
+      unitStats[uid].totalScore += (c.percentage || c.score || 0);
+    }
+
+    const courseStats = Object.entries(unitStats).map(([unitId, stats]) => ({
+      unitId,
+      certsIssued: stats.count,
+      avgScore: Math.round(stats.totalScore / stats.count),
+      passRate: totalUsers > 0 ? Math.round((stats.count / totalUsers) * 100) : 0,
+    }));
+
+    res.json({ courseStats, totalUsers: totalUsers || 0, totalCertsIssued: (certs || []).length });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});

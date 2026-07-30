@@ -443,15 +443,44 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
 
   /* ── ANALYTICS ── */
   const Analytics = () => {
-    const courseStats = Object.entries(UNIT_NAMES).map(([id, name]) => ({
-      id, name, score: Math.floor(Math.random() * 25) + 75
-    }));
+    const [courseStats, setCourseStats] = React.useState([]);
+    const [analyticsLoading, setAnalyticsLoading] = React.useState(true);
+    const [totalCertsIssued, setTotalCertsIssued] = React.useState(0);
+
+    React.useEffect(() => {
+      const fetchAnalytics = async () => {
+        try {
+          const res = await fetch(`${API_URL}/admin/analytics`, {
+            headers: { 'x-admin-email': user.email }
+          });
+          const data = await res.json();
+          const merged = (data.courseStats || []).map(c => ({
+            id: c.unitId,
+            name: UNIT_NAMES[c.unitId] || c.unitId,
+            score: c.avgScore || 0,
+            certsIssued: c.certsIssued || 0,
+            passRate: c.passRate || 0,
+          })).sort((a, b) => b.certsIssued - a.certsIssued);
+          setCourseStats(merged);
+          setTotalCertsIssued(data.totalCertsIssued || 0);
+        } catch(e) {
+          console.error('Analytics fetch error:', e);
+        }
+        setAnalyticsLoading(false);
+      };
+      fetchAnalytics();
+    }, []);
+
+    const overallPassRate = stats?.totalUsers
+      ? Math.round((totalCertsIssued / stats.totalUsers) * 100)
+      : 0;
+
     return (
       <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Summary cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
           {[
-            { label: 'Pass Rate',       value: '91%',  icon: '✅', color: S.green  },
+            { label: 'Overall Completion', value: `${overallPassRate}%`, icon: '✅', color: S.green  },
             { label: 'Active Learners', value: stats?.totalUsers || 0, icon: '👥', color: S.blue   },
             { label: 'Certs Issued',    value: stats?.totalCerts || 0, icon: '🎓', color: S.purple },
           ].map(s => (
@@ -465,28 +494,36 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
           ))}
         </div>
 
-        {/* Bar chart */}
+        {/* Bar chart — avg score per course */}
         <div style={{ background: S.card, borderRadius: '16px', border: `1px solid ${S.border}`, padding: '24px' }}>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: S.text, marginBottom: '20px' }}>📊 Course Pass Rates</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {courseStats.map(c => (
-              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '180px', fontSize: '12px', color: S.sub, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-                <div style={{ flex: 1, height: '10px', background: S.bg, borderRadius: '6px', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '10px', borderRadius: '6px', width: `${c.score}%`,
-                    background: c.score >= 90
-                      ? `linear-gradient(90deg,${S.green},#5dcaa5)`
-                      : c.score >= 80
-                        ? `linear-gradient(90deg,${S.blue},#378add)`
-                        : `linear-gradient(90deg,#ba7517,#ef9f27)`,
-                    transition: 'width 0.6s ease'
-                  }} />
+          <div style={{ fontSize: '14px', fontWeight: '700', color: S.text, marginBottom: '4px' }}>📊 Average Score by Course</div>
+          <div style={{ fontSize: '11px', color: S.sub, marginBottom: '20px' }}>Based on real issued certificates</div>
+          {analyticsLoading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: S.sub }}>⌛ Loading real analytics...</div>
+          ) : courseStats.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: S.sub }}>No certificate data yet</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {courseStats.map(c => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '180px', fontSize: '12px', color: S.sub, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                  <div style={{ flex: 1, height: '10px', background: S.bg, borderRadius: '6px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '10px', borderRadius: '6px', width: `${c.score}%`,
+                      background: c.score >= 90
+                        ? `linear-gradient(90deg,${S.green},#5dcaa5)`
+                        : c.score >= 80
+                          ? `linear-gradient(90deg,${S.blue},#378add)`
+                          : `linear-gradient(90deg,#ba7517,#ef9f27)`,
+                      transition: 'width 0.6s ease'
+                    }} />
+                  </div>
+                  <div style={{ width: '42px', fontSize: '12px', fontWeight: '700', color: c.score >= 90 ? S.green : c.score >= 80 ? S.blue : '#ba7517', textAlign: 'right', flexShrink: 0 }}>{c.score}%</div>
+                  <div style={{ width: '50px', fontSize: '10px', color: S.sub, textAlign: 'right', flexShrink: 0 }}>{c.certsIssued} certs</div>
                 </div>
-                <div style={{ width: '42px', fontSize: '12px', fontWeight: '700', color: c.score >= 90 ? S.green : c.score >= 80 ? S.blue : '#ba7517', textAlign: 'right', flexShrink: 0 }}>{c.score}%</div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
