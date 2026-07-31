@@ -546,16 +546,12 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
     </div>
   );
 
-  /* ── top bar ── */
+  /* ── top bar (desktop only) ── */
   const TopBar = () => (
     <div style={{ padding:'0 20px', height:'52px', background:S.card, borderBottom:`1px solid ${S.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', boxShadow:'0 1px 6px rgba(0,0,0,0.05)', flexShrink:0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
         {/* Desktop collapse */}
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background:S.bg, border:`1px solid ${S.border}`, borderRadius:'8px', padding:'6px 10px', fontSize:'15px', cursor:'pointer', color:S.sub, display:'none' }} className="hide-mobile">☰</button>
-        {/* Mobile hamburger */}
-        <button className="hamburger" onClick={() => setMobileSidebarOpen(true)} aria-label="القائمة">
-          <span/><span/><span/>
-        </button>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background:S.bg, border:`1px solid ${S.border}`, borderRadius:'8px', padding:'6px 10px', fontSize:'15px', cursor:'pointer', color:S.sub }}>☰</button>
         <div style={{ fontSize:'14px', fontWeight:'700', color:S.text }}>
           {isRtl ? NAV.find(n=>n.id===activePage)?.labelAr : NAV.find(n=>n.id===activePage)?.label}
         </div>
@@ -575,6 +571,67 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       </div>
     </div>
   );
+
+  /* ── mobile wallet bar (replaces sidebar wallet on mobile) ── */
+  const MobileWalletBar = () => (
+    <div style={{
+      background:`linear-gradient(135deg,${S.navy},${S.navyMid})`,
+      padding:'12px 16px', flexShrink:0,
+      borderBottom:`2px solid ${S.gold}`,
+      boxShadow:'0 2px 12px rgba(0,0,0,0.2)',
+    }}>
+      {/* Row 1: Avatar + Name + Controls */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+          {user.photoURL ? (
+            <img src={user.photoURL} alt="avatar" style={{ width:'36px', height:'36px', borderRadius:'50%', border:`2px solid ${S.gold}`, flexShrink:0 }}/>
+          ) : (
+            <div style={{ width:'36px', height:'36px', borderRadius:'50%', background:`linear-gradient(135deg,${S.gold},${S.goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', fontWeight:'700', color:S.navy, flexShrink:0 }}>
+              {user.displayName?.[0] || 'S'}
+            </div>
+          )}
+          <div>
+            <div style={{ fontSize:'13px', fontWeight:'700', color:'white', lineHeight:1.2 }}>
+              {user.displayName || user.email?.split('@')[0]}
+            </div>
+            <div style={{ fontSize:'10px', color:'rgba(255,255,255,0.5)', marginTop:'1px' }}>
+              {isRtl ? `المستوى ${level}` : `Level ${level}`}
+            </div>
+          </div>
+        </div>
+        {/* Controls */}
+        <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+          <button onClick={toggleTheme} style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.15)', borderRadius:'8px', padding:'5px 9px', cursor:'pointer', fontSize:'13px', color:'white' }}>
+            {theme==='dark'?'☀️':'🌙'}
+          </button>
+          <button onClick={toggleLanguage} style={{ background:'rgba(212,175,55,0.2)', border:`1px solid ${S.gold}`, color:S.gold, borderRadius:'8px', padding:'5px 10px', cursor:'pointer', fontSize:'11px', fontWeight:'700' }}>
+            {language==='ar'?'EN':'AR'}
+          </button>
+          {isAdmin && onSwitchView && (
+            <button onClick={onSwitchView} style={{ background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', color:'white', borderRadius:'8px', padding:'5px 9px', cursor:'pointer', fontSize:'11px', fontWeight:'600' }}>
+              ⚙️
+            </button>
+          )}
+          <button onClick={onLogout} title="Logout" style={{ background:'rgba(220,38,38,0.2)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'8px', padding:'5px 9px', cursor:'pointer', color:'#f87171', fontSize:'13px' }}>
+            🚶
+          </button>
+        </div>
+      </div>
+      {/* Row 2: XP bar */}
+      <div>
+        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'5px' }}>
+          <span style={{ fontSize:'10px', color:'rgba(255,255,255,0.5)', fontWeight:'600' }}>
+            {isRtl ? `نقاط للمستوى التالي` : `XP to next level`}
+          </span>
+          <span style={{ fontSize:'10px', color:S.gold, fontWeight:'700' }}>{xp} XP</span>
+        </div>
+        <div style={{ height:'5px', background:'rgba(255,255,255,0.1)', borderRadius:'4px', overflow:'hidden' }}>
+          <div style={{ height:'5px', width:`${getXpToNextLevel().percentage}%`, background:`linear-gradient(90deg,${S.gold},${S.goldLt})`, borderRadius:'4px', transition:'width 0.5s' }}/>
+        </div>
+      </div>
+    </div>
+  );
+
 
   /* ── render active page ── */
   const renderContent = () => {
@@ -631,17 +688,11 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
 
   return (
     <>
-    {/* Mobile backdrop */}
-    {mobileSidebarOpen && (
-      <div
-        className="sidebar-backdrop open"
-        onClick={() => setMobileSidebarOpen(false)}
-      />
-    )}
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', fontFamily:"'Inter','Segoe UI',sans-serif", direction: isRtl?'rtl':'ltr' }}>
       <Sidebar />
       <div style={{ flex:1, overflow:'auto', background:S.bg, display:'flex', flexDirection:'column' }}>
-        <TopBar />
+        {/* Desktop: show normal TopBar. Mobile: show wallet bar instead */}
+        {isMobile ? <MobileWalletBar /> : <TopBar />}
         <div style={{ flex:1, overflow:'auto', paddingBottom: isMobile ? '72px' : '0' }}>
           {renderContent()}
         </div>
