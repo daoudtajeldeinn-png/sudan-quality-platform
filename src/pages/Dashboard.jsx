@@ -975,8 +975,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     </button>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px' }}>
                       {units.map(unit => {
-                        const isCompleted = completedUnits[unit.id]?.completed;
-                        const completionScore = completedUnits[unit.id]?.score;
+                        const isCompleted = completedUnits[unit.id]?.completed || (userProgress[unit.id] || 0) >= 80;
+                        const completionScore = completedUnits[unit.id]?.score || userProgress[unit.id] || 0;
                         return (
                           <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card-premium" style={{ padding: '30px 20px', borderRadius: '20px', textAlign: 'center', borderTop: `4px solid ${unit.color}`, position: 'relative' }}>
                             {isCompleted && (
