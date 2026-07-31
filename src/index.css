@@ -172,3 +172,36 @@ input, textarea {
   border: 1px dashed var(--border-color);
   cursor: not-allowed;
 }
+
+/* ===== MOBILE: Cert Section + Badge Wallet ===== */
+@media (max-width: 768px) {
+  /* Main cert grid: stack vertically */
+  .cert-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar goes full width below main content */
+  .cert-sidebar-premium {
+    width: 100% !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Wallet compact on mobile */
+  .wallet-container {
+    gap: 8px !important;
+    padding: 12px !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Smaller badges on mobile */
+  .micro-badge {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.2rem !important;
+  }
+
+  .micro-badge-label {
+    font-size: 0.55rem !important;
+  }
+}

@@ -358,21 +358,50 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
   const handleQuizComplete = (result) => {
     const { score, unitId } = result;
+    const passingThreshold = unitId === 'adv-iso-17025' ? 80 : 90;
+    const passed = score >= passingThreshold;
     logAuditTrail('eventQuiz', unitId);
 
     console.log('[QuizComplete] Score:', score, 'UnitId:', unitId, 'User:', user?.uid, 'Email:', user?.email);
 
+    if (passed && user?.uid) {
+      setCompletedUnits(prev => ({
+        ...prev,
+        [unitId]: {
+          completed: true,
+          score,
+          completedAt: new Date().toISOString(),
+        },
+      }));
+
+      setUnitStates(prev => {
+        const updated = {
+          ...prev,
+          [unitId]: { ...prev[unitId], lectureFinished: true, quizPassed: true, score },
+        };
+        if (user?.email) localStorage.setItem(`sqp_states_${user.email}`, JSON.stringify(updated));
+        return updated;
+      });
+
+      apiService.markUnitCompleted(user.uid, unitId, score, result.totalQuestions || 0)
+        .then(response => {
+          if (response?.completedUnits) {
+            setCompletedUnits(prev => ({ ...prev, ...response.completedUnits }));
+          }
+        })
+        .catch(err => console.error('[QuizComplete] markUnitCompleted failed:', err));
+    }
+
     setUserProgress(prev => {
       console.log('[QuizComplete] Previous progress:', prev);
       console.log('[QuizComplete] Previous score for unit', unitId, ':', prev[unitId]);
-      const passingThreshold = unitId === "adv-iso-17025" ? 80 : 90;
-      const isNewSuccess = score >= passingThreshold && (!prev[unitId] || prev[unitId] < passingThreshold);
+      const isNewSuccess = passed && (!prev[unitId] || prev[unitId] < passingThreshold);
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
       
       console.log('[QuizComplete] Updated unitId:', unitId, 'New score for unit:', newProgress[unitId]);
       console.log('[QuizComplete] Full new progress:', JSON.stringify(newProgress));
       
-      if (score >= (unitId === "adv-iso-17025" ? 80 : 90) && user?.uid) {
+      if (passed && user?.uid) {
         (async () => {
           try {
             // Use UNIT_ICONS for unitName to get proper English title
@@ -431,10 +460,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       
       if (user.uid) {
         console.log('[QuizComplete] Syncing to backend...');
+        const syncedUnitStates = passed
+          ? { ...unitStates, [unitId]: { ...unitStates[unitId], lectureFinished: true, quizPassed: true, score } }
+          : unitStates;
         apiService.syncUserStats(user.uid, {
           progress: {
             unitScores: newProgress,
-            unitStates: unitStates,
+            unitStates: syncedUnitStates,
             lastPlayed: unitId,
             totalScore: Math.round(Object.values(newProgress).reduce((a, b) => a + b, 0) / (Object.values(newProgress).length || 1))
           }
@@ -919,18 +951,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
         {viewMode === 'academy' ? (
           <div className="animate-fade-in">
-            <section className="glass-panel" style={{ padding: '35px', borderRadius: '24px', marginBottom: '40px', position: 'relative', overflow: 'hidden' }}>
-              {/* Decorative background element */}
-              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, var(--pharma-gold) 0%, transparent 70%)', opacity: 0.1, borderRadius: '50%', pointerEvents: 'none' }}></div>
-              <h3 style={{ color: 'var(--primary-color)', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.5rem' }}>
-                <span style={{ fontSize: '1.8rem' }}>🏅</span> {t('microBadge')} Wallet
-              </h3>
-              <div className="wallet-container">
-                {unitIds.map(id => <MicroBadge key={id} unitId={id} score={userProgress[id]} />)}
-              </div>
-            </section>
+
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '40px' }}>
+            <div className='cert-main-grid' style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '40px' }}>
               <section className="glass-panel" style={{ padding: '35px', borderRadius: '24px' }}>
                 {!currentTrack ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
@@ -976,6 +999,15 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               
               <div className="cert-sidebar-premium">
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at center, rgba(201, 162, 39, 0.1) 0%, transparent 60%)', pointerEvents: 'none' }}></div>
+                {/* Badge Wallet — moved here from full-width section */}
+                <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                  <h4 style={{ color: 'var(--primary-color)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                    <span>🏅</span> {t('microBadge')} Wallet
+                  </h4>
+                  <div className="wallet-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {unitIds.map(id => <MicroBadge key={id} unitId={id} score={userProgress[id]} />)}
+                  </div>
+                </div>
                 <div className="cert-trophy" style={{ fontSize: '5rem', marginBottom: '20px', filter: 'drop-shadow(0 10px 15px rgba(201, 162, 39, 0.3))', animation: allPassed ? 'pulse-glow 3s infinite' : 'none', borderRadius: '50%' }}>🏆</div>
                 <h2 style={{ fontSize: '1.4rem', color: 'var(--text-primary)', marginBottom: '15px', zIndex: 1 }}>{t('earnedCertificates')}</h2>
                 {allPassed && <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '10px', zIndex: 1 }}>{language === 'ar' ? 'تهانينا! لقد أتممت جميع المتطلبات.' : 'Congratulations! You met all requirements.'}</p>}
@@ -992,7 +1024,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         ) : (
           /* Analytics View */
           <div className="animate-fade-in">
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px' }}>
+            <div className='cert-main-grid' style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px' }}>
               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', background: 'var(--bg-card)' }}>
                 <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '1.5rem' }}>📊</span> {language === 'ar' ? 'تحليل تقدمك الدراسي' : 'Your Learning Analytics'}
