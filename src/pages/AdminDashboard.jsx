@@ -1,3 +1,4 @@
+import emailjs from '@emailjs/browser';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production'
@@ -366,7 +367,15 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
                                     headers: { 'Content-Type':'application/json', 'x-admin-email': user.email }
                                   });
                                   const data = await res.json();
-                                  if (data.success) { alert(`✅ ${u.displayName} reactivated!`); fetchData(); }
+                                  if (data.success) {
+                                    emailjs.send('service_5cdkh5d', 'template_lrfl1xq', {
+                                      to_email: u.email,
+                                      user_name: u.displayName || u.email,
+                                      days_inactive: daysSince,
+                                    }, 'C-YEGgyegcQ0BL0KU').catch(e => console.warn('EmailJS:', e));
+                                    alert(u.displayName + ' reactivated and email sent!');
+                                    fetchData();
+                                  }
                                   else alert(`❌ ${data.error}`);
                                 } catch(e) { alert('❌ Error reactivating user'); }
                               }}
