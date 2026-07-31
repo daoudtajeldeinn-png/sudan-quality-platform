@@ -70,6 +70,8 @@ const syncUserStats = async (req, res) => {
       // بناء كائن التحديث ديناميكياً لتجنب مسح البيانات الموجودة
       const updateData = {};
       if (xp !== undefined) updateData.xp = xp;
+      // Derive xp from progress.totalScore if xp not sent directly
+      else if (progress && progress.totalScore !== undefined) updateData.xp = progress.totalScore;
       if (level !== undefined) updateData.level = level;
       if (badges !== undefined) updateData.badges = badges;
       if (stats !== undefined) updateData.stats = stats;
