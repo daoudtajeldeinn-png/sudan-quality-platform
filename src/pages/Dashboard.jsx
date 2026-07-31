@@ -184,7 +184,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
                 const certifiedUnitIds = currentCerts.map(c => c.unitId).filter(Boolean);
                 const passingUnits = Object.entries(reconciledProgress)
-                  .filter(([id, sc]) => !isNaN(sc) && sc >= 90 && !certifiedUnitIds.includes(id));
+                  .filter(([id, sc]) => !isNaN(sc) && sc >= 80 && !certifiedUnitIds.includes(id));
 
                 for (const [unitId, score] of passingUnits) {
                   const unitDef = [
@@ -444,13 +444,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         } else if (unitId === 'method-validation') {
           awardBadge('analytical-expert', 'Analytical Expert 🧪', '🧪');
         } else if (unitId === 'process-validation' || unitId === 'hold-time-stability') {
-          if (newProgress['process-validation'] >= 90 && newProgress['hold-time-stability'] >= 90) {
+          if (newProgress['process-validation'] >= 80 && newProgress['hold-time-stability'] >= 80) {
             awardBadge('validation-expert', 'Validation Expert 🔄', '🔄');
           }
         }
       }
 
-      const allOthersPassed = allTrackUnits.filter(id => id !== unitId).every(id => (newProgress[id] || 0) >= 90);
+      const allOthersPassed = allTrackUnits.filter(id => id !== unitId).every(id => (newProgress[id] || 0) >= 80);
 
       if (isNewSuccess && allOthersPassed) newProgress[`completionDate_academy`] = new Date().toISOString();
       
@@ -478,7 +478,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   };
 
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
-  const allPassed = allTrackUnits.every(id => (userProgress[id] || 0) >= 90);
+  const allPassed = allTrackUnits.every(id => (userProgress[id] || 0) >= 80);
 
   const DeveloperProfileModal = () => (
     <div style={{
@@ -743,7 +743,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                           <tr key={id}>
                             <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
                             <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{userProgress[id]}</td>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 90 ? '#28a745' : '#999' }}>{userProgress[id] >= 90 ? 'PASSED' : 'PENDING'}</td>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 80 ? '#28a745' : '#999' }}>{userProgress[id] >= 80 ? 'PASSED' : 'PENDING'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1033,7 +1033,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 {/* Stats Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
                   <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #10b981' }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 90).length}</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length}</div>
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة مكتملة' : 'Units Completed'}</div>
                   </div>
                   <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #f59e0b' }}>
@@ -1041,7 +1041,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'متوسط الدرجات' : 'Average Score'}</div>
                   </div>
                   <div style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #6366f1' }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#6366f1' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 90).length * 2}h</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#6366f1' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length * 2}h</div>
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'ساعات الدراسة' : 'Study Hours'}</div>
                   </div>
                 </div>
@@ -1053,7 +1053,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {allTrackUnits.map(unitId => {
                     const score = userProgress[unitId] || 0;
-                    const isPassed = score >= 90;
+                    const isPassed = score >= 80;
                     const unitInfo = UNIT_ICONS[unitId] || { icon: '📄', color: '#6366f1' };
                     const unitDef = allUnitsDefinition.find(u => u.id === unitId);
                     
@@ -1118,13 +1118,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                       <p>✨ {language === 'ar' ? 'لقد أكملت جميع المتطلبات! يمكنك الآن تحميل شهادتك الرسمية.' : 'You have completed all requirements! You can now download your official certificate.'}</p>
                     ) : (
                       <p>
-                        {language === 'ar' ? 'يتبقى لك' : 'You have'} {allTrackUnits.length - allTrackUnits.filter(id => (userProgress[id] || 0) >= 90).length} {language === 'ar' ? 'وحدات للوصول للدرجة المطلوبة (90%+).' : 'units remaining to reach the required score (90%+).'}
+                        {language === 'ar' ? 'يتبقى لك' : 'You have'} {allTrackUnits.length - allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length} {language === 'ar' ? 'وحدات للوصول للدرجة المطلوبة (90%+).' : 'units remaining to reach the required score (90%+).'}
                       </p>
                     )}
                   </div>
                   <div style={{ marginTop: '20px', height: '10px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', overflow: 'hidden' }}>
                     <div style={{ 
-                      width: `${(allTrackUnits.filter(id => (userProgress[id] || 0) >= 90).length / allTrackUnits.length) * 100}%`, 
+                      width: `${(allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100}%`, 
                       height: '100%', 
                       background: 'white', 
                       borderRadius: '10px',
@@ -1132,7 +1132,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     }} />
                   </div>
                   <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    {Math.round((allTrackUnits.filter(id => (userProgress[id] || 0) >= 90).length / allTrackUnits.length) * 100)}% {language === 'ar' ? 'مكتمل' : 'Complete'}
+                    {Math.round((allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100)}% {language === 'ar' ? 'مكتمل' : 'Complete'}
                   </div>
                 </div>
               </aside>
