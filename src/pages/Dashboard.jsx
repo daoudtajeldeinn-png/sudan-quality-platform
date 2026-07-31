@@ -149,7 +149,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   progress: {
                     unitScores: reconciled,
                     unitStates: unitStates,
-                    totalScore: Object.values(reconciled).reduce((a, b) => (typeof b === 'number' ? a + b : a), 0)
+                    totalScore: Math.round(Object.values(reconciled).filter(b => typeof b === 'number').reduce((a, b) => a + b, 0) / (Object.values(reconciled).filter(b => typeof b === 'number').length || 1))
                   }
                 }, authToken).catch(e => console.error('Initial sync failed', e));
               }
@@ -436,7 +436,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             unitScores: newProgress,
             unitStates: unitStates,
             lastPlayed: unitId,
-            totalScore: Object.values(newProgress).reduce((a, b) => a + b, 0)
+            totalScore: Math.round(Object.values(newProgress).reduce((a, b) => a + b, 0) / (Object.values(newProgress).length || 1))
           }
         }, authToken).catch(err => console.error('[QuizComplete] Sync failed:', err));
       }
