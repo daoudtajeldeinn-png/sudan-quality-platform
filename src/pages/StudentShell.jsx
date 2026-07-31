@@ -450,7 +450,7 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       style={{
         width: sidebarOpen ? '230px' : '62px',
         background:`linear-gradient(180deg,${S.navy} 0%,${S.navyMid} 55%,${S.navyDk} 100%)`,
-        display:'flex', flexDirection:'column', flexShrink:0,
+        display: isMobile ? 'none' : 'flex', flexDirection:'column', flexShrink:0,
         transition:'width 0.22s ease, transform 0.3s ease', overflow:'hidden',
         boxShadow: isRtl ? '-4px 0 20px rgba(0,0,0,0.18)' : '4px 0 20px rgba(0,0,0,0.18)',
         zIndex:10,
@@ -601,6 +601,34 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
 
 
 
+  /* ── mobile bottom nav ── */
+  const MobileBottomNav = () => (
+    <div style={{
+      position:'fixed', bottom:0, left:0, right:0, zIndex:200,
+      background:`linear-gradient(135deg,${S.navy},${S.navyMid})`,
+      display:'flex', justifyContent:'space-around', alignItems:'center',
+      padding:'8px 0 10px', borderTop:`2px solid ${S.gold}`,
+      boxShadow:'0 -4px 20px rgba(0,0,0,0.3)',
+    }}>
+      {NAV.map(item => {
+        const active = activePage === item.id;
+        return (
+          <button key={item.id} onClick={() => setActivePage(item.id)} style={{
+            display:'flex', flexDirection:'column', alignItems:'center', gap:'3px',
+            background:'none', border:'none', cursor:'pointer', padding:'4px 6px',
+            color: active ? S.gold : 'rgba(255,255,255,0.5)',
+            minWidth:'40px',
+          }}>
+            <span style={{ fontSize:'19px' }}>{item.icon}</span>
+            <span style={{ fontSize:'9px', fontWeight: active ? '700' : '400', whiteSpace:'nowrap' }}>
+              {isRtl ? item.labelAr : item.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <>
     {/* Mobile backdrop */}
@@ -614,11 +642,13 @@ export default function StudentShell({ user, onLogout, authToken, onSwitchView, 
       <Sidebar />
       <div style={{ flex:1, overflow:'auto', background:S.bg, display:'flex', flexDirection:'column' }}>
         <TopBar />
-        <div style={{ flex:1, overflow:'auto' }}>
+        <div style={{ flex:1, overflow:'auto', paddingBottom: isMobile ? '72px' : '0' }}>
           {renderContent()}
         </div>
       </div>
     </div>
+    {/* Mobile bottom nav */}
+    {isMobile && <MobileBottomNav />}
     </>
   );
 }
