@@ -154,8 +154,7 @@ const getCertificates = async (req, res) => {
       const { data: certificates, error: certError } = await req.supabase
         .from('certificates')
         .select('*')
-        .eq('userId', userId)
-        .eq('status', 'active');
+        .eq('userId', userId);
 
       if (certError) {
         console.error('❌ Get certificates error:', certError);
