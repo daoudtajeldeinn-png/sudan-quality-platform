@@ -159,7 +159,7 @@ const CertificatesView = ({ user, authToken, isRtl, onViewCert }) => {
         {isRtl ? 'لا توجد شهادات بعد' : 'No certificates yet'}
       </div>
       <div style={{ fontSize:'14px', color:S.sub }}>
-        {isRtl ? 'أكمل الكورسات بنسبة 90%+ لتحصل على شهاداتك' : 'Complete courses with 90%+ score to earn certificates'}
+        {isRtl ? 'أكمل الكورسات بنسبة 80%+ لتحصل على شهاداتك' : 'Complete courses with 80%+ score to earn certificates'}
       </div>
     </div>
   );
@@ -218,7 +218,7 @@ const CertificatesView = ({ user, authToken, isRtl, onViewCert }) => {
                 {score > 0 && (
                   <div style={{
                     position:'absolute', top:'8px', right:'8px',
-                    background: score >= 90 ? S.green : '#f59e0b',
+                    background: score >= 80 ? S.green : '#f59e0b',
                     color:'white', fontSize:'10px', fontWeight:'700',
                     padding:'3px 8px', borderRadius:'10px',
                   }}>
@@ -290,7 +290,7 @@ const AnalyticsView = ({ user, isRtl }) => {
     } catch(e){}
   }, [user.email]);
 
-  const passed  = allUnits.filter(id => (progress[id]||0) >= 90).length;
+  const passed  = allUnits.filter(id => (progress[id]||0) >= 80).length;
   const avg     = allUnits.length
     ? Math.round(allUnits.reduce((a,id) => a+(progress[id]||0), 0) / allUnits.length)
     : 0;
