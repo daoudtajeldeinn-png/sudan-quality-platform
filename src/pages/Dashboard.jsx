@@ -493,7 +493,10 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   };
 
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
-  const allPassed = progressLoaded && allTrackUnits.every(id => (userProgress[id] || 0) >= 80);
+  const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
+  const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id => 
+    certifiedUnitIds.includes(id) || (userProgress[id] || 0) >= 80
+  );
 
   const DeveloperProfileModal = () => (
     <div style={{
