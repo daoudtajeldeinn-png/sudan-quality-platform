@@ -26,6 +26,7 @@ const TRACKS = [
   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
   { id: 'advanced_validation', titleKey: 'track_advanced_validation', units: ['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'], icon: '🧪', color: '#6610f2' },
+  { id: 'quality_systems', titleKey: 'track_quality_systems', units: ['capa', 'iso-9001', 'qc-lab', 'ipqc'], icon: '🎯', color: '#e11d48' },
 ];
 
 // Unit icons mapping
@@ -54,6 +55,14 @@ const UNIT_ICONS = {
   'hold-time-stability': { icon: '⏳', color: '#f59e0b', title: { ar: 'ثبات فترة الاستبقاء', en: 'Hold Time Stability' } },
   'method-validation': { icon: '🧪', color: '#3b82f6', title: { ar: 'التحقق من طرق التحليل', en: 'Analytical Method Validation' } },
   'equipment-qualification': { icon: '⚙️', color: '#8b5cf6', title: { ar: 'تأهيل الأجهزة والمرافق', en: 'Equipment Qualification' } },
+  'capa':     { icon: '🔧', color: '#e11d48', title: { ar: 'إدارة CAPA', en: 'CAPA Management' } },
+  'iso-9001': { icon: '📋', color: '#0ea5e9', title: { ar: 'ISO 9001', en: 'ISO 9001 QMS' } },
+  'qc-lab':   { icon: '🧫', color: '#10b981', title: { ar: 'مختبر ضبط الجودة', en: 'QC Laboratory' } },
+  'ipqc':     { icon: '🏭', color: '#f59e0b', title: { ar: 'رقابة الجودة أثناء العملية', en: 'IPQC' } },
+  'capa':     { icon: '🔧', color: '#e11d48', title: { ar: 'إدارة CAPA', en: 'CAPA Management' } },
+  'iso-9001': { icon: '📋', color: '#0ea5e9', title: { ar: 'ISO 9001', en: 'ISO 9001 QMS' } },
+  'qc-lab':   { icon: '🧫', color: '#10b981', title: { ar: 'مختبر ضبط الجودة', en: 'QC Laboratory' } },
+  'ipqc':     { icon: '🏭', color: '#f59e0b', title: { ar: 'رقابة الجودة أثناء العملية', en: 'IPQC' } },
 };
 
 const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClosed }) => {
@@ -100,7 +109,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       'batch-records': 0, 'nmpb-reg': 0,
       'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
       'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
-      'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0
+      'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0,
+      'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0,
+      'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0
     };
     try {
       // Try all sqp_progress_ keys to find any saved progress
