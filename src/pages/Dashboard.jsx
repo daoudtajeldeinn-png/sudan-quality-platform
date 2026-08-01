@@ -144,6 +144,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       if (user?.uid && authToken) {
         try {
           const profile = await apiService.getUserProfile(user.uid, authToken);
+          setProgressLoaded(true);
           if (profile && profile.progress) {
             const remoteProgress = profile.progress.unitScores || {};
             setUserProgress(prev => {
@@ -168,6 +169,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               }
               return reconciled;
             });
+            setProgressLoaded(true);
             setUserCertLevel(profile.progress.level || 1);
             if (profile.progress.unitStates) {
               setUnitStates(prev => ({ ...profile.progress.unitStates, ...prev }));
