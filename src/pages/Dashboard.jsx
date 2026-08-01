@@ -533,7 +533,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   );
 
   const MicroBadge = ({ unitId, score }) => {
-    const isUnlocked = score >= (unitId === "adv-iso-17025" ? 80 : 90);
+    const isUnlocked = certifiedUnitIds.includes(unitId) || score >= 80;
     return (
       <div 
         className={isUnlocked ? 'badge-unlocked' : 'badge-locked'}
