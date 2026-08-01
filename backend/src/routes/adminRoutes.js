@@ -199,3 +199,17 @@ router.get('/analytics', adminAuth, async (req, res) => {
     res.json({ courseStats, totalUsers: totalUsers || 0, totalCertsIssued: (certs || []).length });
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
+
+// Public verify endpoint — no admin auth required
+router.get('/verify/:certId', async (req, res) => {
+  try {
+    const certId = req.params.certId.toUpperCase();
+    const { data, error } = await supabase
+      .from('certificates')
+      .select('*')
+      .or(`verificationId.eq.${certId},id.eq.${certId}`)
+      .single();
+    if (error || !data) return res.json({ found: false, message: 'Certificate not found' });
+    res.json({ found: true, certificate: data });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});

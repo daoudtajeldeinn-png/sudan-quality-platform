@@ -621,17 +621,8 @@
   .topbar { padding: 0 var(--space-4); }
   .hamburger { display: flex; }
 
+  /* Sidebar fully hidden on mobile — wallet bar + bottom nav replace it */
   .sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    z-index: 999;
-    transform: translateX(100%);
-    transition: transform var(--transition-slow);
-    box-shadow: -4px 0 20px rgba(0,0,0,0.25);
-  }
-  .sidebar.mobile-open {
-    transform: translateX(0);
+    display: none !important;
   }
 }

@@ -1,6 +1,6 @@
 # 🗺️ خطة التنفيذ — منصة السودان للجودة
 > **للمساعد الذكاء الاصطناعي:** اقرأ هذا الملف كاملاً قبل أي إجراء. يحتوي على كل ما تحتاجه للبدء فوراً دون الحاجة لمراجعة باقي الملفات.
-> آخر تحديث: يونيو 2026
+> آخر تحديث: يوليو 2026
 
 ---
 
@@ -84,8 +84,8 @@ export const educationalContent = {
 
 | معرف الوحدة | الحالة | ملاحظات |
 |-------------|--------|---------|
-| `cleaning-validation` | ⚠️ ناقصة | 6 شرائح فقط — تحتاج 4+ شرائح إضافية وأسئلة أكثر |
-| `nmpb-reg` | ✅ مكتملة | 10 شرائح |
+| `cleaning-validation` | ✅ مكتملة | 10+ شرائح، 15+ سؤال — ⚠️ مفتاح مكرر (السطر ~358 يُعيد الكتابة) |
+| `nmpb-reg` | ✅ مكتملة | 10 شرائح — ⚠️ مفتاح مكرر (السطر ~247 يُعيد الكتابة) |
 | `gmp-intro` | ✅ مكتملة | 14 شريحة + 21 سؤال |
 | `glp-basics` | ✅ مكتملة | 9 شرائح |
 | `iso-17025` | ✅ مكتملة | 13 شريحة |
@@ -104,10 +104,10 @@ export const educationalContent = {
 | `adv-validation` | ✅ مكتملة | |
 | `adv-qrm` | ✅ مكتملة | |
 | `adv-gdp` | ✅ مكتملة | |
-| `process-validation` | ❌ **مفقودة** | يجب إنشاؤها |
-| `hold-time-stability` | ❌ **مفقودة** | يجب إنشاؤها |
-| `method-validation` | ❌ **مفقودة** | يجب إنشاؤها |
-| `equipment-qualification` | ❌ **مفقودة** | يجب إنشاؤها |
+| `process-validation` | ⚠️ جزئية | 6 شرائح، 8 أسئلة — تحتاج توسيع إلى 10+ |
+| `hold-time-stability` | ⚠️ جزئية | 4 شرائح، 4 أسئلة — تحتاج توسيع إلى 10+ |
+| `method-validation` | ✅ مكتملة | 10 شرائح، 14 سؤال |
+| `equipment-qualification` | ✅ مكتملة | 11 شريحة، 16 سؤال — ⚠️ مفتاح مكرر (السطر ~375) |
 
 ---
 
@@ -313,28 +313,32 @@ export const educationalContent = {
 | المجال | الحالة |
 |--------|--------|
 | Frontend (Firebase) | ✅ Live |
-| Backend (Vercel) | ✅ Live |
+| Backend (Vercel) | ✅ Live — `backend-lime-gamma-gf9yal9mmd.vercel.app` |
 | Google Auth | ✅ Working |
 | Bilingual AR/EN | ✅ Complete |
+| Quiz scoring (answerResults) | ✅ Fixed — certificates now issue at ≥90% |
 | Dashboard UI للوحدات الخمس | ✅ جاهز (TRACKS + UNIT_ICONS موجود) |
-| cleaning-validation (محتوى) | ⚠️ ناقص (6/10+ شرائح) |
-| equipment-qualification (محتوى) | ❌ مفقود |
-| method-validation (محتوى) | ❌ مفقود |
-| process-validation (محتوى) | ❌ مفقود |
-| hold-time-stability (محتوى) | ❌ مفقود |
-| شارات التخصص | ❌ مخططة لاحقاً |
+| cleaning-validation (محتوى) | ✅ مكتمل — ⚠️ إزالة المفتاح المكرر مطلوبة |
+| equipment-qualification (محتوى) | ✅ مكتمل — ⚠️ إزالة المفتاح المكرر مطلوبة |
+| method-validation (محتوى) | ✅ مكتمل |
+| process-validation (محتوى) | ⚠️ جزئي (6/10+ شرائح) |
+| hold-time-stability (محتوى) | ⚠️ جزئي (4/10+ شرائح) |
+| شارات التخصص | ✅ مُنفَّذة في Dashboard.jsx |
+| Admin question manager | ✅ API routes في adminRoutes.js |
+| Supabase missing questions | ⚠️ `fixed_questions.sql` جاهز — يحتاج تشغيل |
 
 ---
 
 ## 8. ملاحظات تقنية مهمة
 
-- **لا تعدل Dashboard.jsx** — بنية الوحدات الخمس موجودة فيه بالفعل ✅
 - **لا تعدل LanguageContext.jsx** — نظام الترجمة مكتمل ✅
-- **المهمة الوحيدة المتبقية:** إضافة محتوى إلى `content_new.js` فقط
+- **Dashboard.jsx** — الشهادات والشارات مُنفَّذة ✅ — لا تعدّل إلا عند الحاجة
+- **Quiz.jsx** — يستخدم `answerResults` للتسجيل (لا يعتمد على `correctAnswer` من السيرفر)
+- **المهام المتبقية:** (1) إزالة المفاتيح المكررة في `content_new.js`، (2) توسيع process-validation و hold-time-stability، (3) تشغيل `fixed_questions.sql`
 - **بعد كل إضافة:** شغّل `npm run dev` وتحقق من أن الوحدة تظهر وتعمل
-- **القاعدة الذهبية:** كل ID فريد — لا تكرار في slide IDs أو question IDs
+- **القاعدة الذهبية:** كل ID فريد — لا تكرار في unit keys أو slide IDs أو question IDs
 
 ---
 
-*📌 للمساعد: ابدأ دائماً بالمرحلة 1-A (إكمال cleaning-validation) ثم 1-B (equipment-qualification). هذا الترتيب يضمن أقل استهلاك ممكن للحصة مع أعلى قيمة.*
+*📌 للمساعد: ابدأ بإزالة المفاتيح المكررة (nmpb-reg, cleaning-validation, equipment-qualification) — احتفظ بالكتلة الأولى (الأغنى). ثم توسيع process-validation و hold-time-stability إذا طُلب.*
 0

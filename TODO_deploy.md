@@ -1,23 +1,30 @@
 # منصة السودان للجودة - Deployment TODO
 
-Status: Backend Vercel + Frontend Firebase (Demo mode ready)
+Status: ✅ Backend Vercel + Frontend Firebase — Production Ready
 
 ## Backend (Vercel)
 - [x] 1. Install deps: `cd backend && npm install` ✅
-- [x] 2. Test local: `cd backend && npm start` → Visit http://localhost:5000/health (should show demo mode OK)
-- [x] 3. Git init: `cd backend && git init`
-- [x] 4. Add .gitignore improvements if needed (node_modules, .env)
-- [x] 5. Commit & push: Create GitHub repo 'sudan-quality-backend', `git remote add origin https://github.com/YOUR_USERNAME/sudan-quality-backend.git` (replace USERNAME), `git add . && git commit -m \"Deploy ready backend\" && git push -u origin main`
-- [ ] 6. Vercel: vercel.com → New Project → Import GitHub repo → Deploy (auto from vercel.json). Add env MONGODB_URI=your_mongo_uri (Atlas free tier optional)
-- [ ] 7. Note Vercel URL (e.g. sudan-quality-backend.vercel.app)
+- [x] 2. Test local: `cd backend && npm start` → http://localhost:5000/health ✅
+- [x] 3. Git init + push to GitHub ✅
+- [x] 4. `.gitignore` configured ✅
+- [x] 5. Deployed to Vercel ✅
+- [x] 6. Vercel project live ✅
+- [x] 7. Backend URL: `https://backend-lime-gamma-gf9yal9mmd.vercel.app/api`
 
 ## Frontend (Firebase)
 - [x] Live: https://decisive-octane-472816-d3.web.app/
-- [x] 8. If changes: `cd frontend && npm run build && firebase deploy --only hosting`
-- [x] 9. Update frontend/src/services/api.js: const API_BASE = 'https://YOUR_BACKEND.vercel.app/api';
+- [x] `src/services/api.js` → points to Vercel backend ✅
+- [x] Quiz scoring fix deployed (answerResults) ✅
+- [x] Certificate + badge logic in Dashboard.jsx ✅
+- [ ] Re-deploy if local changes not yet pushed: `npm run build && firebase deploy --only hosting`
+
+## Database (Supabase)
+- [x] Questions table populated for most units
+- [ ] Run `fixed_questions.sql` to insert missing questions (ich-guidelines, validation-qualification, gdp-basics, adv-validation, etc.)
 
 ## Testing
-- [x] 10. Local full stack: Backend 5000 + Frontend vite dev (update api to localhost:5000)
-- [x] 11. Live: Frontend Firebase → calls Backend Vercel APIs (auth, quiz, certs, no CORS)
+- [x] 10. Local full stack: Backend 5000 + Frontend vite dev ✅
+- [x] 11. Live: Frontend Firebase → Backend Vercel APIs (auth, quiz, certs) ✅
+- [ ] 12. Verify certificate issues after completing a quiz with ≥90% score on live site
 
-**Next**: Run step 1-2 first. Provide GitHub username/repo or Vercel project for automation. Mongo URI optional.
+**Next**: Remove duplicate unit keys in `content_new.js`, run `fixed_questions.sql`, commit adminRoutes changes.

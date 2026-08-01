@@ -253,9 +253,10 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
     }
     updateStats({ totalQuizzes: stats.totalQuizzes + 1 });
 
-    // Mark unit as completed if score >= 90
+    // Mark unit as completed if score meets passing threshold
     const currentUserId = user ? (user.uid || user.userId || user.email) : null;
-    if (finalScore >= 90 && currentUserId) {
+    const passingThreshold = unitId === 'adv-iso-17025' ? 80 : 90;
+    if (finalScore >= passingThreshold && currentUserId) {
       apiService.markUnitCompleted(currentUserId, unitId, finalScore, questions.length)
         .then(response => {
           console.log('[Quiz] Unit marked as completed:', response);
@@ -268,8 +269,9 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
     if (onQuizComplete) {
       onQuizComplete({
         score: finalScore,
-        passed: finalScore >= 90,
-        unitId
+        passed: finalScore >= passingThreshold,
+        unitId,
+        totalQuestions: questions.length,
       });
     }
     // Legacy PDF removed - handled by Dashboard award system

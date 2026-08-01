@@ -1,6 +1,6 @@
 # 🧠 AI CONTEXT FILE — Sudan Quality Platform
 > Paste this entire file at the START of any new AI chat session.
-> Last updated: June 2026 | Maintained by: Dr. Daoud (SCI, Sudan)
+> Last updated: July 2026 | Maintained by: Dr. Daoud (SCI, Sudan)
 
 ---
 
@@ -22,8 +22,8 @@
 | **Project name** | Sudan Quality Platform (منصة السودان للجودة) |
 | **Purpose** | Pharmaceutical quality training & gamification platform for Sudanese pharmacists/chemists |
 | **GitHub repo** | `https://github.com/daoudtajeldeinn-png/sudan-quality-platform` |
-| **Local path** | `C:\Users\daoud\OneDrive\Desktop\sudan-quality-platform` ← USE THIS |
-| **Wrong path** | `C:\Users\daoud\OneDrive\Desktop\منصة السودان للجودة` ← IGNORE (old duplicate) |
+| **Local path** | `C:\Users\daoud\OneDrive\Desktop\منصة السودان للجودة` ← USE THIS |
+| **Alt path** | `C:\Users\daoud\OneDrive\Desktop\sudan-quality-platform` ← may be duplicate |
 
 ---
 
@@ -44,7 +44,7 @@
 │                    BACKEND                                   │
 │  Node.js + Express                                           │
 │  Hosted: Vercel (serverless)                                 │
-│  Live URL: [check src/services/api.js for current URL]       │
+│  Live URL: https://backend-lime-gamma-gf9yal9mmd.vercel.app/api │
 │  Auth: JWT + Firebase Auth (Google popup)                    │
 │  DB: MongoDB Atlas (mongoose)                                │
 └─────────────────────────────────────────────────────────────┘
@@ -178,7 +178,9 @@ The most common bug is URL mismatch. These three must all point to the SAME back
 ### ✅ Fixed
 | Bug | Fix |
 |---|---|
-| Certificate not issuing | Firebase UID ↔ MongoDB userId mismatch → unified to Firebase UID |
+| Quiz score always 0 (correctAnswer undefined) | Fixed: Quiz.jsx uses `answerResults` tracked during quiz, not server-stripped `correctAnswer` |
+| Certificate not issuing after quiz | Fixed: Dashboard.jsx awards cert at ≥90%; totalScore sends average not sum |
+| Specialization badges | Implemented in Dashboard.jsx (Cleaning Expert, Qualification Master, etc.) |
 | `useGamification()` crash | Added null guard before destructuring |
 | Mongoose deprecated options | Removed `useNewUrlParser`, `useUnifiedTopology` |
 | CORS preflight errors | Added OPTIONS handler + proper headers |
@@ -189,10 +191,11 @@ The most common bug is URL mismatch. These three must all point to the SAME back
 ### ⚠️ Outstanding / Watch-Out
 | Issue | Notes |
 |---|---|
-| Duplicate repo structure | `OneDrive/Desktop/منصة السودان للجودة/` still in git — ghost folder, never edit files there |
+| Duplicate unit keys in content_new.js | `nmpb-reg`, `cleaning-validation`, `equipment-qualification` appear twice — second block overwrites richer first block |
+| Supabase missing questions | `fixed_questions.sql` ready — run against production DB |
 | Build artifacts in git | `dist/` and `.vite/` committed — should be in `.gitignore` |
 | `api-clean.js` drift | Must stay in sync with `api.js` after any URL change |
-| Vercel backend URL | Can change on redeploy — verify in dashboard, update `.env.production` |
+| Partial content units | `process-validation` (6 slides) and `hold-time-stability` (4 slides) need expansion |
 
 ---
 
@@ -245,19 +248,21 @@ PORT=5000
 
 ---
 
-## 14. CURRENT STATUS (June 2026)
+## 14. CURRENT STATUS (July 2026)
 
 | Area | Status |
 |---|---|
 | Frontend (Firebase) | ✅ Live |
-| Backend (Vercel) | ✅ Live |
+| Backend (Vercel) | ✅ Live — backend-lime-gamma-gf9yal9mmd.vercel.app |
 | Google Auth | ✅ Working |
 | Bilingual AR/EN | ✅ Complete |
-| Training content (8 tracks) | 🔄 Content population in progress |
-| Gamification | ✅ Core working |
-| Completion tracking | ✅ Schema in place |
-| Repo cleanliness | ⚠️ Duplicate structure + artifacts in git |
-| Certificate generation | 🔄 Planned |
+| Quiz scoring + certificates | ✅ Fixed and deployed |
+| Training content (5 new units) | ✅ 3 complete, 2 partial (process-validation, hold-time-stability) |
+| Specialization badges | ✅ Implemented |
+| Admin question manager API | ✅ Added (uncommitted) |
+| Supabase question gaps | ⚠️ fixed_questions.sql ready, needs execution |
+| Content duplicate keys | ⚠️ 3 units need deduplication in content_new.js |
+| Repo cleanliness | ⚠️ Build artifacts in git |
 
 ---
 
