@@ -137,9 +137,13 @@ const CertificatesView = ({ user, authToken, isRtl, onViewCert }) => {
     apiService.getUserCertificates(user.uid, authToken)
       .then(data => {
         const arr = Array.isArray(data) ? data : (data?.certificates || []);
+        alert('Certs loaded: ' + arr.length + ' | ' + JSON.stringify(data).substring(0,100));
         setCerts(arr);
       })
-      .catch(err => console.error('Certs fetch error', err))
+      .catch(err => {
+        alert('Certs ERROR: ' + err.message);
+        console.error('Certs fetch error', err);
+      })
       .finally(() => setLoading(false));
   }, [user?.uid]);
 

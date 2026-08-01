@@ -92,14 +92,21 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     }
   }, [activeTab]); 
   const [currentTrack, setCurrentTrack] = useState(null); 
-  const [userProgress, setUserProgress] = useState({
-    'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
-    'validation-qualification': 0, 'data-integrity': 0, 'qrm-basics': 0,
-    'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
-    'batch-records': 0, 'nmpb-reg': 0,
-    'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
-    'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
-    'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0
+  const [userProgress, setUserProgress] = useState(() => {
+    const defaults = {
+      'gmp-intro': 0, 'glp-basics': 0, 'iso-17025': 0, 'ich-guidelines': 0,
+      'validation-qualification': 0, 'data-integrity': 0, 'qrm-basics': 0,
+      'gdp-basics': 0, 'ich-q10': 0, 'sterile-annex1': 0, 'gamp5-basics': 0,
+      'batch-records': 0, 'nmpb-reg': 0,
+      'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
+      'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
+      'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0
+    };
+    try {
+      const saved = localStorage.getItem('sqp_progress_' + (user?.email || ''));
+      if (saved) return { ...defaults, ...JSON.parse(saved) };
+    } catch(e) {}
+    return defaults;
   });
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
