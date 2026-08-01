@@ -112,6 +112,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     } catch(e) {}
     return defaults;
   });
+  const [progressLoaded, setProgressLoaded] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
   const [streak, setStreak] = useState(0);
@@ -131,6 +132,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       if (savedProgress) {
         try {
           const parsed = JSON.parse(savedProgress);
+          setProgressLoaded(true);
           setUserProgress(prev => ({ ...prev, ...parsed }));
         } catch (e) { console.error('Error parsing progress', e); }
       }
@@ -489,7 +491,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   };
 
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
-  const allPassed = allTrackUnits.every(id => (userProgress[id] || 0) >= 80);
+  const allPassed = progressLoaded && allTrackUnits.every(id => (userProgress[id] || 0) >= 80);
 
   const DeveloperProfileModal = () => (
     <div style={{
