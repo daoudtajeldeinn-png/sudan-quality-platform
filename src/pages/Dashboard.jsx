@@ -103,8 +103,12 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0
     };
     try {
-      const saved = localStorage.getItem('sqp_progress_' + (user?.email || ''));
-      if (saved) return { ...defaults, ...JSON.parse(saved) };
+      // Try all sqp_progress_ keys to find any saved progress
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('sqp_progress_'));
+      if (keys.length > 0) {
+        const saved = localStorage.getItem(keys[0]);
+        if (saved) return { ...defaults, ...JSON.parse(saved) };
+      }
     } catch(e) {}
     return defaults;
   });
