@@ -59,10 +59,6 @@ const UNIT_ICONS = {
   'iso-9001': { icon: '📋', color: '#0ea5e9', title: { ar: 'ISO 9001', en: 'ISO 9001 QMS' } },
   'qc-lab':   { icon: '🧫', color: '#10b981', title: { ar: 'مختبر ضبط الجودة', en: 'QC Laboratory' } },
   'ipqc':     { icon: '🏭', color: '#f59e0b', title: { ar: 'رقابة الجودة أثناء العملية', en: 'IPQC' } },
-  'capa':     { icon: '🔧', color: '#e11d48', title: { ar: 'إدارة CAPA', en: 'CAPA Management' } },
-  'iso-9001': { icon: '📋', color: '#0ea5e9', title: { ar: 'ISO 9001', en: 'ISO 9001 QMS' } },
-  'qc-lab':   { icon: '🧫', color: '#10b981', title: { ar: 'مختبر ضبط الجودة', en: 'QC Laboratory' } },
-  'ipqc':     { icon: '🏭', color: '#f59e0b', title: { ar: 'رقابة الجودة أثناء العملية', en: 'IPQC' } },
 };
 
 const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClosed }) => {
@@ -110,7 +106,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
       'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
       'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0,
-      'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0,
       'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0
     };
     try {
