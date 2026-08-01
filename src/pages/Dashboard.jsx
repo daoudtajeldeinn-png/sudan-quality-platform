@@ -953,7 +953,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
           <div className="animate-fade-in">
 
             
-            <div className='cert-main-grid' style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '40px' }}>
+            <div className='cert-main-grid' style={{ display: 'grid', gap: '40px' }}>
               <section className="glass-panel" style={{ padding: '35px', borderRadius: '24px' }}>
                 {!currentTrack ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
@@ -1024,7 +1024,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         ) : (
           /* Analytics View */
           <div className="animate-fade-in">
-            <div className='cert-main-grid' style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '30px' }}>
+            <div className='cert-main-grid' style={{ display: 'grid', gap: '30px' }}>
               <section className="glass-panel" style={{ padding: '30px', borderRadius: '24px', background: 'var(--bg-card)' }}>
                 <h3 style={{ marginBottom: '25px', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '1.5rem' }}>📊</span> {language === 'ar' ? 'تحليل تقدمك الدراسي' : 'Your Learning Analytics'}

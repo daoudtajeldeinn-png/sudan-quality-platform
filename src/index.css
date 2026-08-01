@@ -177,6 +177,7 @@ input, textarea {
 @media (max-width: 768px) {
   /* Main cert grid: stack vertically */
   .cert-main-grid {
+  grid-template-columns: minmax(0, 1fr) 350px;
     grid-template-columns: 1fr !important;
   }
 
