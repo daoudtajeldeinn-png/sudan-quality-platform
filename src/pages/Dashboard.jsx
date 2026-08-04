@@ -223,6 +223,10 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     { id: 'hold-time-stability', title: t('holdTimeStability') },
                     { id: 'method-validation', title: t('methodValidation') },
                     { id: 'equipment-qualification', title: t('equipmentQualification') },
+                    { id: 'capa', title: 'CAPA Management' },
+                    { id: 'iso-9001', title: 'ISO 9001 QMS' },
+                    { id: 'qc-lab', title: 'QC Laboratory' },
+                    { id: 'ipqc', title: 'IPQC' },
                   ].find(u => u.id === unitId);
 
                   if (!unitDef) continue;
