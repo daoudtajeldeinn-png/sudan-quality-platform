@@ -348,6 +348,10 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     { id: 'hold-time-stability', title: t('holdTimeStability'), subtitle: t('unit_spec'), color: '#f59e0b' },
     { id: 'method-validation', title: t('methodValidation'), subtitle: t('unit_spec'), color: '#3b82f6' },
     { id: 'equipment-qualification', title: t('equipmentQualification'), subtitle: t('unit_spec'), color: '#8b5cf6' },
+    { id: 'capa',     title: 'CAPA Management',  subtitle: 'Corrective & Preventive Actions', color: '#e11d48' },
+    { id: 'iso-9001', title: 'ISO 9001 QMS',      subtitle: 'Quality Management System',       color: '#0ea5e9' },
+    { id: 'qc-lab',   title: 'QC Laboratory',     subtitle: 'Quality Control Lab',             color: '#10b981' },
+    { id: 'ipqc',     title: 'IPQC',              subtitle: 'In-Process Quality Control',      color: '#f59e0b' },
   ];
 
   const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
