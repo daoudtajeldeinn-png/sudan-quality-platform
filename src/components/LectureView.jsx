@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import { educationalContent } from '../data/content_new.js';
+import CourseSlides from './CourseSlides';
 
 // Unit-specific colors for visual consistency
 const UNIT_COLORS = {
@@ -26,6 +27,8 @@ const UNIT_COLORS = {
   'adv-gdp': '#ea580c'
 };
 
+const SPECIAL_COURSE_UNITS = ['capa', 'iso-9001', 'qc-lab', 'ipqc'];
+
 const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const { language, t, theme } = useLanguage();
   const { addXp, updateStats, stats } = useGamification();
@@ -36,6 +39,10 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const [showCompletion, setShowCompletion] = useState(false);
   const [slideKey, setSlideKey] = useState(0); // For animation trigger
   
+  if (SPECIAL_COURSE_UNITS.includes(unitId)) {
+    return <CourseSlides unitId={unitId} onStartQuiz={onProceedToQuiz} onBack={onBack} />;
+  }
+
   // Get the unit content - ensure it exists
   const unit = educationalContent?.units?.[unitId];
 
