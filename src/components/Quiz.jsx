@@ -3,6 +3,7 @@ import { useLanguage } from '../LanguageContext';
 import { useGamification } from '../GamificationContext';
 import { apiService } from '../services/api';
 import { educationalContent } from '../data/content_new.js';
+import { getPassingThreshold } from '../utils/passingThreshold';
 import '../styles/CertificateStyles.css';
 import pharmaLogo from '../assets/pharma_logo.png';
 import certBg from '../assets/certificate_bg.png';
@@ -528,7 +529,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
   }
 
   if (quizState === 'completed') {
-    const passed = score >= 90;
+    const passed = score >= getPassingThreshold(unitId);
     // Get unit title from unit data title property or fallback to unitId
     const unitData = educationalContent.units[unitId];
     const unitTitle = unitData?.title || 

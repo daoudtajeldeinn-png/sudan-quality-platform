@@ -15,6 +15,7 @@ import goldSeal from '../assets/gold_seal.png';
 import { QRCodeCanvas } from 'qrcode.react';
 import apiService from '../services/api';
 import '../styles/CertificateStyles.css';
+import { getPassingThreshold } from '../utils/passingThreshold';
 
 // Unit grouping
 const TRACKS = [
@@ -387,7 +388,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
   const handleQuizComplete = (result) => {
     const { score, unitId } = result;
-    const passingThreshold = unitId === 'adv-iso-17025' ? 80 : 90;
+    const passingThreshold = getPassingThreshold(unitId);
     const passed = score >= passingThreshold;
     logAuditTrail('eventQuiz', unitId);
 

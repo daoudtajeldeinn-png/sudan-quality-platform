@@ -31,7 +31,8 @@ const createCertDoc = async (supabaseClient, userId, userName, level, includedUn
 exports.awardCertificateSmart = async (req, res) => {
   try {
     const { userId, userName, unitId, unitName, score, percentage } = req.body;
-    if (!userId || !unitId || score < 90) return res.status(400).json({ error: 'Valid completion required (90%+)' });
+    const threshold = unitId === 'adv-iso-17025' || ['capa', 'iso-9001', 'qc-lab', 'ipqc'].includes(unitId) ? 80 : 90;
+    if (!userId || !unitId || score < threshold) return res.status(400).json({ error: `Valid completion required (${threshold}%+)` });
 
     if (req.isDemoMode) {
       const cert = await req.demoDB.awardCertificate(userId, {
