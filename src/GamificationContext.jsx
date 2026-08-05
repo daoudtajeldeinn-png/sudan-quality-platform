@@ -33,8 +33,8 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
           const profile = await apiService.getUserProfile(userId, authToken);
           if (profile) {
             // RECONCILIATION: Take the highest XP between local and remote
-            const remoteXp = profile.xp || 0;
-            const localXp = localData?.xp || 0;
+            const remoteXp = parseInt(profile.xp || 0, 10);
+            const localXp = parseInt(localData?.xp || 0, 10);
             
             if (localXp > remoteXp) {
               console.log('Local progress is ahead, syncing to cloud...');
@@ -104,7 +104,7 @@ export const GamificationProvider = ({ children, userId, userEmail, authToken, l
   }, [xp, level]);
 
   const addXp = (amount) => {
-    setXp(prev => prev + amount);
+    setXp(prev => parseInt(prev, 10) + parseInt(amount, 10));
   };
 
   const awardBadge = (badgeId, badgeName, icon) => {
