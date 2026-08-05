@@ -184,6 +184,17 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             // Load completed units from profile
             if (profile.completedUnits) {
               setCompletedUnits(profile.completedUnits);
+              // Also merge completedUnits scores into userProgress
+              setUserProgress(prev => {
+                const merged = { ...prev };
+                Object.entries(profile.completedUnits).forEach(([unitId, data]) => {
+                  if (data.score && data.score > (merged[unitId] || 0)) {
+                    merged[unitId] = data.score;
+                  }
+                });
+                setProgressLoaded(true);
+                return merged;
+              });
             }
             try {
                 const certsData = await apiService.getUserCertificates(user.uid, authToken);
