@@ -518,10 +518,20 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     setCurrentUnit(null);
   };
 
-  const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (userProgress[id] || 0), 0) / (allTrackUnits.length || 1));
+  const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
+  // Derive progress from certificates — single source of truth
+  const certProgress = {};
+  certificates.forEach(c => {
+    if (c.unitId) certProgress[c.unitId] = c.score || c.percentage || 100;
+  });
+  // Merge with userProgress (keep highest score)
+  const effectiveProgress = { ...userProgress };
+  Object.entries(certProgress).forEach(([id, score]) => {
+    if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
+  });
   const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id => 
-    certifiedUnitIds.includes(id) || (userProgress[id] || 0) >= 80
+    certifiedUnitIds.includes(id) || (effectiveProgress[id] || 0) >= 80
   );
 
   const DeveloperProfileModal = () => (
