@@ -12,11 +12,10 @@ const getUserProfile = async (req, res) => {
       if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
       return res.json(user);
     } else {
-      const { data: user, error } = await req.supabase
-        .from('users')
-        .select('*')
-        .eq('userId', userId)
-        .single();
+      const [{ data: user, error }, { data: certs }] = await Promise.all([
+        req.supabase.from('users').select('*').eq('userId', userId).single(),
+        req.supabase.from('certificates').select('unitId, score, percentage').eq('userId', userId)
+      ]);
 
       if (error || !user) {
         if (userId) {
@@ -42,6 +41,34 @@ const getUserProfile = async (req, res) => {
         return res.status(404).json({ error: "User not found" });
       }
 
+      // Calculate XP from certificates (single source of truth)
+      if (certs && certs.length > 0) {
+        const uniqueUnits = {};
+        certs.forEach(c => {
+          const score = c.percentage || c.score || 0;
+          if (!uniqueUnits[c.unitId] || score > uniqueUnits[c.unitId]) {
+            uniqueUnits[c.unitId] = score;
+          }
+        });
+        const calculatedXp = Object.values(uniqueUnits).reduce((sum, score) => {
+          if (score === 100) return sum + 600;
+          if (score >= 95) return sum + 550;
+          if (score >= 90) return sum + 500;
+          return sum + 450;
+        }, 0);
+        const calculatedLevel = calculatedXp >= 13000 ? 14 :
+          calculatedXp >= 11000 ? 13 :
+          calculatedXp >= 9000 ? 12 :
+          calculatedXp >= 7000 ? 11 :
+          calculatedXp >= 5500 ? 10 :
+          calculatedXp >= 4000 ? 9 :
+          calculatedXp >= 3000 ? 8 :
+          calculatedXp >= 2000 ? 7 :
+          calculatedXp >= 1000 ? 6 : 5;
+        user.xp = calculatedXp;
+        user.level = calculatedLevel;
+        user.certCount = Object.keys(uniqueUnits).length;
+      }
       res.json(user);
     }
   } catch (error) {
