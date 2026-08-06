@@ -1,25 +1,21 @@
 const supabase = require('../config/supabase');
+const { buildCertificatePayload, resolveThreshold } = require('../services/certificateStorage.cjs');
 
-// Internal: Create cert document (refactored)
 const createCertDoc = async (supabaseClient, userId, userName, level, includedUnits, unitId, unitName, score, percentage) => {
-  const certNumber = `SQP-L${level}-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-  const verifyUrl = `${process.env.FRONTEND_URL || ''}/verify?id=${certNumber}`;
+  const payload = buildCertificatePayload({
+    userId,
+    userName,
+    level,
+    includedUnits,
+    unitId,
+    unitName,
+    score,
+    percentage
+  });
+
   const { data: cert, error } = await supabaseClient
     .from('certificates')
-    .insert({
-      userId,
-      userName,
-      level,
-      includedUnits,
-      unitId: includedUnits?.length > 1 ? null : unitId,
-      unitName,
-      score,
-      percentage,
-      certNumber,
-      verifyUrl,
-      status: 'active',
-      createdAt: new Date().toISOString()
-    })
+    .insert(payload)
     .select()
     .single();
 
@@ -31,7 +27,7 @@ const createCertDoc = async (supabaseClient, userId, userName, level, includedUn
 exports.awardCertificateSmart = async (req, res) => {
   try {
     const { userId, userName, unitId, unitName, score, percentage } = req.body;
-    const threshold = unitId === 'adv-iso-17025' || ['capa', 'iso-9001', 'qc-lab', 'ipqc'].includes(unitId) ? 80 : 90;
+    const threshold = resolveThreshold(unitId);
     if (!userId || !unitId || score < threshold) return res.status(400).json({ error: `Valid completion required (${threshold}%+)` });
 
     if (req.isDemoMode) {
