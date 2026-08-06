@@ -368,11 +368,11 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
                                   });
                                   const data = await res.json();
                                   if (data.success) {
-                                    emailjs.send('service_5cdkh5d', 'template_lrfl1xq', {
+                                    emailjs.send(import.meta.env.VITE_EMAILJS_SERVICE, import.meta.env.VITE_EMAILJS_TEMPLATE, {
                                       to_email: u.email,
                                       user_name: u.displayName || u.email,
                                       days_inactive: daysSince,
-                                    }, 'C-YEGgyegcQ0BL0KU').catch(e => console.warn('EmailJS:', e));
+                                    }, import.meta.env.VITE_EMAILJS_KEY).catch(e => console.warn('EmailJS:', e));
                                     alert(u.displayName + ' reactivated and email sent!');
                                     fetchData();
                                   }

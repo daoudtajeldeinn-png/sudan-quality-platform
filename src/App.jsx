@@ -12,9 +12,9 @@ import { useAuth } from './hooks/useAuth';
 import emailjs from '@emailjs/browser';
 
 // EmailJS config
-const EMAILJS_SERVICE  = 'service_5cdkh5d';
-const EMAILJS_TEMPLATE = 'template_lrfl1xq';
-const EMAILJS_KEY      = 'C-YEGgyegcQ0BL0KU';
+const EMAILJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE;
+const EMAILJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE;
+const EMAILJS_KEY      = import.meta.env.VITE_EMAILJS_KEY;
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
