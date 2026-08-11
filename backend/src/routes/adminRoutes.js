@@ -108,6 +108,55 @@ router.delete('/users/:userId/progress', adminAuth, async (req, res) => {
   } catch(err) { res.status(500).json({ error:err.message }); }
 });
 
+
+// POST /api/admin/notify-inactive
+router.post('/notify-inactive', adminAuth, async (req, res) => {
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 14);
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('email, displayName, lastLogin, completedUnits')
+      .lt('lastLogin', cutoff.toISOString())
+      .not('email', 'is', null);
+
+    if (!users || users.length === 0) {
+      return res.json({ success: true, sent: 0, message: 'No inactive users' });
+    }
+
+    const results = [];
+    for (const user of users) {
+      const daysSince = Math.floor(
+        (Date.now() - new Date(user.lastLogin).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const completedCount = user.completedUnits
+        ? Object.keys(user.completedUnits).length : 0;
+
+      const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: process.env.VITE_EMAILJS_SERVICE || 'service_5cdkh5d',
+          template_id: process.env.VITE_EMAILJS_TEMPLATE || 'template_lrfl1xq',
+          user_id: process.env.VITE_EMAILJS_KEY || 'C-YEGgyegcQ0BL0KU',
+          template_params: {
+            to_email: user.email,
+            user_name: user.displayName || user.email.split('@')[0],
+            days_inactive: daysSince,
+            completed_count: completedCount,
+          }
+        })
+      });
+      results.push({ email: user.email, status: emailRes.status });
+    }
+
+    res.json({ success: true, sent: results.length, results });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
 // ── QUESTION MANAGER ──

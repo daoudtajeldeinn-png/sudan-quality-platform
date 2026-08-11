@@ -1,0 +1,17 @@
+name: Notify Inactive Users
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # كل يوم 9 صباحاً
+  workflow_dispatch:      # تشغيل يدوي للاختبار
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notifications
+        run: |
+          curl -s -X POST \
+            "https://backend-lime-gamma-gf9yal9mmd.vercel.app/api/admin/notify-inactive" \
+            -H "Content-Type: application/json" \
+            -H "x-admin-email: daoudtajeldeinn113@gmail.com"
