@@ -291,84 +291,70 @@ const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   );
 
   const renderContent = () => {
-    if (currentSlide.type === 'learning') {
-      const parseBullets = (text) => {
-        return text.split('\n').map((line, idx) => {
-          if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
-            return <li key={idx} style={{ marginBottom: '0.8rem', fontSize: '1.25rem' }}>{line.trim().substring(2).trim()}</li>;
-          }
-          return <p key={idx} style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>{line}</p>;
-        });
-      };
+    const slide = currentSlide;
+    const lang = slide[language] || slide['ar'];
+    const text = lang?.text || '';
+    const title = lang?.title || '';
+    const color = unitColor;
 
-      return (
-        <div key={slideKey} className="slide-content animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
-          {currentSlide.regulatoryRef && (
-            <div style={{
-              backgroundColor: 'var(--bg-warning)',
-              border: '1px solid var(--border-warning)',
-              color: 'var(--text-warning)',
-              padding: '6px 12px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: '700',
-              marginBottom: '20px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
-              <span>⚖️</span> {currentSlide.regulatoryRef.code}
-            </div>
-          )}
-          <div style={{
-            fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', 
-            lineHeight: '1.6', 
-            color: 'var(--text-primary)', 
-            textAlign: language === 'ar' ? 'right' : 'left',
-            wordBreak: 'break-word',
-            padding: '0 10px'
-          }}>
-            {parseBullets(currentSlide[language].text)}
+    const parseLines = (txt) => txt.split('\n').filter(l => l.trim()).map((line, idx) => {
+      const t = line.trim();
+      if (/^\d+\./.test(t)) {
+        const m = t.match(/^(\d+)\.(.*)$/);
+        return <div key={idx} style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'10px'}}><span style={{minWidth:'26px',height:'26px',borderRadius:'50%',background:color,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.7rem',fontWeight:'800',flexShrink:0}}>{m[1]}</span><span style={{color:'#334155',fontSize:'0.9rem',lineHeight:1.7}}>{m[2].trim()}</span></div>;
+      }
+      if (t.startsWith('✔') || t.startsWith('✓')) {
+        return <div key={idx} style={{display:'flex',gap:'8px',alignItems:'flex-start',marginBottom:'8px'}}><span style={{color:'#10b981',fontWeight:'800',fontSize:'1rem',flexShrink:0}}>✓</span><span style={{color:'#334155',fontSize:'0.9rem',lineHeight:1.7}}>{t.replace(/^[✔✓]\s*/,'')}</span></div>;
+      }
+      if (t.startsWith('•') || t.startsWith('-')) {
+        return <div key={idx} style={{display:'flex',gap:'8px',alignItems:'flex-start',marginBottom:'8px'}}><span style={{color:color,fontWeight:'800',fontSize:'1.1rem',flexShrink:0}}>•</span><span style={{color:'#334155',fontSize:'0.9rem',lineHeight:1.7}}>{t.replace(/^[•\-]\s*/,'')}</span></div>;
+      }
+      if (t.length < 80 && t.endsWith(':')) {
+        return <div key={idx} style={{fontWeight:'700',color:color,fontSize:'0.9rem',marginTop:'12px',marginBottom:'6px',borderBottom:`2px solid ${color}33`,paddingBottom:'4px'}}>{t}</div>;
+      }
+      return <p key={idx} style={{color:'#334155',fontSize:'0.9rem',lineHeight:1.8,marginBottom:'8px'}}>{t}</p>;
+    });
+
+    const headerBlock = (label) => (
+      <div style={{background:`linear-gradient(135deg,${color},${color}cc)`,padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div>
+          <div style={{fontSize:'0.65rem',color:'rgba(255,255,255,0.7)',letterSpacing:'0.1em',marginBottom:'4px'}}>{label}</div>
+          <h2 style={{color:'#fff',fontSize:'1.2rem',fontWeight:'800',margin:0,lineHeight:1.3}}>{title}</h2>
+        </div>
+        {slide.regulatoryRef && <div style={{fontSize:'0.62rem',color:'rgba(255,255,255,0.8)',lineHeight:1.8,whiteSpace:'nowrap'}}>★ {slide.regulatoryRef.body}<br/><span style={{opacity:0.7}}>{slide.regulatoryRef.code}</span></div>}
+      </div>
+    );
+
+    if (slide.type === 'casestudy') return (
+      <div key={slideKey} className="animate-fade-in" style={{maxWidth:'860px',margin:'0 auto',padding:'0 16px',direction:language==='ar'?'rtl':'ltr'}}>
+        <div style={{background:'#fff',borderRadius:'20px',overflow:'hidden',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:`2px solid ${color}22`}}>
+          {headerBlock('📋 CASE STUDY')}
+          <div style={{padding:'20px 24px',background:'#fffbf0'}}>
+            <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}><span style={{fontSize:'1.3rem'}}>📌</span><span style={{fontWeight:'700',color:color}}>{language==='ar'?'دراسة حالة واقعية':'Real Case Study'}</span></div>
+            {parseLines(text)}
           </div>
         </div>
-      );
-    }
+      </div>
+    );
 
-    if (currentSlide.type === 'discussion') {
-      return (
-        <div key={slideKey} className="slide-content discussion-slide animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center', padding: '0 20px' }}>
-          <div style={{
-            display: 'inline-block',
-            padding: '15px 30px',
-            borderRadius: '50px',
-            backgroundColor: 'var(--bg-card)',
-            color: 'var(--text-primary)',
-            marginBottom: '30px',
-            fontWeight: 'bold',
-            border: '1px solid var(--border-color)'
-          }}>
-            <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>💡</span>
-            {language === 'ar' ? 'وقت النقاش وعصصف ذهني' : 'Discussion & Brainstorming'}
-          </div>
-          <div style={{
-            fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
-            lineHeight: '1.9',
-            color: 'var(--text-primary)',
-            padding: '40px',
-            backgroundColor: `${unitColor}08`,
-            borderRadius: '24px',
-            borderRight: language === 'ar' ? `6px solid ${unitColor}` : 'none',
-            borderLeft: language === 'en' ? `6px solid ${unitColor}` : 'none',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-            textAlign: language === 'ar' ? 'right' : 'left'
-          }}>
-            {currentSlide[language].text.split('\n').map((line, idx) => (
-              line.trim() ? <p key={idx} style={{ marginBottom: '1rem' }}>{line}</p> : <br key={idx} />
-            ))}
-          </div>
+    if (slide.type === 'discussion') return (
+      <div key={slideKey} className="animate-fade-in" style={{maxWidth:'860px',margin:'0 auto',padding:'0 16px',direction:language==='ar'?'rtl':'ltr'}}>
+        <div style={{background:'#fff',borderRadius:'20px',overflow:'hidden',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:`2px solid ${color}22`}}>
+          {headerBlock('💡 DISCUSSION')}
+          <div style={{padding:'24px',background:`${color}06`}}>{parseLines(text)}</div>
         </div>
-      );
-    }
+      </div>
+    );
+
+    return (
+      <div key={slideKey} className="animate-fade-in" style={{maxWidth:'860px',margin:'0 auto',padding:'0 16px',direction:language==='ar'?'rtl':'ltr'}}>
+        <div style={{background:'#fff',borderRadius:'20px',overflow:'hidden',boxShadow:'0 4px 24px rgba(0,0,0,0.08)',border:`2px solid ${color}22`,minHeight:'380px'}}>
+          {headerBlock(`SLIDE ${currentSlideIndex + 1} / ${slides.length}`)}
+          <div style={{padding:'20px 24px'}}>{parseLines(text)}</div>
+          {text.length < 300 && <div style={{margin:'0 24px 20px',padding:'12px 16px',background:`${color}0f`,border:`1px dashed ${color}66`,borderRadius:'10px'}}><div style={{color:color,fontWeight:'700',fontSize:'0.75rem',marginBottom:'4px'}}>💡 Key Point</div><div style={{color:'#1e293b',fontSize:'0.85rem',fontWeight:'600'}}>{language==='ar'?'راجع هذا المحتوى بعناية قبل الامتحان':'Review this content carefully before the exam'}</div></div>}
+        </div>
+      </div>
+    );
   };
 
   return (
