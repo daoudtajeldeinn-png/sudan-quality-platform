@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { isSupported, getAnalytics } from "firebase/analytics";
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -14,7 +14,22 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Initialize Analytics only if supported (avoids unhandled rejections in
+// environments where remote-config fetch fails, e.g. ad-blockers or SSR).
+let analytics = null;
+(async () => {
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  } catch (e) {
+    console.warn('Analytics init skipped:', e.message);
+  }
+})();
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export { analytics };
 export default app;

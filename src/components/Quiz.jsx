@@ -256,7 +256,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
 
     // Mark unit as completed if score meets passing threshold
     const currentUserId = user ? (user.uid || user.userId || user.email) : null;
-    const passingThreshold = unitId === 'adv-iso-17025' ? 80 : 90;
+    const passingThreshold = getPassingThreshold(unitId);
     if (finalScore >= passingThreshold && currentUserId) {
       apiService.markUnitCompleted(currentUserId, unitId, finalScore, questions.length)
         .then(response => {

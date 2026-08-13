@@ -1,25 +1,21 @@
 const supabase = require('../config/supabase');
+const { buildCertificatePayload, resolveThreshold } = require('../services/certificateStorage.cjs');
 
-// Internal: Create cert document (refactored)
 const createCertDoc = async (supabaseClient, userId, userName, level, includedUnits, unitId, unitName, score, percentage) => {
-  const certNumber = `SQP-L${level}-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-  const verifyUrl = `${process.env.FRONTEND_URL || ''}/verify?id=${certNumber}`;
+  const payload = buildCertificatePayload({
+    userId,
+    userName,
+    level,
+    includedUnits,
+    unitId,
+    unitName,
+    score,
+    percentage
+  });
+
   const { data: cert, error } = await supabaseClient
     .from('certificates')
-    .insert({
-      userId,
-      userName,
-      level,
-      includedUnits,
-      unitId: includedUnits?.length > 1 ? null : unitId,
-      unitName,
-      score,
-      percentage,
-      certNumber,
-      verifyUrl,
-      status: 'active',
-      createdAt: new Date().toISOString()
-    })
+    .insert(payload)
     .select()
     .single();
 
@@ -31,7 +27,8 @@ const createCertDoc = async (supabaseClient, userId, userName, level, includedUn
 exports.awardCertificateSmart = async (req, res) => {
   try {
     const { userId, userName, unitId, unitName, score, percentage } = req.body;
-    if (!userId || !unitId || score < 90) return res.status(400).json({ error: 'Valid completion required (90%+)' });
+    const threshold = resolveThreshold(unitId);
+    if (!userId || !unitId || score < threshold) return res.status(400).json({ error: `Valid completion required (${threshold}%+)` });
 
     if (req.isDemoMode) {
       const cert = await req.demoDB.awardCertificate(userId, {
@@ -86,14 +83,20 @@ exports.awardCertificateSmart = async (req, res) => {
     const level = user.progress?.level || user.level || 1;
     let cert;
 
-    // Check for duplicate cert for this unit
-    const { data: existingCert } = await req.supabase
+    // Check for duplicate cert for this unit.
+    // IMPORTANT: certificates created from bundled/multi-unit awards may store unitId as NULL
+    // while still listing the real units inside includedUnits.
+    const { data: existingCerts } = await req.supabase
       .from('certificates')
       .select('*')
       .eq('userId', userId)
-      .eq('unitId', unitId)
-      .eq('status', 'active')
-      .single();
+      .eq('status', 'active');
+
+    const existingCert = existingCerts?.find(c => {
+      if (c.unitId && c.unitId === unitId) return true;
+      return Array.isArray(c.includedUnits) && c.includedUnits.some(u => u?.unitId === unitId);
+    });
+
 
     if (existingCert) {
       console.log(`[Award] Cert already exists for ${userId}/${unitId}, skipping`);

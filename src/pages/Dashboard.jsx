@@ -217,7 +217,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
                 const certifiedUnitIds = currentCerts.map(c => c.unitId).filter(Boolean);
                 const passingUnits = Object.entries(reconciledProgress)
-                  .filter(([id, sc]) => !isNaN(sc) && sc >= 80 && !certifiedUnitIds.includes(id));
+                  .filter(([id, sc]) => !isNaN(sc) && sc >= getPassingThreshold(id) && !certifiedUnitIds.includes(id));
 
                 for (const [unitId, score] of passingUnits) {
                   const unitDef = [
