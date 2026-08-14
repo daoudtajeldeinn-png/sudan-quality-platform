@@ -33,5 +33,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['firebase/auth', 'firebase/app']
+  },
+  server: {
+    fs: {
+      strict: true,
+      deny: ['.env', '.env.*', '*.{crt,pem}', '*.{key,cert}']
+    }
   }
 })

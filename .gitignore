@@ -10,3 +10,4 @@ build/
 .vercel
 .firebase/
 .env*.local
+.vite/
