@@ -8,4 +8,5 @@ coverage/
 dist/
 build/
 .vercel
+.firebase/
 .env*.local
