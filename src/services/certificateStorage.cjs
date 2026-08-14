@@ -21,8 +21,7 @@ const createCertificateRecord = ({ userId, userName, level, includedUnits, unitI
 const buildCertificatePayload = (input) => createCertificateRecord(input);
 
 const resolveThreshold = (unitId) => {
-  const specializedUnits = ['adv-iso-17025', 'capa', 'iso-9001', 'qc-lab', 'ipqc'];
-  return specializedUnits.includes(unitId) ? 80 : 90;
+  return 80;
 };
 
 module.exports = {

@@ -21,7 +21,6 @@ const createCertificateRecord = ({ userId, userName, level, includedUnits, unitI
 const buildCertificatePayload = (input) => createCertificateRecord(input);
 
 const resolveThreshold = (unitId) => {
-  // All units use 80% as the passing threshold
   return 80;
 };
 
