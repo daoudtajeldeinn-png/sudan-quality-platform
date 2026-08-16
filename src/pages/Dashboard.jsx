@@ -269,6 +269,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 // Update displayProgress from certificates (primary source of truth)
                 const certProgress = {};
                 currentCerts.forEach(c => {
+                  console.log('[Dashboard] Processing cert:', c.unitId, 'score:', c.score, 'percentage:', c.percentage);
                   if (c.unitId) {
                     certProgress[c.unitId] = c.score || c.percentage || 100;
                   }
