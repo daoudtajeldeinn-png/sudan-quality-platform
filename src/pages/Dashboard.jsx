@@ -217,8 +217,11 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 })();
 
                 const certifiedUnitIds = currentCerts.map(c => c.unitId).filter(Boolean);
+                console.log('[RetroAward] Certified unit IDs:', certifiedUnitIds);
+                console.log('[RetroAward] Reconciled progress:', reconciledProgress);
                 const passingUnits = Object.entries(reconciledProgress)
                   .filter(([id, sc]) => !isNaN(sc) && sc >= getPassingThreshold(id) && !certifiedUnitIds.includes(id));
+                console.log('[RetroAward] Passing units without certs:', passingUnits);
 
                 for (const [unitId, score] of passingUnits) {
                   const unitDef = [
