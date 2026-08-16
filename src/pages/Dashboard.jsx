@@ -1105,7 +1105,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {allTrackUnits.map(unitId => {
-                    const score = userProgress[unitId] || 0;
+                    const score = effectiveProgress[unitId] || 0;
                     const isPassed = score >= 80;
                     const unitInfo = UNIT_ICONS[unitId] || { icon: '📄', color: '#6366f1' };
                     const unitDef = allUnitsDefinition.find(u => u.id === unitId);
@@ -1150,8 +1150,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     <span>⚠️</span> {language === 'ar' ? 'نقاط تحتاج تركيز' : 'Areas for Focus'}
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {allTrackUnits.filter(id => (userProgress[id] || 0) < 90 && (userProgress[id] || 0) > 0).length > 0 ? (
-                      allTrackUnits.filter(id => (userProgress[id] || 0) < 90 && (userProgress[id] || 0) > 0).map(id => (
+                    {allTrackUnits.filter(id => (effectiveProgress[id] || 0) < 90 && (effectiveProgress[id] || 0) > 0).length > 0 ? (
+                      allTrackUnits.filter(id => (effectiveProgress[id] || 0) < 90 && (effectiveProgress[id] || 0) > 0).map(id => (
                         <div key={id} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', padding: '10px', borderRight: '4px solid #ef4444', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '0 8px 8px 0' }}>
                           {allUnitsDefinition.find(u => u.id === id)?.title}
                         </div>
@@ -1171,21 +1171,21 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                       <p>✨ {language === 'ar' ? 'لقد أكملت جميع المتطلبات! يمكنك الآن تحميل شهادتك الرسمية.' : 'You have completed all requirements! You can now download your official certificate.'}</p>
                     ) : (
                       <p>
-                        {language === 'ar' ? 'يتبقى لك' : 'You have'} {allTrackUnits.length - allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length} {language === 'ar' ? 'وحدات للوصول للدرجة المطلوبة (90%+).' : 'units remaining to reach the required score (90%+).'}
+                        {language === 'ar' ? 'يتبقى لك' : 'You have'} {allTrackUnits.length - allTrackUnits.filter(id => (effectiveProgress[id] || 0) >= 80).length} {language === 'ar' ? 'وحدات للوصول للدرجة المطلوبة (90%+).' : 'units remaining to reach the required score (90%+).'}
                       </p>
                     )}
                   </div>
                   <div style={{ marginTop: '20px', height: '10px', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', overflow: 'hidden' }}>
-                    <div style={{ 
-                      width: `${(allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100}%`, 
-                      height: '100%', 
-                      background: 'white', 
+                    <div style={{
+                      width: `${(allTrackUnits.filter(id => (effectiveProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100}%`,
+                      height: '100%',
+                      background: 'white',
                       borderRadius: '10px',
                       boxShadow: '0 0 15px rgba(255,255,255,0.5)'
                     }} />
                   </div>
                   <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    {Math.round((allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100)}% {language === 'ar' ? 'مكتمل' : 'Complete'}
+                    {Math.round((allTrackUnits.filter(id => (effectiveProgress[id] || 0) >= 80).length / allTrackUnits.length) * 100)}% {language === 'ar' ? 'مكتمل' : 'Complete'}
                   </div>
                 </div>
               </aside>
