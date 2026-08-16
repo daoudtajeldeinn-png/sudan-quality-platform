@@ -266,8 +266,19 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 // Update displayProgress from certificates (primary source of truth)
                 const certProgress = {};
                 currentCerts.forEach(c => {
-                  if (c.unitId) certProgress[c.unitId] = c.score || c.percentage || 100;
+                  if (c.unitId) {
+                    certProgress[c.unitId] = c.score || c.percentage || 100;
+                  }
+                  // Also check includedUnits for bundled certificates
+                  if (c.includedUnits && Array.isArray(c.includedUnits)) {
+                    c.includedUnits.forEach(u => {
+                      if (u.unitId) {
+                        certProgress[u.unitId] = u.score || u.percentage || 100;
+                      }
+                    });
+                  }
                 });
+                console.log('[Dashboard] Certificate progress mapping:', certProgress);
                 setDisplayProgress(prev => {
                   const updated = { ...prev };
                   Object.entries(certProgress).forEach(([id, score]) => {
@@ -544,9 +555,21 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   // Derive progress from certificates — single source of truth
   const certProgress = {};
   certificates.forEach(c => {
-    if (c.unitId) certProgress[c.unitId] = c.score || c.percentage || 100;
+    if (c.unitId) {
+      certProgress[c.unitId] = c.score || c.percentage || 100;
+    }
+    // Also check includedUnits for bundled certificates
+    if (c.includedUnits && Array.isArray(c.includedUnits)) {
+      c.includedUnits.forEach(u => {
+        if (u.unitId) {
+          certProgress[u.unitId] = u.score || u.percentage || 100;
+        }
+      });
+    }
   });
-  const effectiveProgress = { ...displayProgress };
+  console.log('[Dashboard] Cert progress for display:', certProgress);
+  // Start with userProgress, then overlay certificate data
+  const effectiveProgress = { ...userProgress };
   Object.entries(certProgress).forEach(([id, score]) => {
     if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
   });
