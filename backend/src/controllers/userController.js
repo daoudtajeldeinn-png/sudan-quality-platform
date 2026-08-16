@@ -210,18 +210,56 @@ const getLeaderboard = async (req, res) => {
         }));
       res.json(topUsers);
     } else {
-      const { data: topUsers, error } = await req.supabase
+      const { data: users, error } = await req.supabase
         .from('users')
-        .select('userId, displayName, xp, level, photoURL')
-        .order('xp', { ascending: false })
-        .limit(10);
+        .select('userId, displayName, xp, level, photoURL');
 
       if (error) {
         console.error('❌ Leaderboard error:', error);
         return res.status(500).json({ error: error.message });
       }
 
-      res.json(topUsers || []);
+      // Calculate real XP from certificates
+      const { data: allCerts } = await req.supabase
+        .from('certificates')
+        .select('userId, unitId, score, percentage');
+
+      const topUsers = (users || []).map(u => {
+        const userCerts = (allCerts || []).filter(c => c.userId === u.userId);
+        const uniqueUnits = {};
+        userCerts.forEach(c => {
+          const score = c.percentage || c.score || 0;
+          if (!uniqueUnits[c.unitId] || score > uniqueUnits[c.unitId]) {
+            uniqueUnits[c.unitId] = score;
+          }
+        });
+        const calculatedXp = Object.values(uniqueUnits).reduce((sum, score) => {
+          if (score === 100) return sum + 600;
+          if (score >= 95) return sum + 550;
+          if (score >= 90) return sum + 500;
+          return sum + 450;
+        }, 0);
+        const certCount = Object.keys(uniqueUnits).length;
+        const calculatedLevel = calculatedXp >= 13000 ? 14 :
+          calculatedXp >= 11000 ? 13 :
+          calculatedXp >= 9000 ? 12 :
+          calculatedXp >= 7000 ? 11 :
+          calculatedXp >= 5500 ? 10 :
+          calculatedXp >= 4000 ? 9 :
+          calculatedXp >= 3000 ? 8 :
+          calculatedXp >= 2000 ? 7 :
+          calculatedXp >= 1000 ? 6 : certCount > 0 ? 5 : 1;
+        return {
+          ...u,
+          xp: calculatedXp,
+          level: calculatedLevel,
+          certCount,
+        };
+      }).filter(u => u.xp > 0)
+        .sort((a, b) => b.xp - a.xp)
+        .slice(0, 10);
+
+      res.json(topUsers);
     }
 
   } catch (error) {
