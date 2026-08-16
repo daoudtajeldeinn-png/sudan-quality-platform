@@ -119,6 +119,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     } catch(e) {}
     return defaults;
   });
+  const [displayProgress, setDisplayProgress] = useState(userProgress);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
@@ -261,6 +262,19 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   const updatedCerts = await apiService.getUserCertificates(user.uid, authToken);
                   setCertificates(updatedCerts.certificates || []);
                 }
+
+                // Update displayProgress from certificates (primary source of truth)
+                const certProgress = {};
+                currentCerts.forEach(c => {
+                  if (c.unitId) certProgress[c.unitId] = c.score || c.percentage || 100;
+                });
+                setDisplayProgress(prev => {
+                  const updated = { ...prev };
+                  Object.entries(certProgress).forEach(([id, score]) => {
+                    if (score > (updated[id] || 0)) updated[id] = score;
+                  });
+                  return updated;
+                });
             } catch (err) { console.warn('Certs fetch error', err); }
             
             try {
@@ -461,8 +475,17 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             
             // Refresh certificates list
             const certsData = await apiService.getUserCertificates(user.uid, authToken);
-            setCertificates(certsData.certificates || []);
-            
+            const updatedCerts = certsData.certificates || [];
+            setCertificates(updatedCerts);
+
+            // Update displayProgress from new certificate
+            if (response.certificate) {
+              setDisplayProgress(prev => ({
+                ...prev,
+                [unitId]: score
+              }));
+            }
+
             if (response.certificate) {
               alert(language === 'ar' 
                 ? 'تهانينا! تم إصدار شهادتك بنجاح. يمكنك العثور عليها في قسم الشهادات بالأسفل.' 
@@ -523,13 +546,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   certificates.forEach(c => {
     if (c.unitId) certProgress[c.unitId] = c.score || c.percentage || 100;
   });
-  const effectiveProgress = { ...userProgress };
+  const effectiveProgress = { ...displayProgress };
   Object.entries(certProgress).forEach(([id, score]) => {
     if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
   });
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
-  const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id => 
+  const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id =>
     certifiedUnitIds.includes(id) || (effectiveProgress[id] || 0) >= 80
   );
 
