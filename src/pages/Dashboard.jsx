@@ -572,11 +572,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     }
   });
   console.log('[Dashboard] Cert progress for display:', certProgress);
+  console.log('[Dashboard] displayProgress before effectiveProgress:', displayProgress);
   // Start with displayProgress (has certificate data), then overlay certificate data again
   const effectiveProgress = { ...displayProgress };
   Object.entries(certProgress).forEach(([id, score]) => {
     if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
   });
+  console.log('[Dashboard] effectiveProgress final:', effectiveProgress);
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
   const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id =>
