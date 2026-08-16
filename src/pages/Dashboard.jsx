@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Quiz from '../components/Quiz';
 import LectureView from '../components/LectureView';
 import FMEATool from '../components/FMEATool';
@@ -559,26 +559,30 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   };
 
   // Derive progress from certificates — single source of truth
-  const certProgress = {};
-  certificates.forEach(c => {
-    if (c.unitId) {
-      certProgress[c.unitId] = c.score || c.percentage || 100;
-    }
-    // Also check includedUnits for bundled certificates
-    if (c.includedUnits && Array.isArray(c.includedUnits)) {
-      c.includedUnits.forEach(u => {
-        if (u.unitId) {
-          certProgress[u.unitId] = u.score || u.percentage || 100;
-        }
-      });
-    }
-  });
-  console.log('[Dashboard] Cert progress for display:', certProgress);
-  // Start with userProgress (now has certificate data), then overlay certificate data again
-  const effectiveProgress = { ...userProgress };
-  Object.entries(certProgress).forEach(([id, score]) => {
-    if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
-  });
+  const effectiveProgress = useMemo(() => {
+    const certProgress = {};
+    certificates.forEach(c => {
+      if (c.unitId) {
+        certProgress[c.unitId] = c.score || c.percentage || 100;
+      }
+      // Also check includedUnits for bundled certificates
+      if (c.includedUnits && Array.isArray(c.includedUnits)) {
+        c.includedUnits.forEach(u => {
+          if (u.unitId) {
+            certProgress[u.unitId] = u.score || u.percentage || 100;
+          }
+        });
+      }
+    });
+    console.log('[Dashboard] Cert progress for display:', certProgress);
+    // Start with userProgress (now has certificate data), then overlay certificate data again
+    const progress = { ...userProgress };
+    Object.entries(certProgress).forEach(([id, score]) => {
+      if (score > (progress[id] || 0)) progress[id] = score;
+    });
+    return progress;
+  }, [certificates, userProgress]);
+
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
   const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id =>
