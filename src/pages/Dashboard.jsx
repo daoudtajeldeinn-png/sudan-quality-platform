@@ -119,7 +119,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     } catch(e) {}
     return defaults;
   });
-  const [displayProgress, setDisplayProgress] = useState(userProgress);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [unitStates, setUnitStates] = useState({}); 
@@ -266,7 +265,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   setCertificates(updatedCerts.certificates || []);
                 }
 
-                // Update displayProgress from certificates (primary source of truth)
+                // Update userProgress directly from certificates (primary source of truth)
                 const certProgress = {};
                 currentCerts.forEach(c => {
                   console.log('[Dashboard] Processing cert:', c.unitId, 'score:', c.score, 'percentage:', c.percentage);
@@ -283,11 +282,14 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   }
                 });
                 console.log('[Dashboard] Certificate progress mapping:', certProgress);
-                setDisplayProgress(prev => {
+                // Update userProgress directly with certificate data
+                setUserProgress(prev => {
                   const updated = { ...prev };
                   Object.entries(certProgress).forEach(([id, score]) => {
                     if (score > (updated[id] || 0)) updated[id] = score;
                   });
+                  // Also update localStorage
+                  localStorage.setItem(`sqp_progress_${user.email}`, JSON.stringify(updated));
                   return updated;
                 });
             } catch (err) { console.warn('Certs fetch error', err); }
@@ -572,13 +574,11 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     }
   });
   console.log('[Dashboard] Cert progress for display:', certProgress);
-  console.log('[Dashboard] displayProgress before effectiveProgress:', displayProgress);
-  // Start with displayProgress (has certificate data), then overlay certificate data again
-  const effectiveProgress = { ...displayProgress };
+  // Start with userProgress (now has certificate data), then overlay certificate data again
+  const effectiveProgress = { ...userProgress };
   Object.entries(certProgress).forEach(([id, score]) => {
     if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
   });
-  console.log('[Dashboard] effectiveProgress final:', effectiveProgress);
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
   const allPassed = allTrackUnits.length > 0 && allTrackUnits.every(id =>
