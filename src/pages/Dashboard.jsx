@@ -401,6 +401,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const currentSectionUnits = currentTrackObj ? currentTrackObj.units : [];
   const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
   const allTrackUnits = TRACKS.flatMap(t => t.units);
+  console.log('[Dashboard] Total units in TRACKS:', allTrackUnits.length, allTrackUnits);
 
   const handleLevelToggle = async () => {
     const newLevel = userCertLevel === 1 ? 2 : 1;
