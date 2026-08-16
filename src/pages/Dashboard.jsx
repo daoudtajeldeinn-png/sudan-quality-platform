@@ -845,8 +845,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                         {unitIds.map(id => (
                           <tr key={id}>
                             <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{userProgress[id]}</td>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', color: userProgress[id] >= 80 ? '#28a745' : '#999' }}>{userProgress[id] >= 80 ? 'PASSED' : 'PENDING'}</td>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{effectiveProgress[id]}</td>
+                            <td style={{ padding: '8px', border: '1px solid #ddd', color: effectiveProgress[id] >= 80 ? '#28a745' : '#999' }}>{effectiveProgress[id] >= 80 ? 'PASSED' : 'PENDING'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -862,7 +862,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px' }}>
                 <div style={{ textAlign: certLang === 'ar' ? 'right' : 'left', color: 'var(--text-secondary)' }}>
                   <p style={{ margin: '5px 0', fontWeight: '700', fontSize: '1rem', color: 'var(--pharma-navy)' }}>
-                    {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (userProgress['completionDate_academy'] ? new Date(userProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
+                    {current.date}: {certData ? new Date(certData.issueDate || certData.createdAt || Date.now()).toLocaleDateString() : (effectiveProgress['completionDate_academy'] ? new Date(effectiveProgress['completionDate_academy']).toLocaleDateString() : new Date().toLocaleDateString())}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                     <div style={{ backgroundColor: 'white', padding: '5px', borderRadius: '4px', border: '1px solid #ddd' }}>
@@ -877,7 +877,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                       <div style={{ fontWeight: 'bold', color: 'var(--pharma-navy)' }}>CERTIFICATE VERIFICATION</div>
                       <div>SCAN TO VALIDATE AUTHENTICITY</div>
                       <div style={{ fontFamily: 'monospace', letterSpacing: '1px', marginTop: '3px' }}>
-                        ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date(userProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}
+                        ID: {user.uid?.substring(0, 8).toUpperCase()}-{new Date(effectiveProgress['completionDate_academy'] || Date.now()).getTime().toString().substring(8)}
                       </div>
                     </div>
                   </div>
@@ -1078,8 +1078,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     </button>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px' }}>
                       {units.map(unit => {
-                        const isCompleted = completedUnits[unit.id]?.completed || (userProgress[unit.id] || 0) >= 80;
-                        const completionScore = completedUnits[unit.id]?.score || userProgress[unit.id] || 0;
+                        const isCompleted = completedUnits[unit.id]?.completed || (effectiveProgress[unit.id] || 0) >= 80;
+                        const completionScore = completedUnits[unit.id]?.score || effectiveProgress[unit.id] || 0;
                         return (
                           <div key={unit.id} onClick={() => handleStartUnit(unit.id)} className="interactive-card-premium" style={{ padding: '30px 20px', borderRadius: '20px', textAlign: 'center', borderTop: `4px solid ${unit.color}`, position: 'relative' }}>
                             {isCompleted && (
@@ -1108,7 +1108,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     <span>🏅</span> {t('microBadge')} Wallet
                   </h4>
                   <div className="wallet-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {unitIds.map(id => <MicroBadge key={id} unitId={id} score={userProgress[id]} />)}
+                    {unitIds.map(id => <MicroBadge key={id} unitId={id} score={effectiveProgress[id]} />)}
                   </div>
                 </div>
                 <div className="cert-trophy" style={{ fontSize: '5rem', marginBottom: '20px', filter: 'drop-shadow(0 10px 15px rgba(201, 162, 39, 0.3))', animation: allPassed ? 'pulse-glow 3s infinite' : 'none', borderRadius: '50%' }}>🏆</div>
@@ -1136,7 +1136,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 {/* Stats Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
                   <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #10b981' }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length}</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{allTrackUnits.filter(id => (effectiveProgress[id] || 0) >= 80).length}</div>
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'وحدة مكتملة' : 'Units Completed'}</div>
                   </div>
                   <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #f59e0b' }}>
@@ -1144,7 +1144,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'متوسط الدرجات' : 'Average Score'}</div>
                   </div>
                   <div style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)', padding: '25px', borderRadius: '20px', textAlign: 'center', border: '1px solid #6366f1' }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#6366f1' }}>{allTrackUnits.filter(id => (userProgress[id] || 0) >= 80).length * 2}h</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#6366f1' }}>{allTrackUnits.filter(id => (effectiveProgress[id] || 0) >= 80).length * 2}h</div>
                     <div style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: '500' }}>{language === 'ar' ? 'ساعات الدراسة' : 'Study Hours'}</div>
                   </div>
                 </div>
