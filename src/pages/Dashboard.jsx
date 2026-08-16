@@ -572,8 +572,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     }
   });
   console.log('[Dashboard] Cert progress for display:', certProgress);
-  // Start with userProgress, then overlay certificate data
-  const effectiveProgress = { ...userProgress };
+  // Start with displayProgress (has certificate data), then overlay certificate data again
+  const effectiveProgress = { ...displayProgress };
   Object.entries(certProgress).forEach(([id, score]) => {
     if (score > (effectiveProgress[id] || 0)) effectiveProgress[id] = score;
   });
