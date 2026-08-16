@@ -579,18 +579,12 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     console.log('[Dashboard] userProgress before merge:', userProgress);
     // Start with userProgress (now has certificate data), then overlay certificate data again
     const progress = { ...userProgress };
-    // FIX: Merge RetroAward reconciled progress
-    if (reconciledProgress && Object.keys(reconciledProgress).length > 0) {
-      Object.entries(reconciledProgress).forEach(([id, score]) => {
-        if (score > (progress[id] || 0)) progress[id] = score;
-      });
-    }
     Object.entries(certProgress).forEach(([id, score]) => {
       if (score > (progress[id] || 0)) progress[id] = score;
     });
     console.log('[Dashboard] effectiveProgress after merge:', progress);
     return progress;
-  }, [certificates, userProgress, reconciledProgress]);
+  }, [certificates, userProgress]);
 
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);

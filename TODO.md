@@ -24,23 +24,23 @@
 
 ### Database
 - [x] `fixed_questions.sql` prepared — fixes missing Supabase questions for ich-guidelines, validation-qualification, adv-validation, gdp-basics, etc.
-- [ ] Run `fixed_questions.sql` against Supabase production (if not done yet)
+- [x] Run `fixed_questions.sql` against Supabase production (if not done yet)
 
 ---
 
 ## Remaining Work
 
 ### P1 — Content integrity (quick fix)
-- [ ] Remove duplicate unit keys in `content_new.js` — second blocks at lines ~247, ~358, ~375 overwrite richer first blocks for `nmpb-reg`, `cleaning-validation`, `equipment-qualification`
+- [x] Remove duplicate unit keys in `content_new.js` — second blocks at lines ~247, ~358, ~375 overwrite richer first blocks for `nmpb-reg`, `cleaning-validation`, `equipment-qualification`
 
 ### P2 — Optional content expansion
-- [ ] Expand `process-validation` to 10+ slides / 15+ questions
-- [ ] Expand `hold-time-stability` to 10+ slides / 10+ questions
+- [x] Expand `process-validation` to 10+ slides / 15+ questions
+- [x] Expand `hold-time-stability` to 10+ slides / 10+ questions
 
 ### P3 — Deploy & commit
-- [ ] Commit uncommitted: `backend/src/routes/adminRoutes.js`, `fixed_questions.sql`
-- [ ] `npm run build && firebase deploy --only hosting` (if frontend changes not yet live)
-- [ ] Push backend changes to trigger Vercel redeploy
+- [x] Commit uncommitted: `backend/src/routes/adminRoutes.js`, `fixed_questions.sql`
+- [x] `npm run build && firebase deploy --only hosting` (if frontend changes not yet live)
+- [x] Push backend changes to trigger Vercel redeploy
 
 ### P4 — Documentation sync
 - [x] Update `TODO.md` (this file)
