@@ -576,11 +576,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       }
     });
     console.log('[Dashboard] Cert progress for display:', certProgress);
+    console.log('[Dashboard] userProgress before merge:', userProgress);
     // Start with userProgress (now has certificate data), then overlay certificate data again
     const progress = { ...userProgress };
     Object.entries(certProgress).forEach(([id, score]) => {
       if (score > (progress[id] || 0)) progress[id] = score;
     });
+    console.log('[Dashboard] effectiveProgress after merge:', progress);
     return progress;
   }, [certificates, userProgress]);
 
