@@ -40,6 +40,7 @@ const UNIT_ICONS = {
   'adv-iso-17025':'📊','adv-validation':'✅','adv-qrm':'⚠️','adv-gdp':'🚚',
   'cleaning-validation':'🧼','process-validation':'🔄','hold-time-stability':'⏳',
   'method-validation':'🧪','equipment-qualification':'⚙️',
+  'capa':'🔧','iso-9001':'📋','qc-lab':'🧫','ipqc':'🏭',
 };
 const UNIT_COLORS = {
   'gmp-intro':'#10b981','glp-basics':'#3b82f6','iso-17025':'#f59e0b',
@@ -51,6 +52,7 @@ const UNIT_COLORS = {
   'adv-qrm':'#db2777','adv-gdp':'#ea580c','cleaning-validation':'#17a2b8',
   'process-validation':'#10b981','hold-time-stability':'#f59e0b',
   'method-validation':'#3b82f6','equipment-qualification':'#8b5cf6',
+  'capa':'#e11d48','iso-9001':'#0ea5e9','qc-lab':'#10b981','ipqc':'#f59e0b',
 };
 const UNIT_NAMES = {
   'gmp-intro':'GMP Basics','glp-basics':'GLP Basics','iso-17025':'ISO 17025',
@@ -62,6 +64,7 @@ const UNIT_NAMES = {
   'adv-qrm':'Advanced QRM','adv-gdp':'Advanced GDP','cleaning-validation':'Cleaning Validation',
   'process-validation':'Process Validation','hold-time-stability':'Hold Time Stability',
   'method-validation':'Method Validation','equipment-qualification':'Equipment Qualification',
+  'capa':'CAPA Management','iso-9001':'ISO 9001 QMS','qc-lab':'QC Laboratory','ipqc':'IPQC',
 };
 
 const TOOLS = [
@@ -307,7 +310,7 @@ const AnalyticsView = ({ user, isRtl }) => {
           { label: isRtl?'وحدات مكتملة':'Units Completed', value:passed,     icon:'✅', color:S.green  },
           { label: isRtl?'متوسط الدرجات':'Average Score',   value:`${avg}%`, icon:'📊', color:S.blue   },
           { label: isRtl?'ساعات الدراسة':'Study Hours',     value:`${passed*2}h`, icon:'⏱️', color:S.purple },
-          { label: isRtl?'نسبة الإتمام':'Completion',       value:`${Math.round(passed/24*100)}%`, icon:'🎯', color:S.gold },
+          { label: isRtl?'نسبة الإتمام':'Completion',       value:`${Math.round(passed/allUnits.length*100)}%`, icon:'🎯', color:S.gold },
         ].map(s => (
           <div key={s.label} style={{ background:S.card, borderRadius:'16px', border:`1px solid ${S.border}`, padding:'20px', textAlign:'center', boxShadow:'0 2px 8px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize:'28px', marginBottom:'8px' }}>{s.icon}</div>

@@ -197,7 +197,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             }
             try {
                 const certsData = await apiService.getUserCertificates(user.uid, authToken);
-                const currentCerts = certsData.certificates || [];
+                const currentCerts = Array.isArray(certsData) ? certsData : (certsData?.certificates || []);
                 setCertificates(currentCerts);
                 
                 // Retroactive fix: for ALL units the user has already passed (90%+) but has no cert yet
@@ -257,7 +257,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
                 if (passingUnits.length > 0) {
                   const updatedCerts = await apiService.getUserCertificates(user.uid, authToken);
-                  setCertificates(updatedCerts.certificates || []);
+                  setCertificates(Array.isArray(updatedCerts) ? updatedCerts : (updatedCerts?.certificates || []));
                 }
 
                 // Update userProgress directly from certificates (primary source of truth)
@@ -393,7 +393,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const currentTrackObj = currentTrack ? TRACKS.find(t => t.id === currentTrack) : null;
   const currentSectionUnits = currentTrackObj ? currentTrackObj.units : [];
   const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
-  const allTrackUnits = TRACKS.flatMap(t => t.units);
+  const allTrackUnits = [...new Set([...TRACKS.flatMap(t => t.units), ...allUnitsDefinition.map(u => u.id)])];
 
   const handleLevelToggle = async () => {
     const newLevel = userCertLevel === 1 ? 2 : 1;
@@ -478,7 +478,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             
             // Refresh certificates list
             const certsData = await apiService.getUserCertificates(user.uid, authToken);
-            const updatedCerts = certsData.certificates || [];
+            const updatedCerts = Array.isArray(certsData) ? certsData : (certsData?.certificates || []);
             setCertificates(updatedCerts);
 
             // Update displayProgress from new certificate
