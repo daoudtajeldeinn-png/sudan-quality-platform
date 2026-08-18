@@ -165,7 +165,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               });
 
               if (needsSync && user.uid) {
-                console.log('Pushing reconciled local progress to cloud...');
                 apiService.syncUserStats(user.uid, {
                   progress: {
                     unitScores: reconciled,
@@ -216,11 +215,8 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 })();
 
                 const certifiedUnitIds = currentCerts.map(c => c.unitId).filter(Boolean);
-                console.log('[RetroAward] Certified unit IDs:', certifiedUnitIds);
-                console.log('[RetroAward] Reconciled progress:', reconciledProgress);
                 const passingUnits = Object.entries(reconciledProgress)
                   .filter(([id, sc]) => !isNaN(sc) && sc >= getPassingThreshold(id) && !certifiedUnitIds.includes(id));
-                console.log('[RetroAward] Passing units without certs:', passingUnits);
 
                 for (const [unitId, score] of passingUnits) {
                   const unitDef = [
@@ -245,7 +241,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   ].find(u => u.id === unitId);
 
                   if (!unitDef) continue;
-                  console.log(`[RetroAward] Issuing cert for: ${unitId} (${score}%)`);
                   try {
                     await apiService.awardCertificate({
                       userId: user.uid,
@@ -268,7 +263,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                 // Update userProgress directly from certificates (primary source of truth)
                 const certProgress = {};
                 currentCerts.forEach(c => {
-                  console.log('[Dashboard] Processing cert:', c.unitId, 'score:', c.score, 'percentage:', c.percentage);
                   if (c.unitId) {
                     certProgress[c.unitId] = c.score || c.percentage || 100;
                   }
@@ -281,7 +275,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                     });
                   }
                 });
-                console.log('[Dashboard] Certificate progress mapping:', certProgress);
                 // Update userProgress directly with certificate data
                 setUserProgress(prev => {
                   const updated = { ...prev };
@@ -401,7 +394,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
   const currentSectionUnits = currentTrackObj ? currentTrackObj.units : [];
   const units = allUnitsDefinition.filter(u => currentSectionUnits.includes(u.id));
   const allTrackUnits = TRACKS.flatMap(t => t.units);
-  console.log('[Dashboard] Total units in TRACKS:', allTrackUnits.length, allTrackUnits);
 
   const handleLevelToggle = async () => {
     const newLevel = userCertLevel === 1 ? 2 : 1;
@@ -435,7 +427,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     const passed = score >= passingThreshold;
     logAuditTrail('eventQuiz', unitId);
 
-    console.log('[QuizComplete] Score:', score, 'UnitId:', unitId, 'User:', user?.uid, 'Email:', user?.email);
 
     if (passed && user?.uid) {
       setCompletedUnits(prev => ({
@@ -466,20 +457,15 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     }
 
     setUserProgress(prev => {
-      console.log('[QuizComplete] Previous progress:', prev);
-      console.log('[QuizComplete] Previous score for unit', unitId, ':', prev[unitId]);
       const isNewSuccess = passed && (!prev[unitId] || prev[unitId] < passingThreshold);
       const newProgress = { ...prev, [unitId]: Math.max(prev[unitId] || 0, score) };
       
-      console.log('[QuizComplete] Updated unitId:', unitId, 'New score for unit:', newProgress[unitId]);
-      console.log('[QuizComplete] Full new progress:', JSON.stringify(newProgress));
       
       if (passed && user?.uid) {
         (async () => {
           try {
             // Use UNIT_ICONS for unitName to get proper English title
             const unitName = UNIT_ICONS[unitId]?.title?.en || unitId;
-            console.log('[QuizComplete] Awarding certificate for unit:', unitId, 'unitName:', unitName);
             const response = await apiService.awardCertificate({
               userId: user.uid,
               userName: user.displayName || user.email,
@@ -489,7 +475,6 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
               percentage: score
             });
             
-            console.log('[QuizComplete] Certificate response:', response);
             
             // Refresh certificates list
             const certsData = await apiService.getUserCertificates(user.uid, authToken);
@@ -537,11 +522,9 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       if (isNewSuccess && allOthersPassed) newProgress[`completionDate_academy`] = new Date().toISOString();
       
       const storageKey = `sqp_progress_${user.email}`;
-      console.log('[QuizComplete] Saving to localStorage:', storageKey, 'Progress:', newProgress);
       localStorage.setItem(storageKey, JSON.stringify(newProgress));
       
       if (user.uid) {
-        console.log('[QuizComplete] Syncing to backend...');
         const syncedUnitStates = passed
           ? { ...unitStates, [unitId]: { ...unitStates[unitId], lectureFinished: true, quizPassed: true, score } }
           : unitStates;
@@ -575,22 +558,13 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
         });
       }
     });
-    console.log('[Dashboard] Cert progress for display:', certProgress);
-    console.log('[Dashboard] userProgress before merge:', userProgress);
     // Start with userProgress (now has certificate data), then overlay certificate data again
     const progress = { ...userProgress };
-    // FIX: Merge RetroAward reconciled progress
-    if (reconciledProgress && Object.keys(reconciledProgress).length > 0) {
-      Object.entries(reconciledProgress).forEach(([id, score]) => {
-        if (score > (progress[id] || 0)) progress[id] = score;
-      });
-    }
     Object.entries(certProgress).forEach(([id, score]) => {
       if (score > (progress[id] || 0)) progress[id] = score;
     });
-    console.log('[Dashboard] effectiveProgress after merge:', progress);
     return progress;
-  }, [certificates, userProgress, reconciledProgress]);
+  }, [certificates, userProgress]);
 
   const totalAverage = Math.round(allTrackUnits.reduce((a, id) => a + (effectiveProgress[id] || 0), 0) / (allTrackUnits.length || 1));
   const certifiedUnitIds = certificates.map(c => c.unitId).filter(Boolean);
