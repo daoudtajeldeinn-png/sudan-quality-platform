@@ -24,11 +24,10 @@ const UNIT_COLORS = {
   'adv-iso-17025': '#d97706',
   'adv-validation': '#0891b2',
   'adv-qrm': '#db2777',
-  'adv-gdp': '#ea580c',
-  'capping-lamination': '#7c3aed'
+  'adv-gdp': '#ea580c'
 };
 
-const SPECIAL_COURSE_UNITS = ['capa', 'iso-9001', 'qc-lab', 'ipqc', 'capping-lamination'];
+const SPECIAL_COURSE_UNITS = ['capa', 'iso-9001', 'qc-lab', 'ipqc'];
 
 const LectureView = ({ unitId, onProceedToQuiz, onBack }) => {
   const { language, t, theme } = useLanguage();
