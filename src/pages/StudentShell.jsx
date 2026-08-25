@@ -40,7 +40,7 @@ const UNIT_ICONS = {
   'adv-iso-17025':'📊','adv-validation':'✅','adv-qrm':'⚠️','adv-gdp':'🚚',
   'cleaning-validation':'🧼','process-validation':'🔄','hold-time-stability':'⏳',
   'method-validation':'🧪','equipment-qualification':'⚙️',
-  'capa':'🔧','iso-9001':'📋','qc-lab':'🧫','ipqc':'🏭',
+  'capa':'🔧','iso-9001':'📋','qc-lab':'🧫','ipqc':'🏭','capping-lamination':'💊',
 };
 const UNIT_COLORS = {
   'gmp-intro':'#10b981','glp-basics':'#3b82f6','iso-17025':'#f59e0b',
@@ -52,7 +52,7 @@ const UNIT_COLORS = {
   'adv-qrm':'#db2777','adv-gdp':'#ea580c','cleaning-validation':'#17a2b8',
   'process-validation':'#10b981','hold-time-stability':'#f59e0b',
   'method-validation':'#3b82f6','equipment-qualification':'#8b5cf6',
-  'capa':'#e11d48','iso-9001':'#0ea5e9','qc-lab':'#10b981','ipqc':'#f59e0b',
+  'capa':'#e11d48','iso-9001':'#0ea5e9','qc-lab':'#10b981','ipqc':'#f59e0b','capping-lamination':'#7c3aed',
 };
 const UNIT_NAMES = {
   'gmp-intro':'GMP Basics','glp-basics':'GLP Basics','iso-17025':'ISO 17025',
@@ -64,7 +64,7 @@ const UNIT_NAMES = {
   'adv-qrm':'Advanced QRM','adv-gdp':'Advanced GDP','cleaning-validation':'Cleaning Validation',
   'process-validation':'Process Validation','hold-time-stability':'Hold Time Stability',
   'method-validation':'Method Validation','equipment-qualification':'Equipment Qualification',
-  'capa':'CAPA Management','iso-9001':'ISO 9001 QMS','qc-lab':'QC Laboratory','ipqc':'IPQC',
+  'capa':'CAPA Management','iso-9001':'ISO 9001 QMS','qc-lab':'QC Laboratory','ipqc':'IPQC','capping-lamination':'Capping & Lamination',
 };
 
 const TOOLS = [

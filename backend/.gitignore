@@ -10,3 +10,4 @@ build/
 .vercel
 .env*.local
 src/config/firebase-admin.json
+.env*

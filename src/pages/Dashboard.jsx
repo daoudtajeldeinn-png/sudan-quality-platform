@@ -27,7 +27,7 @@ const TRACKS = [
   { id: 'gdp', titleKey: 'track_gdp', units: ['gdp-basics', 'adv-gdp'], icon: '🚚', color: '#fd7e14' },
   { id: 'regulatory', titleKey: 'track_regulatory', units: ['nmpb-reg', 'ich-guidelines', 'glp-basics', 'iso-17025', 'adv-glp', 'adv-iso-17025'], icon: '⚖️', color: '#009688' },
   { id: 'advanced_validation', titleKey: 'track_advanced_validation', units: ['cleaning-validation', 'process-validation', 'hold-time-stability', 'method-validation', 'equipment-qualification'], icon: '🧪', color: '#6610f2' },
-  { id: 'quality_systems', titleKey: 'track_quality_systems', units: ['capa', 'iso-9001', 'qc-lab', 'ipqc'], icon: '🎯', color: '#e11d48' },
+  { id: 'quality_systems', titleKey: 'track_quality_systems', units: ['capa', 'iso-9001', 'qc-lab', 'ipqc', 'capping-lamination'], icon: '🎯', color: '#e11d48' },
 ];
 
 // Unit icons mapping
@@ -107,7 +107,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
       'adv-gmp': 0, 'adv-glp': 0, 'adv-iso-17025': 0, 'adv-validation': 0,
       'adv-qrm': 0, 'adv-gdp': 0, 'cleaning-validation': 0,
       'process-validation': 0, 'hold-time-stability': 0, 'method-validation': 0, 'equipment-qualification': 0,
-      'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0
+      'capa': 0, 'iso-9001': 0, 'qc-lab': 0, 'ipqc': 0, 'capping-lamination': 0
     };
     try {
       // Try all sqp_progress_ keys to find any saved progress
@@ -385,6 +385,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
     { id: 'method-validation', title: t('methodValidation'), subtitle: t('unit_spec'), color: '#3b82f6' },
     { id: 'equipment-qualification', title: t('equipmentQualification'), subtitle: t('unit_spec'), color: '#8b5cf6' },
     { id: 'capa',     title: 'CAPA Management',  subtitle: 'Corrective & Preventive Actions', color: '#e11d48' },
+    { id: 'capping-lamination', title: 'Capping & Lamination', subtitle: 'Tablet Compression Troubleshooting', color: '#7c3aed' },
     { id: 'iso-9001', title: 'ISO 9001 QMS',      subtitle: 'Quality Management System',       color: '#0ea5e9' },
     { id: 'qc-lab',   title: 'QC Laboratory',     subtitle: 'Quality Control Lab',             color: '#10b981' },
     { id: 'ipqc',     title: 'IPQC',              subtitle: 'In-Process Quality Control',      color: '#f59e0b' },
