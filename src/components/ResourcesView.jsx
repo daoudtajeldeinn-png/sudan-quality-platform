@@ -45,15 +45,86 @@ const GMP_TEMPLATES = [
 ];
 
 function downloadTemplate(key, title) {
-  const content = TEMPLATE_CONTENTS[key];
-  if (!content) return;
-  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${key}-template.md`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const mdContent = TEMPLATE_CONTENTS[key];
+  if (!mdContent) return;
+
+  import('jspdf').then(({ jsPDF }) => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // RTL + Arabic font support via built-in
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxW = pageW - margin * 2;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(15, 37, 87);
+    doc.text(title, margin, 20);
+
+    doc.setDrawColor(0, 212, 170);
+    doc.setLineWidth(0.8);
+    doc.line(margin, 24, pageW - margin, 24);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+
+    const lines = mdContent.split('\n');
+    let y = 32;
+
+    lines.forEach(line => {
+      if (y > 270) { doc.addPage(); y = 20; }
+
+      if (line.startsWith('# ')) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(15, 37, 87);
+        const wrapped = doc.splitTextToSize(line.replace('# ', ''), maxW);
+        doc.text(wrapped, margin, y);
+        y += wrapped.length * 7 + 3;
+      } else if (line.startsWith('## ')) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(0, 184, 146);
+        const wrapped = doc.splitTextToSize(line.replace('## ', ''), maxW);
+        doc.text(wrapped, margin, y);
+        y += wrapped.length * 6 + 2;
+      } else if (line.startsWith('### ')) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        const wrapped = doc.splitTextToSize(line.replace('### ', ''), maxW);
+        doc.text(wrapped, margin, y);
+        y += wrapped.length * 5 + 2;
+      } else if (line.startsWith('---')) {
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pageW - margin, y);
+        y += 4;
+      } else if (line.trim() === '') {
+        y += 3;
+      } else {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(40, 40, 40);
+        const wrapped = doc.splitTextToSize(line, maxW);
+        doc.text(wrapped, margin, y);
+        y += wrapped.length * 5 + 1;
+      }
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Sudan Quality Platform — منصة السودان للجودة', margin, 290);
+      doc.text(`${i} / ${pageCount}`, pageW - margin, 290, { align: 'right' });
+    }
+
+    doc.save(`${key}-template.pdf`);
+  });
 }
 
 export default function ResourcesView() {
