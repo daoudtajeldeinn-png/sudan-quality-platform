@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { TEMPLATE_CONTENTS } from '../data/templateContents';
 import { REGULATORY_RESOURCES } from '../data/resourcesAndTemplates';
 
 const S = {
@@ -16,12 +17,51 @@ const S = {
   sub: '#64748b',
 };
 
+const GMP_TEMPLATES = [
+  { id: 'capa', key: 'capa', icon: '🔧', color: '#e11d48',
+    title: 'CAPA Template', titleAr: 'قالب CAPA — الإجراءات التصحيحية والوقائية',
+    description: 'Complete CAPA investigation and root cause analysis template.',
+    descriptionAr: 'قالب شامل للتحقيق وتحليل السبب الجذري وفق ICH Q10 و FDA CAPA Guidelines.' },
+  { id: 'bmr_bpr', key: 'bmr_bpr', icon: '📋', color: '#0ea5e9',
+    title: 'BMR/BPR Template', titleAr: 'قالب سجل دفعة التصنيع/الإنتاج',
+    description: 'Batch Manufacturing Record and Batch Production Record template.',
+    descriptionAr: 'قالب سجل دفعة التصنيع والإنتاج — موثق وفق GMP.' },
+  { id: 'iq_oq_pq', key: 'iq_oq_pq', icon: '✅', color: '#10b981',
+    title: 'IQ/OQ/PQ Template', titleAr: 'قالب التأهيل IQ/OQ/PQ',
+    description: 'Installation, Operational and Performance Qualification template.',
+    descriptionAr: 'قالب تأهيل التركيب والتشغيل والأداء للمعدات والأنظمة.' },
+  { id: 'oot_oos', key: 'oot_oos', icon: '⚠️', color: '#f59e0b',
+    title: 'OOS/OOT Template', titleAr: 'قالب نتائج OOS/OOT',
+    description: 'Out of Specification and Out of Trend investigation template.',
+    descriptionAr: 'قالب التحقيق في النتائج خارج المواصفات وخارج الاتجاه.' },
+  { id: 'internal_audit', key: 'internal_audit', icon: '🔍', color: '#8b5cf6',
+    title: 'Internal Audit Template', titleAr: 'قالب التدقيق الداخلي',
+    description: 'GMP internal audit checklist and findings report template.',
+    descriptionAr: 'قائمة مراجعة التدقيق الداخلي وقالب تقرير النتائج وفق GMP.' },
+  { id: 'quality_policy', key: 'quality_policy', icon: '🏆', color: '#06b6d4',
+    title: 'Quality Policy Template', titleAr: 'قالب سياسة الجودة',
+    description: 'Pharmaceutical quality policy document template.',
+    descriptionAr: 'قالب وثيقة سياسة الجودة الصيدلانية وفق ISO 9001 و GMP.' },
+];
+
+function downloadTemplate(key, title) {
+  const content = TEMPLATE_CONTENTS[key];
+  if (!content) return;
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${key}-template.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function ResourcesView() {
   const { lang, isRtl } = useLanguage();
   const [selectedAgency, setSelectedAgency] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const agencies = ['ALL', 'FDA', 'WHO', 'ICH', 'ISO', 'EMA', 'Videos'];
+  const agencies = ['ALL', 'FDA', 'WHO', 'ICH', 'ISO', 'EMA', 'Videos', 'Templates'];
 
   const filteredResources = REGULATORY_RESOURCES.filter((res) => {
     const matchesAgency = selectedAgency === 'ALL' || res.agency === selectedAgency;
@@ -90,8 +130,8 @@ export default function ResourcesView() {
                 ? 'الكل'
                 : agency === 'Videos'
                 ? '🎥 فيديوهات تدريبية'
-                : agency;
-            const labelEn = agency === 'ALL' ? 'All' : agency === 'Videos' ? '🎥 Webinars' : agency;
+                : agency === 'Templates' ? '📄 قوالب GMP' : agency;
+            const labelEn = agency === 'ALL' ? 'All' : agency === 'Videos' ? '🎥 Webinars' : agency === 'Templates' ? '📄 GMP Templates' : agency;
 
             return (
               <button
@@ -151,8 +191,32 @@ export default function ResourcesView() {
         </div>
       </div>
 
+      {/* Templates Section */}
+      {selectedAgency === 'Templates' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+          {GMP_TEMPLATES.map(tpl => (
+            <div key={tpl.id} style={{ background: '#0d1f38', borderRadius: '14px', border: '1px solid rgba(0,212,170,0.2)', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <span style={{ background: 'rgba(0,212,170,0.12)', color: '#00d4aa', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(0,212,170,0.3)' }}>GMP Template</span>
+                  <span style={{ fontSize: '24px' }}>{tpl.icon}</span>
+                </div>
+                <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>{isRtl ? tpl.titleAr : tpl.title}</h3>
+                <p style={{ color: '#8ba3c4', fontSize: '13px', lineHeight: '1.6', marginBottom: '20px' }}>{isRtl ? tpl.descriptionAr : tpl.description}</p>
+              </div>
+              <button
+                onClick={() => downloadTemplate(tpl.key, tpl.title)}
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', background: `linear-gradient(135deg, ${tpl.color}, ${tpl.color}cc)`, color: 'white', fontWeight: '700', fontSize: '13px', border: 'none', cursor: 'pointer' }}>
+                <span>⬇️</span>
+                <span>{isRtl ? 'تحميل القالب' : 'Download Template'}</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Grid of Cards */}
-      {filteredResources.length === 0 ? (
+      {selectedAgency !== 'Templates' && filteredResources.length === 0 ? (
         <div
           style={{
             textAlign: 'center',
@@ -170,7 +234,7 @@ export default function ResourcesView() {
             {isRtl ? 'جرب البحث بكلمات أخرى أو اختر فئة مختلفة' : 'Try adjusting your search or filters.'}
           </div>
         </div>
-      ) : (
+      ) : selectedAgency !== 'Templates' ? (
         <div
           style={{
             display: 'grid',
@@ -264,7 +328,7 @@ export default function ResourcesView() {
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
