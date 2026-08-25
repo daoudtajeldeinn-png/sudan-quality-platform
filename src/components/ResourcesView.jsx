@@ -44,88 +44,48 @@ const GMP_TEMPLATES = [
     descriptionAr: 'قالب وثيقة سياسة الجودة الصيدلانية وفق ISO 9001 و GMP.' },
 ];
 
-function downloadTemplate(key, title) {
+function downloadTemplate(key, titleEn) {
   const mdContent = TEMPLATE_CONTENTS[key];
   if (!mdContent) return;
 
-  import('jspdf').then(({ jsPDF }) => {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const htmlContent = mdContent
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^## (.+)$/gm, '<h2>$2</h2>'.replace('$2','$1'))
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^---$/gm, '<hr/>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^- \[ \] (.+)$/gm, '<div class="cb">☐ $1</div>')
+    .replace(/^- (.+)$/gm, '<div class="li">• $1</div>')
+    .replace(/^([^<\n].+)$/gm, '<p>$1</p>');
 
-    // RTL + Arabic font support via built-in
-    const pageW = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    const maxW = pageW - margin * 2;
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;padding:40px;background:white;font-family:Cairo,Arial,sans-serif;font-size:13px;line-height:1.7;color:#1a2a4a;direction:rtl;text-align:right;';
+  div.innerHTML = `<style>h1{color:#0f2557;font-size:20px;border-bottom:3px solid #00d4aa;padding-bottom:8px;margin-bottom:16px}h2{color:#00b892;font-size:15px;margin:16px 0 8px}h3{color:#1a3a7a;font-size:13px;margin:12px 0 6px}hr{border:none;border-top:1px solid #ddd;margin:12px 0}p{margin:4px 0}.cb,.li{margin:2px 0;padding-right:8px}strong{font-weight:700}.footer{margin-top:30px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#888;display:flex;justify-content:space-between}</style><div style="background:linear-gradient(135deg,#0f2557,#1a3a7a);color:white;padding:20px 24px;border-radius:8px;margin-bottom:24px"><div style="font-size:18px;font-weight:700">${titleEn}</div><div style="font-size:11px;margin-top:4px;opacity:0.8">منصة السودان للجودة — Sudan Quality Platform</div></div>${htmlContent}<div class="footer"><span>Sudan Quality Platform — منصة السودان للجودة</span><span>GMP Template</span></div>`;
+  document.body.appendChild(div);
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(15, 37, 87);
-    doc.text(title, margin, 20);
-
-    doc.setDrawColor(0, 212, 170);
-    doc.setLineWidth(0.8);
-    doc.line(margin, 24, pageW - margin, 24);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(30, 30, 30);
-
-    const lines = mdContent.split('\n');
-    let y = 32;
-
-    lines.forEach(line => {
-      if (y > 270) { doc.addPage(); y = 20; }
-
-      if (line.startsWith('# ')) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(15, 37, 87);
-        const wrapped = doc.splitTextToSize(line.replace('# ', ''), maxW);
-        doc.text(wrapped, margin, y);
-        y += wrapped.length * 7 + 3;
-      } else if (line.startsWith('## ')) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.setTextColor(0, 184, 146);
-        const wrapped = doc.splitTextToSize(line.replace('## ', ''), maxW);
-        doc.text(wrapped, margin, y);
-        y += wrapped.length * 6 + 2;
-      } else if (line.startsWith('### ')) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(50, 50, 50);
-        const wrapped = doc.splitTextToSize(line.replace('### ', ''), maxW);
-        doc.text(wrapped, margin, y);
-        y += wrapped.length * 5 + 2;
-      } else if (line.startsWith('---')) {
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.line(margin, y, pageW - margin, y);
-        y += 4;
-      } else if (line.trim() === '') {
-        y += 3;
-      } else {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(40, 40, 40);
-        const wrapped = doc.splitTextToSize(line, maxW);
-        doc.text(wrapped, margin, y);
-        y += wrapped.length * 5 + 1;
+  Promise.all([import('html2canvas'), import('jspdf')]).then(([h2c, { jsPDF }]) => {
+    h2c.default(div, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const imgData = canvas.toDataURL('image/png');
+      const imgH = (canvas.height * pdfW) / canvas.width;
+      let heightLeft = imgH;
+      let pos = 0;
+      pdf.addImage(imgData, 'PNG', 0, pos, pdfW, imgH);
+      heightLeft -= pdfH;
+      while (heightLeft > 0) {
+        pos -= pdfH;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, pos, pdfW, imgH);
+        heightLeft -= pdfH;
       }
+      pdf.save(`${key}-template.pdf`);
+      document.body.removeChild(div);
     });
-
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text('Sudan Quality Platform — منصة السودان للجودة', margin, 290);
-      doc.text(`${i} / ${pageCount}`, pageW - margin, 290, { align: 'right' });
-    }
-
-    doc.save(`${key}-template.pdf`);
   });
 }
+
 
 export default function ResourcesView() {
   const { lang, isRtl } = useLanguage();
