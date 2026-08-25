@@ -91,11 +91,11 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
         totalUsers:   statsData.totalUsers   || userArr.length,
         totalCerts:   statsData.totalCerts   || certArr.length,
         avgScore:     statsData.avgXp        || 0,
-        totalCourses: 28,
+        totalCourses: 29,
       });
     } catch (err) {
       console.error('Admin fetch error:', err);
-      setStats({ totalUsers: 0, totalCerts: 0, avgScore: 0, totalCourses: 28 });
+      setStats({ totalUsers: 0, totalCerts: 0, avgScore: 0, totalCourses: 29 });
     } finally {
       setLoading(false);
     }
@@ -251,7 +251,7 @@ export default function AdminDashboard({ user, onLogout, authToken, onSwitchView
         <StatCard label="Total Users"   value={stats?.totalUsers  || 0} sub="registered students"  gradient={`linear-gradient(135deg,${S.green},#0f6e56)`}  icon="👥" />
         <StatCard label="Certificates"  value={stats?.totalCerts  || 0} sub="issued to date"        gradient={`linear-gradient(135deg,${S.blue},#0c447c)`}   icon="🎓" />
         <StatCard label="Avg. Score"    value={`${stats?.avgScore || 0}%`} sub="platform average"  gradient={`linear-gradient(135deg,${S.gold},#a07820)`}    icon="⭐" />
-        <StatCard label="Active Courses" value={28}                     sub="pharmaceutical units"  gradient={`linear-gradient(135deg,${S.purple},#3c3489)`}  icon="📚" />
+        <StatCard label="Active Courses" value={29}                     sub="pharmaceutical units"  gradient={`linear-gradient(135deg,${S.purple},#3c3489)`}  icon="📚" />
       </div>
 
       {/* Quick actions */}

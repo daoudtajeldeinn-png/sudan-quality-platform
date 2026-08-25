@@ -484,7 +484,7 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
 
             // Update displayProgress from new certificate
             if (response.certificate) {
-              setDisplayProgress(prev => ({
+              setUserProgress(prev => ({
                 ...prev,
                 [unitId]: score
               }));
