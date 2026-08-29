@@ -336,7 +336,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
       }}>
         {/* Quiz Header */}
         <div className="glass-panel" style={{
-          backgroundColor: 'var(--bg-card)',
+          backgroundColor: '#ffffff',
           borderRadius: '20px',
           padding: '25px',
           marginBottom: '30px',
@@ -350,7 +350,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
             height: '100px',
           margin: '0 auto 30px',
           borderRadius: '50%',
-          backgroundColor: 'var(--bg-card)',
+          backgroundColor: '#ffffff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -423,7 +423,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
               width: '80px',
               height: '80px',
               borderRadius: '50%',
-              backgroundColor: 'var(--bg-card)',
+              backgroundColor: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -485,7 +485,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            backgroundColor: 'var(--bg-card)',
+            backgroundColor: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -545,7 +545,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
           margin: '0 auto',
           padding: '40px',
           textAlign: 'center',
-          backgroundColor: 'var(--bg-card)',
+          backgroundColor: '#ffffff',
           borderRadius: '24px',
           boxShadow: 'var(--shadow-lg)',
           direction: language === 'ar' ? 'rtl' : 'ltr'
@@ -721,7 +721,7 @@ const Quiz = ({ unitId, onQuizComplete, user, count = 10 }) => {
       </div>
 
       <div className="glass-panel" style={{
-        backgroundColor: 'var(--bg-card)',
+        backgroundColor: '#ffffff',
         padding: '40px',
         borderRadius: '24px',
         boxShadow: 'var(--shadow-md)',
