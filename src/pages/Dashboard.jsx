@@ -60,6 +60,7 @@ const UNIT_ICONS = {
   'iso-9001': { icon: '📋', color: '#0ea5e9', title: { ar: 'ISO 9001', en: 'ISO 9001 QMS' } },
   'qc-lab':   { icon: '🧫', color: '#10b981', title: { ar: 'مختبر ضبط الجودة', en: 'QC Laboratory' } },
   'ipqc':     { icon: '🏭', color: '#f59e0b', title: { ar: 'رقابة الجودة أثناء العملية', en: 'IPQC' } },
+  'capping-lamination': { icon: '💊', color: '#7c3aed', title: { ar: 'التغليف والتصفيح', en: 'Capping & Lamination' } },
 };
 
 const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClosed }) => {
@@ -820,30 +821,46 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
                   </p>
                 </div>
               ) : (
-                <div style={{ marginTop: '110px', textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '2.2rem', color: 'var(--pharma-navy)', marginBottom: '20px' }}>{current.transcriptTitle}</h2>
-                  <div style={{ maxHeight: '400px', overflowY: 'hidden', padding: '0 40px' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid var(--border-color)' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: 'var(--pharma-navy)', color: 'white' }}>
-                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.unitHead}</th>
-                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.scoreHead}</th>
-                          <th style={{ padding: '12px', border: '1px solid #ddd' }}>{current.statusHead}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {unitIds.map(id => (
-                          <tr key={id}>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? UNIT_ICONS[id].title.ar : UNIT_ICONS[id].title.en}</td>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)' }}>%{effectiveProgress[id]}</td>
-                            <td style={{ padding: '8px', border: '1px solid #ddd', color: effectiveProgress[id] >= 80 ? '#28a745' : '#999' }}>{effectiveProgress[id] >= 80 ? 'PASSED' : 'PENDING'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div style={{ marginTop: '60px', textAlign: 'center' }}>
+                  <h2 style={{ fontSize: '1.6rem', color: 'var(--pharma-navy)', marginBottom: '2px' }}>{current.transcriptTitle}</h2>
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', margin: '2px 0' }}>{current.intro}</p>
+                  <h3 style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--pharma-blue)', margin: '2px 0' }}>
+                    {isSample ? current.name : (user.displayName || user.email.split('@')[0])}
+                  </h3>
+                  <div style={{ width: '120px', height: '3px', backgroundColor: 'var(--pharma-gold)', margin: '6px auto 8px' }}></div>
+                  <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    {(() => {
+                      const filtered = unitIds.filter(id => (effectiveProgress[id] || 0) > 0);
+                      const half = Math.ceil(filtered.length / 2);
+                      const col1 = filtered.slice(0, half);
+                      const col2 = filtered.slice(half);
+                      const renderTable = (ids) => (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid var(--border-color)', fontSize: '0.7rem' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: 'var(--pharma-navy)', color: 'white' }}>
+                              <th style={{ padding: '5px 6px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{current.unitHead}</th>
+                              <th style={{ padding: '5px 6px', border: '1px solid #ddd', width: '45px' }}>{current.scoreHead}</th>
+                              <th style={{ padding: '5px 6px', border: '1px solid #ddd', width: '55px' }}>{current.statusHead}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ids.map(id => (
+                              <tr key={id}>
+                                <td style={{ padding: '3px 6px', border: '1px solid #ddd', textAlign: certLang === 'ar' ? 'right' : 'left' }}>{certLang === 'ar' ? (UNIT_ICONS[id]?.title?.ar || id) : (UNIT_ICONS[id]?.title?.en || id)}</td>
+                                <td style={{ padding: '3px 6px', border: '1px solid #ddd', fontWeight: 'bold', color: 'var(--pharma-green)', textAlign: 'center' }}>{effectiveProgress[id] || 0}%</td>
+                                <td style={{ padding: '3px 6px', border: '1px solid #ddd', color: effectiveProgress[id] >= 80 ? '#28a745' : '#999', textAlign: 'center', fontSize: '0.65rem' }}>{effectiveProgress[id] >= 80 ? 'PASSED' : 'PENDING'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      );
+                      return certLang === 'ar'
+                        ? <>{renderTable(col2)}{renderTable(col1)}</>
+                        : <>{renderTable(col1)}{renderTable(col2)}</>;
+                    })()}
                   </div>
-                  <div style={{ marginTop: '20px', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--pharma-navy)' }}>
-                    {language === 'ar' ? 'متوسط الدرجات الكلي' : 'Overall Performance Average'}: %{totalAverage}
+                  <div style={{ marginTop: '10px', fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--pharma-navy)' }}>
+                    {language === 'ar' ? 'متوسط الدرجات الكلي' : 'Overall Performance Average'}: {totalAverage}%
                   </div>
                 </div>
               )}
@@ -895,9 +912,28 @@ const Dashboard = ({ user, onLogout, authToken, activeTab, certToOpen, onCertClo
             <button onClick={() => setViewType(viewType === 'cert' ? 'transcript' : 'cert')} className="btn-lang" style={{ background: 'var(--regulatory-amber)', minWidth: '150px' }}>
                {viewType === 'cert' ? '📄 View Details' : '📜 View Certificate'}
             </button>
-            <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
-              ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              {/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) && (
+                <div style={{
+                  backgroundColor: '#fff3cd',
+                  border: '1px solid #ffc107',
+                  borderRadius: '10px',
+                  padding: '10px 20px',
+                  fontSize: '0.85rem',
+                  color: '#856404',
+                  textAlign: 'center',
+                  maxWidth: '400px',
+                  lineHeight: '1.5'
+                }}>
+                  {certLang === 'ar'
+                    ? '⚠️ للحصول على أفضل جودة للشهادة، يُنصح بالتحميل من جهاز كمبيوتر أو لابتوب'
+                    : '⚠️ For best certificate quality, we recommend downloading from a PC or laptop'}
+                </div>
+              )}
+              <button onClick={() => downloadPDF(viewType === 'cert' ? 'Certificate' : 'Transcript')} className="btn-primary" style={{ minWidth: '150px' }}>
+                ⬇️ Download {viewType === 'cert' ? 'PDF' : 'Details'}
+              </button>
+            </div>
             <button onClick={() => { setShowCertificate(false); setIsSampleMode(false); setSelectedCert(null); if(onCertClosed) onCertClosed(); }} className="btn-logout" style={{ background: '#333', minWidth: '100px' }}>
               {t('back')}
             </button>
